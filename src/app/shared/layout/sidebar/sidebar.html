@@ -1,0 +1,33 @@
+<aside class="sidebar" [class.open]="sidebarOpen()">
+  <p-card class="sidebar-card">
+    <div class="sidebar-brand">
+      <i class="pi pi-calendar"></i>
+      <span>SAHD</span>
+    </div>
+
+    <p-panelmenu [model]="menuItems" [multiple]="true" />
+
+    <div class="sidebar-bottom">
+      <p-button
+        label="Configuración"
+        icon="pi pi-cog"
+        severity="secondary"
+        variant="text"
+        fluid
+        styleClass="configurar-button"
+        (onClick)="onConfigurar()"
+      />
+
+      <p-button
+        label="Cerrar sesión"
+        icon="pi pi-sign-out"
+        severity="secondary"
+        variant="text"
+        fluid
+        styleClass="logout-button"
+        (onClick)="confirmarCerrarSesion()"
+      />
+    </div>
+  </p-card>
+</aside>
+<p-confirmdialog />

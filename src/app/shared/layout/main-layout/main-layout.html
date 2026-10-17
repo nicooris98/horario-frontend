@@ -1,0 +1,33 @@
+<div class="layout-wrapper">
+  <app-sidebar
+    [sidebarOpen]="sidebarOpen()"
+    (configurar)="onConfigurar()"
+    (cerrarSesion)="onCerrarSesion()"
+  />
+  <div class="main-area">
+    <p-toolbar class="topbar">
+      <ng-template pTemplate="start">
+        <p-button
+          class="menu-toggle-btn"
+          icon="pi pi-bars"
+          (onClick)="toggleSidebar()"
+          aria-label="Abrir menú principal"
+          [text]="true"
+          size="small"
+        ></p-button>
+      </ng-template>
+      <ng-template pTemplate="end">
+        <p-avatar
+          shape="circle"
+          size="large"
+          icon="pi pi-user"
+          (onClick)="toggleProfileMenu($event)"
+        ></p-avatar>
+        <p-menu #profileMenu [model]="profileMenuItems" [popup]="true"></p-menu>
+      </ng-template>
+    </p-toolbar>
+    <main class="content">
+      <router-outlet />
+    </main>
+  </div>
+</div>

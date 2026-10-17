@@ -1,0 +1,96 @@
+
+:host {
+  display: block;
+  height: 100%;
+}
+
+/* Sidebar */
+.sidebar {
+  position: fixed;
+  top: 64px;
+  bottom: 0;
+  left: 0;
+  z-index: 1100;
+  display: flex;
+  flex-direction: column;
+  width: 260px;
+  box-sizing: border-box;
+  transform: translateX(-100%);
+  transition: transform 0.3s ease;
+}
+
+.sidebar.open {
+  transform: translateX(0);
+}
+
+/* Card */
+.sidebar-card {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  height: 100%;
+  min-height: 0;
+  border-radius: 0;
+}
+
+:host ::ng-deep .sidebar-card .p-card-body,
+:host ::ng-deep .sidebar-card .p-card-content {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-height: 0;
+}
+
+/* Marca */
+.sidebar-brand {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem 0.5rem 1.5rem;
+}
+
+/* Menú */
+p-panelmenu {
+  display: block;
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+}
+
+:host ::ng-deep .p-panelmenu-panel {
+  margin-bottom: 6px;
+}
+
+/* Acciones inferiores */
+.sidebar-bottom {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin-top: auto;
+  padding-top: 1.5rem;
+  border-top: 1px solid var(--p-surface-200);
+}
+
+:host ::ng-deep .configurar-button,
+:host ::ng-deep .logout-button {
+  justify-content: flex-start;
+  gap: 0.75rem;
+  width: 100%;
+  padding: 0.5rem 0.75rem;
+  font-family: var(--p-font-family);
+  font-size: 0.875rem;
+
+}
+
+
+
+
+/* Escritorio */
+@media (min-width: 992px) {
+  .sidebar {
+    position: static;
+    height: 100%;
+    transform: none;
+    z-index: auto;
+  }
+}
