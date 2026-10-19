@@ -1,4 +1,4 @@
-import { Component, EventEmitter, Output, computed, input, inject, signal } from '@angular/core';
+import { Component, EventEmitter, Output, input, inject } from '@angular/core';
 import { NavigationEnd, Router } from '@angular/router';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ConfirmationService, MenuItem } from 'primeng/api';
@@ -23,15 +23,12 @@ export class Sidebar {
   private readonly confirmationService = inject(ConfirmationService);
   private readonly auth = inject(Auth);
   private readonly router = inject(Router);
-  private readonly currentUrl = signal(this.router.url);
+  private currentUrl = this.router.url;
 
   @Output() cerrarSesion = new EventEmitter<void>();
 
-  readonly menuItems = computed<MenuItem[]>(() => this.filterMenuItems(MENU_ITEMS));
-  readonly navigationItems = computed(() => this.menuItems().filter((item) => !!item.routerLink));
-  readonly administrationItems = computed(() =>
-    this.menuItems().filter((item) => !item.routerLink),
-  );
+  navigationItems: MenuItem[] = [];
+  administrationItems: MenuItem[] = [];
 
   readonly panelMenuTheme = {
     root: { gap: '0.375rem' },
@@ -70,12 +67,23 @@ export class Sidebar {
   };
 
   constructor() {
+    this.updateMenuItems();
+
     this.router.events
       .pipe(
         filter((event): event is NavigationEnd => event instanceof NavigationEnd),
         takeUntilDestroyed(),
       )
-      .subscribe((event) => this.currentUrl.set(event.urlAfterRedirects));
+      .subscribe((event) => {
+        this.currentUrl = event.urlAfterRedirects;
+        this.updateMenuItems();
+      });
+  }
+
+  private updateMenuItems(): void {
+    const items = this.filterMenuItems(MENU_ITEMS);
+    this.navigationItems = items.filter((item) => !!item.routerLink);
+    this.administrationItems = items.filter((item) => !item.routerLink);
   }
 
   private filterMenuItems(items: typeof MENU_ITEMS): MenuItem[] {
@@ -115,7 +123,7 @@ export class Sidebar {
   }
 
   private isMenuItemActive(routerLink: string): boolean {
-    const currentPath = this.currentUrl().split(/[?#]/, 1)[0];
+    const currentPath = this.currentUrl.split(/[?#]/, 1)[0];
     const targetPath = this.router.serializeUrl(this.router.createUrlTree([routerLink]));
 
     return currentPath === targetPath;
