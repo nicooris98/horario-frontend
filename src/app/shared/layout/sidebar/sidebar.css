@@ -1,96 +1,123 @@
-
 :host {
   display: block;
-  height: 100%;
+  flex: 0 0 17rem;
+  width: 17rem;
+  min-width: 0;
 }
 
-/* Sidebar */
 .sidebar {
-  position: fixed;
-  top: 64px;
-  bottom: 0;
-  left: 0;
-  z-index: 1100;
+  position: sticky;
+  top: 0;
   display: flex;
-  flex-direction: column;
-  width: 260px;
-  box-sizing: border-box;
-  transform: translateX(-100%);
-  transition: transform 0.3s ease;
+  width: 100%;
+  height: 100dvh;
+  padding: 1.25rem 1rem;
+  overflow-y: auto;
+  color: var(--p-primary-contrast-color);
+  background: linear-gradient(180deg, var(--p-primary-800), var(--p-primary-900));
 }
 
-.sidebar.open {
-  transform: translateX(0);
-}
-
-/* Card */
-.sidebar-card {
+.sidebar-content {
   display: flex;
   flex: 1;
   flex-direction: column;
-  height: 100%;
-  min-height: 0;
-  border-radius: 0;
+  min-height: 100%;
 }
 
-:host ::ng-deep .sidebar-card .p-card-body,
-:host ::ng-deep .sidebar-card .p-card-content {
-  display: flex;
-  flex: 1;
-  flex-direction: column;
-  min-height: 0;
-}
-
-/* Marca */
 .sidebar-brand {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   gap: 0.75rem;
-  padding: 0.75rem 0.5rem 1.5rem;
+  padding: 0.25rem 0.5rem 1.25rem;
+  color: inherit;
+  text-decoration: none;
 }
 
-/* Menú */
-p-panelmenu {
+.sidebar-brand > i {
+  margin-top: 0.15rem;
+  color: var(--p-primary-contrast-color);
+  font-size: 1.5rem;
+}
+
+.sidebar-brand > span {
+  display: grid;
+  gap: 0.3rem;
+  min-width: 0;
+}
+
+.sidebar-brand strong {
+  color: inherit;
+  font-size: 1.125rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  line-height: 1.1;
+}
+
+.sidebar-brand small {
+  color: rgb(255 255 255 / 75%);
+  font-size: 0.7rem;
+  line-height: 1.35;
+}
+
+.sidebar-navigation {
+  display: grid;
+  gap: 0.625rem;
+  margin-top: 0.5rem;
+}
+
+.sidebar-section-title {
+  padding-inline: 0.75rem;
+  color: rgb(255 255 255 / 62%);
+  font-size: 0.6875rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.sidebar-navigation p-panelmenu {
   display: block;
-  flex: 1;
-  min-height: 0;
-  overflow-y: auto;
-}
-
-:host ::ng-deep .p-panelmenu-panel {
-  margin-bottom: 6px;
-}
-
-/* Acciones inferiores */
-.sidebar-bottom {
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-  margin-top: auto;
-  padding-top: 1.5rem;
-  border-top: 1px solid var(--p-surface-200);
-}
-
-:host ::ng-deep .configurar-button,
-:host ::ng-deep .logout-button {
-  justify-content: flex-start;
-  gap: 0.75rem;
   width: 100%;
-  padding: 0.5rem 0.75rem;
-  font-family: var(--p-font-family);
-  font-size: 0.875rem;
-
 }
 
+.sidebar-administration {
+  margin-top: auto;
+}
 
+.sidebar-administration p-panelmenu {
+  display: block;
+  width: 100%;
+}
 
+.sidebar-bottom {
+  padding-top: 1rem;
+  border-top: 1px solid rgb(255 255 255 / 20%);
+}
 
-/* Escritorio */
-@media (min-width: 992px) {
+@media (max-width: 991px) {
+  :host {
+    flex: none;
+    width: auto;
+  }
+
   .sidebar {
-    position: static;
-    height: 100%;
-    transform: none;
-    z-index: auto;
+    position: fixed;
+    inset: 4rem auto 0 0;
+    z-index: 50;
+    width: min(17rem, calc(100vw - 2rem));
+    height: calc(100dvh - 4rem);
+    transform: translateX(-102%);
+    visibility: hidden;
+    transition: transform 180ms ease, visibility 180ms ease;
+  }
+
+  .sidebar.open {
+    transform: translateX(0);
+    visibility: visible;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sidebar {
+    transition: none;
   }
 }

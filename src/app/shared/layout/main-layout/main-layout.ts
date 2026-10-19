@@ -1,74 +1,80 @@
-import { Component, signal, inject, ViewChild, AfterViewInit } from '@angular/core';
-import { RouterOutlet } from '@angular/router';
-import { Sidebar } from '../sidebar/sidebar';
-import { ToolbarModule } from 'primeng/toolbar';
-import { ButtonModule } from 'primeng/button';
+import { DOCUMENT } from '@angular/common';
+import { Component, DestroyRef, inject, OnInit, signal } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { Router, RouterOutlet, NavigationEnd } from '@angular/router';
 import { AvatarModule } from 'primeng/avatar';
-import { MenuModule, Menu } from 'primeng/menu';
-import { MenuItem } from 'primeng/api';
+import { ButtonModule } from 'primeng/button';
+import { ToolbarModule } from 'primeng/toolbar';
+import { filter } from 'rxjs';
 import { Auth } from '../../../features/auth/services/auth';
-import { Router } from '@angular/router';
+import { Sidebar } from '../sidebar/sidebar';
 
 @Component({
   selector: 'app-main-layout',
   standalone: true,
-  imports: [Sidebar, RouterOutlet, ToolbarModule, ButtonModule, AvatarModule, MenuModule],
+  imports: [Sidebar, RouterOutlet, ToolbarModule, ButtonModule, AvatarModule],
   templateUrl: './main-layout.html',
   styleUrl: './main-layout.css',
 })
-export class MainLayout implements AfterViewInit {
-  @ViewChild('profileMenu') profileMenu!: Menu;
-
+export class MainLayout implements OnInit {
   private readonly auth = inject(Auth);
   private readonly router = inject(Router);
+  private readonly document = inject(DOCUMENT);
+  private readonly destroyRef = inject(DestroyRef);
 
   protected readonly sidebarOpen = signal(false);
-  protected readonly currentSectionTitle = signal('Dashboard');
+  protected readonly sidebarCollapsed = signal(false);
 
-  profileMenuItems: MenuItem[] = [
-    {
-      label: 'Configuración',
-      icon: 'pi pi-cog',
-      command: () => {
-        this.onConfigurar();
-      },
-    },
-    {
-      separator: true,
-    },
-    {
-      label: 'Cerrar sesión',
-      icon: 'pi pi-sign-out',
-      command: () => {
-        this.onCerrarSesion();
-      },
-    },
-  ];
-
-  ngAfterViewInit(): void {
-    // El componente Menu de PrimeNG necesita estar inicializado antes de usarse.
+  ngOnInit(): void {
+    this.router.events
+      .pipe(
+        filter((event): event is NavigationEnd => event instanceof NavigationEnd),
+        takeUntilDestroyed(this.destroyRef),
+      )
+      .subscribe(() => this.closeSidebar());
   }
 
   protected toggleSidebar(): void {
-    this.sidebarOpen.update((value) => !value);
+    if (this.isDesktopViewport()) {
+      this.sidebarCollapsed.update((collapsed) => !collapsed);
+      return;
+    }
+
+    this.sidebarOpen.update((open) => !open);
   }
 
-  protected toggleProfileMenu(event: Event): void {
-    this.profileMenu.toggle(event);
+  protected closeSidebar(): void {
+    this.sidebarOpen.set(false);
   }
 
-  protected onConfigurar(): void {
-    // Opción preparada para futuras preferencias del sistema y configuración del usuario.
+  protected sidebarExpanded(): boolean {
+    return this.isDesktopViewport() ? !this.sidebarCollapsed() : this.sidebarOpen();
+  }
+
+  protected profileName(): string {
+    const user = this.auth.currentUser();
+    return [user?.firstName, user?.lastName].filter(Boolean).join(' ') || 'Usuario';
+  }
+
+  protected profileInitials(): string {
+    const user = this.auth.currentUser();
+    const firstName = user?.firstName?.trim() ?? '';
+    const lastName = user?.lastName?.trim() ?? '';
+    const initials = `${firstName.charAt(0)}${lastName.charAt(0)}`;
+
+    return (initials || firstName.slice(0, 2) || 'US').toLocaleUpperCase('es');
   }
 
   protected onCerrarSesion(): void {
     this.auth.logout().subscribe({
-      next: () => {
-        this.router.navigate(['/login']);
-      },
-      error: (err: unknown) => {
-        console.error('Error al cerrar sesión:', err);
+      next: () => this.router.navigate(['/login']),
+      error: (error: unknown) => {
+        console.error('No se pudo cerrar la sesión:', error);
       },
     });
+  }
+
+  private isDesktopViewport(): boolean {
+    return this.document.defaultView?.matchMedia?.('(min-width: 992px)').matches ?? false;
   }
 }

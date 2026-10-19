@@ -1,103 +1,122 @@
-<div class="login-container">
-  <div class="login-layout">
-    <!-- Panel institucional izquierdo -->
-    <section class="login-brand">
-      <div class="brand-header">
-        <div class="brand-logo">
-          <img src="/logo6001lt.png" alt="Escudo del Instituto Superior N.º 6001" />
-        </div>
-
-        <span class="brand-label">SISTEMA INSTITUCIONAL</span>
+<main class="login-layout">
+  <section class="login-brand" aria-labelledby="brand-title">
+    <div class="brand-lockup">
+      <i class="brand-mark pi pi-graduation-cap" aria-hidden="true"></i>
+      <div class="brand-copy">
+        <h1 id="brand-title">SAHD</h1>
+        <p class="brand-institution">Sistema de Administración de Horarios Docentes</p>
       </div>
+    </div>
 
-      <div class="brand-content">
-        <h1>SAHD</h1>
+    <div class="brand-message">
+      <p>
+        Organiza, gestiona y optimiza los horarios docentes de forma simple y eficiente.
+      </p>
+    </div>
 
-        <p class="brand-institution">Sistema de Administración de Horario Docente</p>
+    <ul class="brand-features" aria-label="Funciones del sistema">
+      <li>
+        <span class="feature-icon"><i class="pi pi-calendar" aria-hidden="true"></i></span>
+        <span>
+          <strong>Gestión académica</strong>
+          <small>Asignaturas, horarios y aulas.</small>
+        </span>
+      </li>
+      <li>
+        <span class="feature-icon"><i class="pi pi-users" aria-hidden="true"></i></span>
+        <span>
+          <strong>Administración</strong>
+          <small>Usuarios, roles y permisos.</small>
+        </span>
+      </li>
+      <li>
+        <span class="feature-icon"><i class="pi pi-chart-bar" aria-hidden="true"></i></span>
+        <span>
+          <strong>Reportes</strong>
+          <small>Información clara para la toma de decisiones.</small>
+        </span>
+      </li>
+    </ul>
+  </section>
 
-        <div class="brand-divider"></div>
+  <section class="login-form-container" aria-label="Acceso al sistema">
+    <form [formGroup]="loginForm" (ngSubmit)="login()" aria-labelledby="login-title">
+      <p-card class="login-card">
+        <header class="login-card-heading">
+          <h2 id="login-title">Bienvenida</h2>
+          <p>Ingresá a tu cuenta para continuar</p>
+        </header>
 
-        <p class="brand-footer">
-          Instituto Superior N.º 6001<br />
-          General Manuel Belgrano
-        </p>
-      </div>
-
-      <div class="brand-bottom">
-        <i class="pi pi-calendar"></i>
-        <span>© 2026 · Sistema de Administración de Horario Docente</span>
-      </div>
-    </section>
-
-    <!-- Formulario de acceso -->
-    <section class="login-form-container">
-      <form [formGroup]="loginForm" (ngSubmit)="login()">
-        <p-card
-          class="login-card"
-          header="Iniciar sesión"
-          subheader="Ingresá tus credenciales para continuar."
-        >
-          <!-- Email -->
-          <div class="field">
-            <label for="email">Correo electrónico</label>
-
+        <div class="field">
+          <label for="email">Correo electrónico</label>
+          <p-iconfield>
+            <p-inputicon class="pi pi-envelope" aria-hidden="true" />
             <input
               id="email"
               type="email"
               pInputText
               formControlName="email"
-              placeholder="usuario@email.com"
+              placeholder="tu.correo@institucion.edu.ar"
               autocomplete="username"
+              [attr.aria-invalid]="loginForm.controls.email.touched && loginForm.controls.email.invalid"
+              [attr.aria-describedby]="loginForm.controls.email.touched && loginForm.controls.email.invalid ? 'email-error' : null"
             />
+          </p-iconfield>
 
-            @if (loginForm.controls.email.touched) {
-              @if (loginForm.controls.email.hasError('required')) {
-                <small class="error"> El correo electrónico es obligatorio. </small>
-              } @else if (loginForm.controls.email.hasError('email')) {
-                <small class="error"> Ingresá un correo electrónico válido. </small>
-              }
+          @if (loginForm.controls.email.touched) {
+            @if (loginForm.controls.email.hasError('required')) {
+              <small id="email-error" class="field-error" role="alert">
+                El correo electrónico es obligatorio.
+              </small>
+            } @else if (loginForm.controls.email.hasError('email')) {
+              <small id="email-error" class="field-error" role="alert">
+                Ingresá un correo electrónico válido.
+              </small>
             }
-          </div>
+          }
+        </div>
 
-          <!-- Contraseña -->
-          <div class="field">
-            <label for="password">Contraseña</label>
-
+        <div class="field">
+          <label for="password">Contraseña</label>
+          <p-iconfield>
+            <p-inputicon class="pi pi-lock" aria-hidden="true" />
             <p-password
               inputId="password"
               formControlName="password"
-              placeholder="Ingresá tu contraseña"
+              placeholder="Tu contraseña"
               [feedback]="false"
               [toggleMask]="true"
+              [fluid]="true"
+              ariaLabel="Contraseña"
               autocomplete="current-password"
             />
+          </p-iconfield>
 
-            @if (
-              loginForm.controls.password.touched &&
-              loginForm.controls.password.hasError('required')
-            ) {
-              <small class="error"> La contraseña es obligatoria. </small>
-            }
-          </div>
-
-          <!-- Acceso -->
-          <p-button
-            type="submit"
-            label="Iniciar sesión"
-            icon="pi pi-sign-in"
-            [fluid]="true"
-            [loading]="loading()"
-            [disabled]="loginForm.invalid || loading()"
-          />
-          @if (errorMessage()) {
-            <div class="error-message-container">
-              <p-message severity="error">
-                {{ errorMessage() }}
-              </p-message>
-            </div>
+          @if (
+            loginForm.controls.password.touched &&
+            loginForm.controls.password.hasError('required')
+          ) {
+            <small id="password-error" class="field-error" role="alert">
+              La contraseña es obligatoria.
+            </small>
           }
-        </p-card>
-      </form>
-    </section>
-  </div>
-</div>
+        </div>
+
+        @if (errorMessage()) {
+          <p-message class="login-error" severity="error" role="alert">
+            {{ errorMessage() }}
+          </p-message>
+        }
+
+        <p-button
+          type="submit"
+          label="Iniciar sesión"
+          icon="pi pi-sign-in"
+          [fluid]="true"
+          [loading]="loading()"
+          [disabled]="loading()"
+        />
+      </p-card>
+    </form>
+  </section>
+</main>

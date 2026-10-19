@@ -1,15 +1,22 @@
 export interface LoginResponse {
-    accessToken: string;
-    user:        User;
+  user: User;
+}
+
+export interface UserRole {
+  id: number;
+  name: string;
+  description: string | null;
+  isActive: boolean;
 }
 
 export interface User {
-    createdAt: Date;
-    updatedAt: Date;
-    id:        number;
-    firstName: string;
-    lastName:  string;
-    email:     string;
-    isActive:  boolean;
-    roles:     any[];
+  id: number;
+  firstName: string;
+  lastName: string;
+  email: string;
+  isActive: boolean;
+  createdAt: string;
+  updatedAt: string;
+  roles: UserRole[];
+  permissions: string[];
 }

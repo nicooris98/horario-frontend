@@ -1,74 +1,85 @@
 .layout-wrapper {
   display: flex;
-  flex-direction: column;
   min-height: 100dvh;
   width: 100%;
-  box-sizing: border-box;
+}
+
+.sidebar-shell.collapsed {
+  display: none;
 }
 
 .main-area {
-  flex: 1;
   display: flex;
+  flex: 1;
   flex-direction: column;
-  min-height: 0;
+  min-width: 0;
+  min-height: 100dvh;
 }
 
 .topbar {
-  position: fixed;
+  position: sticky;
   top: 0;
-  left: 0;
-  right: 0;
-  height: 64px;
-  z-index: 1100;
-  background: var(--p-surface-0);
+  z-index: 40;
+  min-height: 4rem;
   border-bottom: 1px solid var(--p-surface-200);
-  color: var(--p-text-color);
+}
+
+.menu-toggle-btn {
+  display: inline-flex;
+}
+
+.profile-summary {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  padding: 0 1rem;
-  box-sizing: border-box;
+  gap: 0.625rem;
+  color: var(--p-text-color);
+}
+
+.profile-name {
+  max-width: 14rem;
+  overflow: hidden;
+  font-size: 0.875rem;
+  font-weight: 500;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .content {
   flex: 1;
-  min-height: 0;
-  overflow-y: auto;
-  padding: 1.5rem;
-  margin-top: 64px;
-  box-sizing: border-box;
+  width: 100%;
+  max-width: 90rem;
+  min-width: 0;
+  margin-inline: auto;
+  padding: clamp(1.25rem, 3vw, 2rem);
+}
+
+.sidebar-backdrop {
+  position: fixed;
+  inset: 4rem 0 0;
+  z-index: 30;
+  padding: 0;
+  border: 0;
+  background: rgb(9 26 54 / 38%);
+}
+
+@media (max-width: 991px) {
+  .layout-wrapper {
+    display: block;
+  }
+
+  .sidebar-shell.collapsed {
+    display: block;
+  }
 }
 
 @media (min-width: 992px) {
-  .layout-wrapper {
-    flex-direction: row;
-    height: 100dvh;
-  }
-
-  .main-area {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    min-height: 0;
-  }
-
-  .topbar {
-    position: static;
-    top: auto;
-    left: auto;
-    right: auto;
-    width: 100%;
-    z-index: 1;
-  }
-
-  .menu-toggle-btn {
+  .sidebar-backdrop {
     display: none;
   }
+}
 
-  .content {
-    margin-top: 0;
-    flex: 1;
-    overflow-y: auto;
-    padding: 1.5rem;
+@media (max-width: 380px) {
+  .profile-name {
+    display: none;
   }
 }

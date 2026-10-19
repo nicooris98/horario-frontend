@@ -1,31 +1,45 @@
 <div class="layout-wrapper">
+  @if (sidebarOpen()) {
+    <button
+      class="sidebar-backdrop"
+      type="button"
+      aria-label="Cerrar navegación"
+      (click)="closeSidebar()"
+    ></button>
+  }
+
   <app-sidebar
+    class="sidebar-shell"
+    [class.collapsed]="sidebarCollapsed()"
     [sidebarOpen]="sidebarOpen()"
-    (configurar)="onConfigurar()"
     (cerrarSesion)="onCerrarSesion()"
   />
+
   <div class="main-area">
     <p-toolbar class="topbar">
-      <ng-template pTemplate="start">
-        <p-button
+      <ng-template #start>
+        <button
+          pButton
           class="menu-toggle-btn"
+          type="button"
           icon="pi pi-bars"
-          (onClick)="toggleSidebar()"
-          aria-label="Abrir menú principal"
+          (click)="toggleSidebar()"
+          aria-label="Alternar navegación principal"
+          [attr.aria-expanded]="sidebarExpanded()"
+          aria-controls="primary-navigation"
           [text]="true"
-          size="small"
-        ></p-button>
+          [rounded]="true"
+        ></button>
       </ng-template>
-      <ng-template pTemplate="end">
-        <p-avatar
-          shape="circle"
-          size="large"
-          icon="pi pi-user"
-          (onClick)="toggleProfileMenu($event)"
-        ></p-avatar>
-        <p-menu #profileMenu [model]="profileMenuItems" [popup]="true"></p-menu>
+
+      <ng-template #end>
+        <div class="profile-summary" role="group" [attr.aria-label]="'Usuario ' + profileName()">
+          <p-avatar [label]="profileInitials()" shape="circle" aria-hidden="true" />
+          <span class="profile-name">{{ profileName() }}</span>
+        </div>
       </ng-template>
     </p-toolbar>
+
     <main class="content">
       <router-outlet />
     </main>

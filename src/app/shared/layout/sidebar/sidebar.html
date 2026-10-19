@@ -1,33 +1,39 @@
-<aside class="sidebar" [class.open]="sidebarOpen()">
-  <p-card class="sidebar-card">
+<nav
+  id="primary-navigation"
+  class="sidebar"
+  [class.open]="sidebarOpen()"
+  aria-label="Navegación principal"
+>
+  <div class="sidebar-content">
     <div class="sidebar-brand">
-      <i class="pi pi-calendar"></i>
-      <span>SAHD</span>
+      <i class="pi pi-graduation-cap" aria-hidden="true"></i>
+      <span>
+        <strong>SAHD</strong>
+        <small>Sistema de Administración de Horarios Docentes</small>
+      </span>
     </div>
 
-    <p-panelmenu [model]="menuItems" [multiple]="true" />
+    <div class="sidebar-navigation">
+      <span class="sidebar-section-title">Navegación</span>
+      <p-panelmenu [model]="navigationItems()" [multiple]="true" [dt]="panelMenuTheme" />
+    </div>
+
+    <div class="sidebar-administration">
+      <p-panelmenu [model]="administrationItems()" [multiple]="true" [dt]="panelMenuTheme" />
+    </div>
 
     <div class="sidebar-bottom">
-      <p-button
-        label="Configuración"
-        icon="pi pi-cog"
-        severity="secondary"
-        variant="text"
-        fluid
-        styleClass="configurar-button"
-        (onClick)="onConfigurar()"
-      />
-
       <p-button
         label="Cerrar sesión"
         icon="pi pi-sign-out"
         severity="secondary"
         variant="text"
         fluid
-        styleClass="logout-button"
+        [dt]="sidebarButtonTheme"
         (onClick)="confirmarCerrarSesion()"
       />
     </div>
-  </p-card>
-</aside>
+  </div>
+</nav>
+
 <p-confirmdialog />

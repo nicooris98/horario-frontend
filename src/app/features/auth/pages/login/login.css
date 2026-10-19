@@ -1,250 +1,301 @@
-/* Contenedor principal */
-.login-container {
-  min-height: 100vh;
-  display: flex;
-  background-color: #D7EAF7;
+:host {
+  display: block;
+  min-height: 100dvh;
 }
 
 .login-layout {
-  display: flex;
+  display: grid;
+  grid-template-columns: minmax(20rem, 0.92fr) minmax(26rem, 1.08fr);
   width: 100%;
-  min-height: 100vh;
+  min-width: 0;
+  min-height: 100dvh;
+  background: var(--p-surface-50);
 }
 
-/* Panel institucional izquierdo */
 .login-brand {
   position: relative;
-  isolation: isolate;
-  overflow: hidden;
-  flex: 0 0 48%;
-  box-sizing: border-box;
   display: flex;
   flex-direction: column;
-  justify-content: flex-start;
-  padding: 48px clamp(32px, 5vw, 80px);
-  background-color: #2476B9;
-  color: #FFFFFF;
+  min-width: 0;
+  overflow: hidden;
+  padding: clamp(2.5rem, 5.5vw, 5.5rem);
+  color: var(--p-primary-contrast-color);
+  background:
+    radial-gradient(circle at 110% -5%, rgb(255 255 255 / 8%) 0 12rem, transparent 12.1rem),
+    linear-gradient(145deg, var(--p-primary-700), var(--p-primary-900) 62%, var(--p-primary-950));
 }
 
-/* Detalles gráficos del fondo */
-.login-brand::before {
-  content: '';
-  position: absolute;
-  z-index: -1;
-  width: 420px;
-  height: 420px;
-  top: -180px;
-  right: -180px;
-  border: 1px solid rgb(255 255 255 / 12%);
-  border-radius: 50%;
-  box-shadow:
-    0 0 0 45px rgb(255 255 255 / 4%),
-    0 0 0 90px rgb(255 255 255 / 3%);
+.brand-lockup,
+.brand-message,
+.brand-features {
+  position: relative;
+  z-index: 1;
 }
 
-.login-brand::after {
-  content: '';
-  position: absolute;
-  z-index: -1;
-  width: 300px;
-  height: 300px;
-  bottom: -190px;
-  left: -120px;
-  border: 1px solid rgb(255 255 255 / 12%);
-  border-radius: 50%;
-  box-shadow: 0 0 0 35px rgb(255 255 255 / 4%);
-}
-
-/* Encabezado y escudo */
-.brand-header {
+.brand-lockup {
   display: flex;
-  align-items: center;
-  gap: 16px;
+  align-items: flex-start;
+  gap: 1rem;
 }
 
-.brand-logo {
-  flex-shrink: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 64px;
-  height: 64px;
-  padding: 5px;
-  border-radius: 14px;
-  background-color: #FFFFFF;
+.brand-mark {
+  margin-top: 0.25rem;
+  color: var(--p-primary-contrast-color);
+  font-size: 2.5rem;
 }
 
-.brand-logo img {
-  display: block;
-  width: 100%;
-  height: 100%;
-  object-fit: contain;
-}
-
-.brand-label {
-  color: #D7EAF7;
-  font-size: 11px;
-  font-weight: 600;
-  letter-spacing: 1.5px;
-}
-
-/* Identidad del sistema */
-.brand-content {
-   max-width: 480px;
-  margin-top: 120px;
-  margin-bottom: auto;
-}
-
-.brand-content h1 {
-  margin: 0 0 14px;
-  color: #FFFFFF;
-  font-size: clamp(48px, 5vw, 68px);
+.brand-copy h1 {
+  margin: 0;
+  color: inherit;
+  font-size: clamp(2.25rem, 4vw, 3rem);
   font-weight: 700;
+  letter-spacing: -0.04em;
   line-height: 1;
-  letter-spacing: -2px;
 }
 
 .brand-institution {
-  max-width: 400px;
+  max-width: 19rem;
+  margin: 0.5rem 0 0;
+  color: rgb(255 255 255 / 82%);
+  font-size: 0.9375rem;
+  line-height: 1.45;
+}
+
+.brand-message {
+  max-width: 30rem;
+  margin-block: auto;
+  padding-block: clamp(2.5rem, 9vh, 6rem);
+}
+
+.brand-message p {
+  max-width: 28rem;
   margin: 0;
-  color: #FFFFFF;
-  font-size: clamp(18px, 2vw, 24px);
+  color: rgb(255 255 255 / 91%);
+  font-size: clamp(1.125rem, 1.8vw, 1.375rem);
+  line-height: 1.65;
+}
+
+.brand-features {
+  display: grid;
+  gap: 1rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.brand-features li {
+  display: flex;
+  align-items: center;
+  gap: 0.875rem;
+  min-width: 0;
+}
+
+.feature-icon {
+  display: grid;
+  flex: 0 0 2.75rem;
+  width: 2.75rem;
+  height: 2.75rem;
+  place-items: center;
+  border: 1px solid rgb(255 255 255 / 16%);
+  border-radius: 50%;
+  color: var(--p-primary-contrast-color);
+  background: rgb(255 255 255 / 11%);
+  font-size: 1rem;
+}
+
+.brand-features li > span:last-child {
+  display: grid;
+  gap: 0.2rem;
+  min-width: 0;
+}
+
+.brand-features strong {
+  color: var(--p-primary-contrast-color);
+  font-size: 0.9375rem;
   font-weight: 600;
+}
+
+.brand-features small {
+  color: rgb(255 255 255 / 72%);
+  font-size: 0.8125rem;
   line-height: 1.4;
 }
 
-.brand-divider {
-  width: 48px;
-  height: 3px;
-  margin: 28px 0 22px;
-  border-radius: 2px;
-  background-color: #D7EAF7;
-}
-
-.brand-footer {
-  margin: 0;
-  color: #FFFFFF;
-  font-size: 14px;
-  line-height: 1.8;
-}
-
-/* Pie institucional */
-.brand-bottom {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  color: #D7EAF7;
-  font-size: 12px;
-  letter-spacing: 0.2px;
-}
-
-.brand-bottom i {
-  flex-shrink: 0;
-  font-size: 16px;
-}
-
-/* Panel derecho */
 .login-form-container {
-  flex: 1;
+  display: grid;
   min-width: 0;
-  box-sizing: border-box;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 40px;
-  background-color: #D7EAF7;
+  place-items: center;
+  padding: clamp(1.5rem, 6vw, 5rem);
+  background: var(--p-surface-50);
 }
 
 .login-form-container form {
-  width: 100%;
-  max-width: 400px;
+  width: min(100%, 27rem);
+  min-width: 0;
 }
 
 .login-card {
   display: block;
   width: 100%;
+  min-width: 0;
 }
 
-/* Campos y validaciones */
+.login-card-heading {
+  margin-bottom: 2rem;
+  text-align: center;
+}
+
+.login-card-heading h2 {
+  margin: 0;
+  color: var(--p-text-color);
+  font-size: clamp(1.625rem, 2.2vw, 1.875rem);
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  line-height: 1.2;
+}
+
+.login-card-heading p {
+  margin: 0.55rem 0 0;
+  color: var(--p-text-muted-color);
+  font-size: 0.9375rem;
+}
+
 .field {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  margin-top: 6px;
-  margin-bottom: 18px;
+  display: grid;
+  gap: 0.55rem;
+  min-width: 0;
+  margin-bottom: 1.25rem;
 }
 
 .field label {
-  color: #334155;
-  font-size: 13px;
+  color: var(--p-text-color);
+  font-size: 0.875rem;
   font-weight: 500;
 }
 
-.field .error {
-  color: #DC2626;
-  font-size: 12px;
+.field p-iconfield,
+.field input[pInputText],
+.field p-password {
+  width: 100%;
+  min-width: 0;
+}
+
+.field-error {
+  color: var(--p-red-700);
+  font-size: 0.8125rem;
   line-height: 1.4;
 }
-.error-message-container {
+
+.login-error {
   display: block;
-  margin-top: 12px;
-}
-/* Ancho del campo de contraseña */
-:host ::ng-deep p-password {
-  display: block;
-  width: 100%;
+  margin-bottom: 1rem;
 }
 
-:host ::ng-deep p-password input {
-  width: 100%;
-}
-
-/* Adaptación para tablets y móviles */
 @media (max-width: 768px) {
   .login-layout {
-    flex-direction: column;
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: auto 1fr;
   }
 
   .login-brand {
-    flex: initial;
-    min-height: 320px;
-    padding: 28px 24px;
+    align-items: center;
+    min-height: 12.5rem;
+    padding: 2rem 1.25rem 3.25rem;
+    text-align: center;
   }
 
-  .brand-content {
-    padding: 32px 0;
+  .brand-lockup {
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
   }
 
-  .brand-content h1 {
-    font-size: 44px;
+  .brand-mark {
+    margin: 0;
+    font-size: 2.125rem;
+  }
+
+  .brand-copy h1 {
+    font-size: 1.875rem;
   }
 
   .brand-institution {
-    font-size: 19px;
+    max-width: 18rem;
+    margin-top: 0.25rem;
+    font-size: 0.875rem;
+  }
+
+  .brand-message,
+  .brand-features {
+    display: none;
   }
 
   .login-form-container {
-    padding: 32px 20px;
+    align-items: start;
+    margin-top: -1.5rem;
+    padding: 0 1rem 2rem;
+    background: transparent;
+    z-index: 1;
+  }
+
+  .login-form-container form {
+    width: min(100%, 30rem);
+  }
+
+  .login-card-heading {
+    margin-bottom: 1.5rem;
   }
 }
 
-/* Móviles pequeños */
-@media (max-width: 380px) {
+@media (orientation: landscape) and (max-height: 600px) {
+  .login-layout {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: auto 1fr;
+  }
+
   .login-brand {
-    padding: 24px 20px;
+    align-items: center;
+    min-height: auto;
+    padding: 0.5rem 1.25rem 1rem;
+    text-align: center;
   }
 
-  .brand-logo {
-    width: 56px;
-    height: 56px;
+  .brand-lockup {
+    flex-direction: row;
+    justify-content: center;
+    gap: 0.5rem;
   }
 
-  .brand-label {
-    font-size: 10px;
-    letter-spacing: 1px;
+  .brand-message,
+  .brand-features {
+    display: none;
+  }
+
+  .brand-mark {
+    font-size: 1.5rem;
+  }
+
+  .brand-copy h1 {
+    font-size: 1.25rem;
+  }
+
+  .brand-institution {
+    max-width: 20rem;
+    margin-top: 0.125rem;
+    font-size: 0.75rem;
   }
 
   .login-form-container {
-    padding: 24px 16px;
+    margin-top: 0;
+    padding: 0 1rem 0.75rem;
+  }
+
+  .login-card-heading {
+    margin-bottom: 1rem;
+  }
+
+  .field {
+    gap: 0.4rem;
+    margin-bottom: 0.75rem;
   }
 }

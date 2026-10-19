@@ -1,97 +1,141 @@
-import { Component, input, Output, EventEmitter, inject } from '@angular/core';
-import { MenuItem,ConfirmationService } from 'primeng/api';
-import { PanelMenuModule } from 'primeng/panelmenu';
-import { Card } from 'primeng/card';
+import { Component, EventEmitter, Output, computed, input, inject, signal } from '@angular/core';
+import { NavigationEnd, Router } from '@angular/router';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { ConfirmationService, MenuItem } from 'primeng/api';
 import { ButtonModule } from 'primeng/button';
 import { ConfirmDialogModule } from 'primeng/confirmdialog';
+import { PanelMenuModule } from 'primeng/panelmenu';
+import { filter } from 'rxjs';
+import { Auth } from '../../../features/auth/services/auth';
+import { MENU_ITEMS } from './menu.config';
+
 @Component({
   selector: 'app-sidebar',
   standalone: true,
-  imports: [PanelMenuModule, Card, ButtonModule, ConfirmDialogModule],
+  imports: [PanelMenuModule, ButtonModule, ConfirmDialogModule],
   providers: [ConfirmationService],
   templateUrl: './sidebar.html',
   styleUrl: './sidebar.css',
 })
 export class Sidebar {
   readonly sidebarOpen = input(false);
+
   private readonly confirmationService = inject(ConfirmationService);
-  @Output() configurar = new EventEmitter<void>();
+  private readonly auth = inject(Auth);
+  private readonly router = inject(Router);
+  private readonly currentUrl = signal(this.router.url);
+
   @Output() cerrarSesion = new EventEmitter<void>();
 
-  menuItems: MenuItem[] = [
-    {
-      label: 'Dashboard',
-      icon: 'pi pi-home',
-      routerLink: '/dashboard',
-    },
-    {
-      label: 'Gestión',
-      icon: 'pi pi-users',
-      items: [
-        {
-          label: 'Usuarios',
-          icon: 'pi pi-user',
-          routerLink: '/usuarios',
-        },
-        {
-          label: 'Roles',
-          icon: 'pi pi-shield',
-          routerLink: '/roles',
-        },
-        {
-          label: 'Permisos',
-          icon: 'pi pi-lock',
-          routerLink: '/permisos',
-        },
-      ],
-    },
-    {
-      label: 'Académico',
-      icon: 'pi pi-calendar',
-      items: [
-        {
-          label: 'Asignaturas',
-          icon: 'pi pi-book',
-          routerLink: '/asignaturas',
-        },
-        {
-          label: 'Horarios',
-          icon: 'pi pi-clock',
-          routerLink: '/horarios',
-        },
-      ],
-    },
-  ];
+  readonly menuItems = computed<MenuItem[]>(() => this.filterMenuItems(MENU_ITEMS));
+  readonly navigationItems = computed(() => this.menuItems().filter((item) => !!item.routerLink));
+  readonly administrationItems = computed(() =>
+    this.menuItems().filter((item) => !item.routerLink),
+  );
 
-  onConfigurar(): void {
-    this.configurar.emit();
+  readonly panelMenuTheme = {
+    root: { gap: '0.375rem' },
+    panel: {
+      background: 'transparent',
+      borderColor: 'transparent',
+      borderWidth: '0',
+      color: 'var(--p-primary-contrast-color)',
+      padding: '0',
+      borderRadius: '0.625rem',
+      first: { borderWidth: '0', topBorderRadius: '0.625rem' },
+      last: { borderWidth: '0', bottomBorderRadius: '0.625rem' },
+    },
+    item: {
+      focusBackground: 'var(--p-primary-color)',
+      color: 'rgba(255, 255, 255, 0.88)',
+      focusColor: '#FFFFFF',
+      gap: '0.75rem',
+      padding: '0.75rem 0.875rem',
+      borderRadius: '0.625rem',
+      icon: { color: 'currentColor', focusColor: 'currentColor', size: '1rem' },
+      label: { fontWeight: '500', fontSize: '0.875rem' },
+    },
+    submenu: { indent: '0.75rem' },
+    submenuIcon: { color: 'rgba(255, 255, 255, 0.72)', focusColor: '#FFFFFF' },
+  };
+
+  readonly sidebarButtonTheme = {
+    text: {
+      secondary: {
+        color: 'rgba(255, 255, 255, 0.88)',
+        hoverBackground: 'rgba(255, 255, 255, 0.12)',
+        activeBackground: 'rgba(255, 255, 255, 0.18)',
+      },
+    },
+  };
+
+  constructor() {
+    this.router.events
+      .pipe(
+        filter((event): event is NavigationEnd => event instanceof NavigationEnd),
+        takeUntilDestroyed(),
+      )
+      .subscribe((event) => this.currentUrl.set(event.urlAfterRedirects));
   }
 
-  onCerrarSesion(): void {
-    this.cerrarSesion.emit();
+  private filterMenuItems(items: typeof MENU_ITEMS): MenuItem[] {
+    return items.flatMap((item) => {
+      const children = item.items ? this.filterMenuItems(item.items) : undefined;
+      const hasPermission = !item.permission || this.auth.hasPermission(item.permission);
+
+      if (!hasPermission || (item.items && !children?.length)) {
+        return [];
+      }
+
+      const { permission: _permission, items: _items, ...menuItem } = item;
+      const isActive = menuItem.routerLink ? this.isMenuItemActive(menuItem.routerLink) : false;
+
+      return [
+        {
+          ...menuItem,
+          ...(children ? { items: children } : {}),
+          ...(menuItem.routerLink
+            ? {
+                routerLinkActiveOptions: { exact: true },
+                ...(isActive
+                  ? {
+                      linkStyle: {
+                        backgroundColor: 'var(--p-primary-color)',
+                        color: 'var(--p-primary-contrast-color)',
+                        borderRadius: 'var(--p-content-border-radius)',
+                        fontWeight: '600',
+                      },
+                    }
+                  : {}),
+              }
+            : {}),
+        },
+      ];
+    });
   }
 
+  private isMenuItemActive(routerLink: string): boolean {
+    const currentPath = this.currentUrl().split(/[?#]/, 1)[0];
+    const targetPath = this.router.serializeUrl(this.router.createUrlTree([routerLink]));
 
-confirmarCerrarSesion(): void {
-  this.confirmationService.confirm({
-    header: 'Confirmación',
-    message: '¿Está seguro de que desea cerrar sesión?',
-    icon: 'pi pi-exclamation-triangle',
+    return currentPath === targetPath;
+  }
 
-    acceptButtonProps: {
-      label: 'Aceptar',
-      severity: 'primary',
-      outlined: false,
-    },
-
-    rejectButtonProps: {
-      label: 'Cancelar',
-      severity: 'secondary',
-      outlined: true,
-    },
-
-    accept: () => this.onCerrarSesion(),
-  });
-}
-
+  confirmarCerrarSesion(): void {
+    this.confirmationService.confirm({
+      header: 'Confirmar cierre de sesión',
+      message: '¿Querés cerrar la sesión actual?',
+      icon: 'pi pi-exclamation-triangle',
+      acceptButtonProps: {
+        label: 'Cerrar sesión',
+        severity: 'primary',
+      },
+      rejectButtonProps: {
+        label: 'Cancelar',
+        severity: 'secondary',
+        outlined: true,
+      },
+      accept: () => this.cerrarSesion.emit(),
+    });
+  }
 }

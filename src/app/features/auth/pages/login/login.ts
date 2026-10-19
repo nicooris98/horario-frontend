@@ -1,4 +1,4 @@
-import { ChangeDetectorRef, Component, inject, OnInit, signal } from '@angular/core';
+import { Component, inject, OnInit, signal } from '@angular/core';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { InputTextModule } from 'primeng/inputtext';
 import { PasswordModule } from 'primeng/password';
@@ -9,6 +9,9 @@ import { Auth } from '../../services/auth';
 import { Message } from 'primeng/message';
 import { HttpErrorResponse } from '@angular/common/http';
 import { Router } from '@angular/router';
+import { IconFieldModule } from 'primeng/iconfield';
+import { InputIconModule } from 'primeng/inputicon';
+
 @Component({
   selector: 'app-login',
   imports: [
@@ -18,6 +21,8 @@ import { Router } from '@angular/router';
     ReactiveFormsModule,
     CardModule,
     Message,
+    IconFieldModule,
+    InputIconModule,
   ],
   templateUrl: './login.html',
   styleUrl: './login.css',
@@ -67,13 +72,12 @@ export class Login implements OnInit {
     this.auth.login(requestData).subscribe({
       next: () => {
         this.auth.getMe().subscribe({
-          next: (user) => {
-            console.log('Usuario autenticado:', user);
-
+          next: () => {
             this.router.navigate(['/dashboard']);
           },
-          error: (err) => {
-            console.error('Error al consultar /auth/me:', err);
+          error: () => {
+            this.loading.set(false);
+            this.errorMessage.set('No se pudo validar la sesión. Intentá iniciar sesión nuevamente.');
           },
         });
       },

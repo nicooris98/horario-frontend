@@ -1,18 +1,8 @@
-@import "primeicons/primeicons.css";
+@import 'primeicons/primeicons.css';
 
-:root {
-  --color-primary: #2476B9;
-  --color-primary-dark: #17365D;
-  --color-primary-light: #D7EAF7;
-  --color-surface: #FFFFFF;
-  --color-border: #DCE4EE;
-  --color-text: #334155;
-  --color-text-muted: #64748B;
-  --color-error: #DC2626;
-  --color-success: #15803D;
-}
-
-* {
+*,
+*::before,
+*::after {
   box-sizing: border-box;
 }
 
@@ -22,7 +12,29 @@ body {
   min-height: 100%;
 }
 
+html {
+  font-size: 16px;
+}
+
 body {
-  min-height: 100vh;
-  font-family: 'Inter', sans-serif;
+  min-height: 100dvh;
+  font-family: Inter, Arial, sans-serif;
+  color: var(--p-text-color);
+  background: var(--p-surface-50);
+}
+
+button:focus-visible,
+a:focus-visible,
+input:focus-visible,
+[tabindex]:focus-visible {
+  outline: 2px solid var(--p-primary-color);
+  outline-offset: 2px;
+}
+
+input:-webkit-autofill,
+input:-webkit-autofill:hover,
+input:-webkit-autofill:focus,
+input:-webkit-autofill:active {
+  -webkit-box-shadow: 0 0 0 1000px var(--p-form-field-background) inset;
+  -webkit-text-fill-color: var(--p-form-field-color);
 }
