@@ -19,6 +19,15 @@ export const routes: Routes = [
       import('./shared/layout/main-layout/main-layout').then((m) => m.MainLayout),
     children: [
       {
+        path: 'administracion/usuarios/nuevo',
+        canActivate: [permissionGuard],
+        data: { permission: 'users.read' },
+        loadComponent: () =>
+          import('./features/users/pages/create-user/create-user').then(
+            (m) => m.CreateUser,
+          ),
+      },
+      {
         path: 'dashboard',
         loadComponent: () =>
           import('./features/dashboard/pages/dashboard/dashboard').then((m) => m.Dashboard),

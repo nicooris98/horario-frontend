@@ -1,6 +1,51 @@
 <section class="user-management-page" aria-labelledby="user-management-title">
-  <h1 id="user-management-title" class="user-management-title">Gestión de usuarios</h1>
-  <p class="user-management-subtitle">
-    Administración de las cuentas de usuario del sistema.
-  </p>
+  <header class="user-management-header">
+    <div>
+      <h1 id="user-management-title" class="user-management-title">Gestión de usuarios</h1>
+      <p class="user-management-subtitle">
+        Administración de las cuentas de usuario del sistema.
+      </p>
+    </div>
+
+    <p-button label="Agregar usuario" icon="pi pi-user-plus" (onClick)="goToCreate()" />
+  </header>
+
+  @if (errorMessage()) {
+    <p-message class="user-management-error" severity="error" role="alert">
+      {{ errorMessage() }}
+    </p-message>
+  }
+
+  <p-card>
+    <p-table [value]="users()" [loading]="loading()" [paginator]="true" [rows]="10" responsiveLayout="scroll">
+      <ng-template #header>
+        <tr>
+          <th>Nombre</th>
+          <th>Apellido</th>
+          <th>Correo electrónico</th>
+          <th>Estado</th>
+        </tr>
+      </ng-template>
+
+      <ng-template #body let-user>
+        <tr>
+          <td>{{ user.firstName }}</td>
+          <td>{{ user.lastName }}</td>
+          <td>{{ user.email }}</td>
+          <td>
+            <p-tag
+              [value]="user.isActive ? 'Activo' : 'Pendiente de activación'"
+              [severity]="user.isActive ? 'success' : 'warn'"
+            />
+          </td>
+        </tr>
+      </ng-template>
+
+      <ng-template #emptymessage>
+        <tr>
+          <td colspan="4">No hay usuarios registrados.</td>
+        </tr>
+      </ng-template>
+    </p-table>
+  </p-card>
 </section>

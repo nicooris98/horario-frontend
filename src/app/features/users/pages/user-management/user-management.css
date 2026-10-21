@@ -22,3 +22,17 @@
   font-size: 0.9375rem;
   line-height: 1.5;
 }
+
+.user-management-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+  flex-wrap: wrap;
+}
+
+.user-management-error {
+  display: block;
+  margin-bottom: 1rem;
+}
