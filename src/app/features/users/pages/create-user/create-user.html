@@ -1,0 +1,60 @@
+<section class="create-user-page" aria-labelledby="create-user-title">
+  <header class="create-user-header">
+    <h1 id="create-user-title" class="create-user-title">Agregar usuario</h1>
+    <p class="create-user-subtitle">
+      El usuario recibirá un correo para activar su cuenta y crear su contraseña.
+    </p>
+  </header>
+
+  <form [formGroup]="userForm" (ngSubmit)="save()">
+    <p-card>
+      <div class="field">
+        <label for="firstName">Nombre</label>
+        <input id="firstName" type="text" pInputText formControlName="firstName" placeholder="Nombre" />
+        @if (userForm.controls.firstName.touched) {
+          @if (userForm.controls.firstName.hasError('required')) {
+            <small class="field-error" role="alert">El nombre es obligatorio.</small>
+          } @else if (userForm.controls.firstName.invalid) {
+            <small class="field-error" role="alert">El nombre debe tener entre 2 y 100 caracteres.</small>
+          }
+        }
+      </div>
+
+      <div class="field">
+        <label for="lastName">Apellido</label>
+        <input id="lastName" type="text" pInputText formControlName="lastName" placeholder="Apellido" />
+        @if (userForm.controls.lastName.touched) {
+          @if (userForm.controls.lastName.hasError('required')) {
+            <small class="field-error" role="alert">El apellido es obligatorio.</small>
+          } @else if (userForm.controls.lastName.invalid) {
+            <small class="field-error" role="alert">El apellido debe tener entre 2 y 100 caracteres.</small>
+          }
+        }
+      </div>
+
+      <div class="field">
+        <label for="email">Correo electrónico</label>
+        <input id="email" type="email" pInputText formControlName="email" placeholder="usuario@institucion.edu.ar" />
+        @if (userForm.controls.email.touched) {
+          @if (userForm.controls.email.hasError('required')) {
+            <small class="field-error" role="alert">El correo electrónico es obligatorio.</small>
+          } @else if (userForm.controls.email.hasError('email')) {
+            <small class="field-error" role="alert">Ingresá un correo electrónico válido.</small>
+          }
+        }
+      </div>
+
+      @if (errorMessage()) {
+        <p-message class="form-message" severity="error" role="alert">{{ errorMessage() }}</p-message>
+      }
+      @if (successMessage()) {
+        <p-message class="form-message" severity="success" role="status">{{ successMessage() }}</p-message>
+      }
+
+      <div class="actions">
+        <p-button label="Cancelar" severity="secondary" [outlined]="true" (onClick)="cancel()" />
+        <p-button type="submit" label="Crear usuario" icon="pi pi-user-plus" [loading]="loading()" [disabled]="loading()" />
+      </div>
+    </p-card>
+  </form>
+</section>
