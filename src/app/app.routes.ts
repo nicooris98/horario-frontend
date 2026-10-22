@@ -19,6 +19,7 @@ export const routes: Routes = [
       import('./shared/layout/main-layout/main-layout').then((m) => m.MainLayout),
     children: [
       {
+
         path: 'administracion/usuarios/nuevo',
         canActivate: [permissionGuard],
         data: { permission: 'users.read' },
@@ -28,6 +29,7 @@ export const routes: Routes = [
           ),
       },
       {
+
         path: 'dashboard',
         loadComponent: () =>
           import('./features/dashboard/pages/dashboard/dashboard').then((m) => m.Dashboard),

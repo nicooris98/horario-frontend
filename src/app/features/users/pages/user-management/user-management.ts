@@ -1,3 +1,4 @@
+
 import { Component, inject, OnInit, signal } from '@angular/core';
 import { Router } from '@angular/router';
 import { HttpErrorResponse } from '@angular/common/http';
@@ -9,9 +10,11 @@ import { Message } from 'primeng/message';
 import { Users } from '../../services/users';
 import { User } from '../../interfaces/user';
 
+
 @Component({
   selector: 'app-user-management',
   standalone: true,
+
   imports: [TableModule, ButtonModule, CardModule, TagModule, Message],
   templateUrl: './user-management.html',
   styleUrl: './user-management.css',
@@ -52,3 +55,6 @@ export class UserManagement implements OnInit {
     this.router.navigate(['/administracion/usuarios/nuevo']);
   }
 }
+
+
+
