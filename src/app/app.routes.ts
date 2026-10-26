@@ -8,6 +8,11 @@ export const routes: Routes = [
     loadComponent: () => import('./features/auth/pages/login/login').then((c) => c.Login),
   },
   {
+    path: 'verify-code',
+    loadComponent: () =>
+      import('./features/auth/pages/verify-code/verify-code').then((c) => c.VerifyCode),
+  },
+  {
     path: '',
     pathMatch: 'full',
     redirectTo: 'login',
@@ -22,6 +27,13 @@ export const routes: Routes = [
         path: 'dashboard',
         loadComponent: () =>
           import('./features/dashboard/pages/dashboard/dashboard').then((m) => m.Dashboard),
+      },
+      {
+        path: 'administracion/usuarios/nuevo',
+        canActivate: [permissionGuard],
+        data: { permission: 'users.read' },
+        loadComponent: () =>
+          import('./features/users/pages/create-user/create-user').then((m) => m.CreateUser),
       },
       {
         path: 'administracion/usuarios',

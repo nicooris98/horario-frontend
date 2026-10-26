@@ -34,6 +34,7 @@ export class Login implements OnInit {
 
   loading = signal(false);
   errorMessage = signal('');
+  readonly adminAccess = signal(false);
 
   loginForm!: FormGroup<LoginForm>;
 
@@ -43,10 +44,7 @@ export class Login implements OnInit {
         nonNullable: true,
         validators: [Validators.required, Validators.email],
       }),
-      password: this.formBuilder.control('', {
-        nonNullable: true,
-        validators: [Validators.required],
-      }),
+      password: this.formBuilder.control('', { nonNullable: true }),
     });
 
     this.loginForm.controls.email.valueChanges.subscribe(() => {
@@ -58,40 +56,67 @@ export class Login implements OnInit {
     });
   }
 
+  showAdminAccess(): void {
+    this.adminAccess.set(true);
+    this.errorMessage.set('');
+    this.loginForm.controls.password.setValidators([Validators.required]);
+    this.loginForm.controls.password.updateValueAndValidity();
+  }
+
+  showCodeAccess(): void {
+    this.adminAccess.set(false);
+    this.errorMessage.set('');
+    this.loginForm.controls.password.clearValidators();
+    this.loginForm.controls.password.setValue('');
+    this.loginForm.controls.password.updateValueAndValidity();
+  }
+
   login(): void {
     if (this.loginForm.invalid) {
       this.loginForm.markAllAsTouched();
       return;
     }
 
-    const requestData = this.loginForm.getRawValue();
+    const { email, password } = this.loginForm.getRawValue();
 
     this.loading.set(true);
     this.errorMessage.set('');
 
-    this.auth.login(requestData).subscribe({
-      next: () => {
-        this.auth.getMe().subscribe({
-          next: () => {
-            this.router.navigate(['/dashboard']);
-          },
-          error: () => {
-            this.loading.set(false);
-            this.errorMessage.set('No se pudo validar la sesión. Intentá iniciar sesión nuevamente.');
-          },
-        });
-      },
+    if (this.adminAccess()) {
+      this.auth.login({ email, password }).subscribe({
+        next: () => {
+          this.auth.getMe().subscribe({
+            next: () => {
+              void this.router.navigate(['/dashboard']);
+            },
+            error: () => {
+              this.loading.set(false);
+              this.errorMessage.set('No se pudo validar la sesión. Intentá iniciar sesión nuevamente.');
+            },
+          });
+        },
+        error: (error: HttpErrorResponse) => {
+          this.loading.set(false);
+          this.errorMessage.set(
+            error.status === 401
+              ? (error.error?.message ?? 'Correo electrónico o contraseña incorrectos.')
+              : 'Ocurrió un error al iniciar sesión.',
+          );
+        },
+      });
+      return;
+    }
 
+    this.auth.resendOtp(email).subscribe({
+      next: () => {
+        void this.router.navigate(['/verify-code'], { state: { email } });
+      },
       error: (error: HttpErrorResponse) => {
         this.loading.set(false);
-
-        if (error.status === 401) {
-          this.errorMessage.set(
-            error.error?.message ?? 'Correo electrónico o contraseña incorrectos.',
-          );
-        } else {
-          this.errorMessage.set('Ocurrió un error al iniciar sesión.');
-        }
+        const message = error.error?.message;
+        this.errorMessage.set(
+          typeof message === 'string' ? message : 'No se pudo enviar el código.',
+        );
       },
     });
   }

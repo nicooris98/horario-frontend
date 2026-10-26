@@ -21,6 +21,14 @@ export class Auth {
     return this.api.post<LoginResponse>('auth/login', data);
   }
 
+  verifyOtp(email: string, code: string) {
+    return this.api.post('auth/activation/verify-code', { email, code });
+  }
+
+  resendOtp(email: string) {
+    return this.api.post<{ message: string }>('auth/activation/resend-code', { email });
+  }
+
   getMe() {
     return this.api.get<User>('auth/me').pipe(tap((user) => this.currentUser.set(user)));
   }
