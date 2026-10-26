@@ -126,6 +126,10 @@ export class VerifyCode implements OnInit {
     return '¿No recibiste el código? Reenviar';
   }
 
+  backToLogin(): void {
+    void this.router.navigate(['/login']);
+  }
+
   resendCode(): void {
     if (this.countdown() > 0 || this.resending()) {
       return;
@@ -134,8 +138,21 @@ export class VerifyCode implements OnInit {
     this.resending.set(true);
     this.errorMessage.set('');
 
-    this.auth.resendOtp(this.userEmail()).subscribe({
-      next: () => {
+    this.auth.login(this.userEmail()).subscribe({
+      next: (response) => {
+        if (!response.verificationRequired) {
+          this.auth.getMe().subscribe({
+            next: () => {
+              void this.router.navigate(['/dashboard']);
+            },
+            error: () => {
+              this.resending.set(false);
+              this.errorMessage.set('No se pudo validar la sesión. Intentá iniciar sesión nuevamente.');
+            },
+          });
+          return;
+        }
+
         this.resending.set(false);
         this.restartCountdown$.next();
       },

@@ -1,7 +1,6 @@
 import { Component, inject, OnInit, signal } from '@angular/core';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { InputTextModule } from 'primeng/inputtext';
-import { PasswordModule } from 'primeng/password';
 import { ButtonModule } from 'primeng/button';
 import { LoginForm } from '../../interfaces/login-form.interface';
 import { CardModule } from 'primeng/card';
@@ -16,7 +15,6 @@ import { InputIconModule } from 'primeng/inputicon';
   selector: 'app-login',
   imports: [
     InputTextModule,
-    PasswordModule,
     ButtonModule,
     ReactiveFormsModule,
     CardModule,
@@ -34,7 +32,6 @@ export class Login implements OnInit {
 
   loading = signal(false);
   errorMessage = signal('');
-  readonly adminAccess = signal(false);
 
   loginForm!: FormGroup<LoginForm>;
 
@@ -44,31 +41,11 @@ export class Login implements OnInit {
         nonNullable: true,
         validators: [Validators.required, Validators.email],
       }),
-      password: this.formBuilder.control('', { nonNullable: true }),
     });
 
     this.loginForm.controls.email.valueChanges.subscribe(() => {
       this.errorMessage.set('');
     });
-
-    this.loginForm.controls.password.valueChanges.subscribe(() => {
-      this.errorMessage.set('');
-    });
-  }
-
-  showAdminAccess(): void {
-    this.adminAccess.set(true);
-    this.errorMessage.set('');
-    this.loginForm.controls.password.setValidators([Validators.required]);
-    this.loginForm.controls.password.updateValueAndValidity();
-  }
-
-  showCodeAccess(): void {
-    this.adminAccess.set(false);
-    this.errorMessage.set('');
-    this.loginForm.controls.password.clearValidators();
-    this.loginForm.controls.password.setValue('');
-    this.loginForm.controls.password.updateValueAndValidity();
   }
 
   login(): void {
@@ -77,45 +54,33 @@ export class Login implements OnInit {
       return;
     }
 
-    const { email, password } = this.loginForm.getRawValue();
+    const { email } = this.loginForm.getRawValue();
 
     this.loading.set(true);
     this.errorMessage.set('');
 
-    if (this.adminAccess()) {
-      this.auth.login({ email, password }).subscribe({
-        next: () => {
-          this.auth.getMe().subscribe({
-            next: () => {
-              void this.router.navigate(['/dashboard']);
-            },
-            error: () => {
-              this.loading.set(false);
-              this.errorMessage.set('No se pudo validar la sesión. Intentá iniciar sesión nuevamente.');
-            },
-          });
-        },
-        error: (error: HttpErrorResponse) => {
-          this.loading.set(false);
-          this.errorMessage.set(
-            error.status === 401
-              ? (error.error?.message ?? 'Correo electrónico o contraseña incorrectos.')
-              : 'Ocurrió un error al iniciar sesión.',
-          );
-        },
-      });
-      return;
-    }
+    this.auth.login(email).subscribe({
+      next: (response) => {
+        if (response.verificationRequired) {
+          void this.router.navigate(['/verify-code'], { state: { email } });
+          return;
+        }
 
-    this.auth.resendOtp(email).subscribe({
-      next: () => {
-        void this.router.navigate(['/verify-code'], { state: { email } });
+        this.auth.getMe().subscribe({
+          next: () => {
+            void this.router.navigate(['/dashboard']);
+          },
+          error: () => {
+            this.loading.set(false);
+            this.errorMessage.set('No se pudo validar la sesión. Intentá iniciar sesión nuevamente.');
+          },
+        });
       },
       error: (error: HttpErrorResponse) => {
         this.loading.set(false);
         const message = error.error?.message;
         this.errorMessage.set(
-          typeof message === 'string' ? message : 'No se pudo enviar el código.',
+          typeof message === 'string' ? message : 'No se pudo iniciar sesión.',
         );
       },
     });
