@@ -2,8 +2,7 @@ import { Injectable, inject, signal } from '@angular/core';
 import { tap } from 'rxjs';
 import { Api } from '../../../core/services/api';
 
-import { LoginRequest } from '../interfaces/login-request.interface';
-import { LoginResponse, User } from '../interfaces/login-response.interface';
+import { User } from '../interfaces/login-response.interface';
 
 @Injectable({
   providedIn: 'root',
@@ -17,8 +16,12 @@ export class Auth {
     return this.currentUser()?.permissions.includes(permission) ?? false;
   }
 
-  login(data: LoginRequest) {
-    return this.api.post<LoginResponse>('auth/login', data);
+  login(email: string) {
+    return this.api.post<{ verificationRequired: boolean }>('auth/login', { email });
+  }
+
+  verifyOtp(email: string, code: string) {
+    return this.api.post('auth/activation/verify-code', { email, code });
   }
 
   getMe() {
