@@ -56,6 +56,13 @@ export const routes: Routes = [
           ),
       },
       {
+        path: 'administracion/carreras',
+        canActivate: [permissionGuard],
+        data: { permission: 'degrees.read' },
+        loadChildren: () =>
+          import('./features/degrees/routes/degree.routes').then((m) => m.degreeRoutes),
+      },
+      {
         path: '',
         pathMatch: 'full',
         redirectTo: 'dashboard',

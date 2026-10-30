@@ -16,6 +16,9 @@
     <div class="sidebar-navigation">
       <span class="sidebar-section-title">Navegación</span>
       <p-panelmenu [model]="navigationItems" [multiple]="true" [dt]="panelMenuTheme" />
+      <div class="degree-menu-wrap">
+        <p-panelmenu [model]="degreeMenuItems" [multiple]="true" [dt]="panelMenuTheme" styleClass="degree-menu" />
+      </div>
     </div>
 
     <div class="sidebar-administration">
