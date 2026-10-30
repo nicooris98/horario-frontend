@@ -1,0 +1,138 @@
+<section aria-labelledby="subject-management-title">
+  <p-breadcrumb
+    class="page-breadcrumb"
+    [home]="breadcrumbHome"
+    [model]="breadcrumbItems"
+    [dt]="breadcrumbTheme"
+  />
+
+  <header class="page-header">
+    <div>
+      <h1 id="subject-management-title" class="page-title">Gestión de materias</h1>
+      <p class="page-subtitle">Administrá las materias y sus datos académicos.</p>
+    </div>
+
+    <p-button label="Nueva materia" icon="pi pi-plus" (onClick)="goToCreate()" />
+  </header>
+
+  @if (errorMessage()) {
+    <p-message class="subjects-error" severity="error" role="alert">
+      {{ errorMessage() }}
+    </p-message>
+  }
+
+  <p-card>
+    <div class="subjects-filters" role="search">
+      <p-iconfield class="subjects-search">
+        <p-inputicon class="pi pi-search" />
+        <input
+          type="text"
+          pInputText
+          placeholder="Buscar por nombre de materia..."
+          aria-label="Buscar por nombre de materia"
+          [ngModel]="search()"
+          (ngModelChange)="search.set($event)"
+        />
+      </p-iconfield>
+
+      <p-select
+        [options]="studyPlanOptions()"
+        [ngModel]="studyPlanFilter()"
+        (ngModelChange)="studyPlanFilter.set($event ?? null)"
+        placeholder="Todos los planes"
+        ariaLabel="Filtrar por plan de estudio"
+        [showClear]="true"
+      />
+
+      <p-select
+        [options]="yearOptions()"
+        [ngModel]="yearFilter()"
+        (ngModelChange)="yearFilter.set($event ?? null)"
+        placeholder="Todos los años"
+        ariaLabel="Filtrar por año de cursado"
+        [showClear]="true"
+      />
+
+      <p-select
+        [options]="statusOptions"
+        [ngModel]="statusFilter()"
+        (ngModelChange)="statusFilter.set($event ?? null)"
+        placeholder="Todos los estados"
+        ariaLabel="Filtrar por estado"
+        [showClear]="true"
+      />
+    </div>
+
+    <p-table
+      [value]="filteredSubjects()"
+      [paginator]="true"
+      [rows]="10"
+      [rowsPerPageOptions]="[5, 10, 20]"
+      [showCurrentPageReport]="true"
+      currentPageReportTemplate="Mostrando {first} a {last} de {totalRecords} materias"
+      [tableStyle]="{ 'min-width': '52rem' }"
+    >
+      <ng-template #header>
+        <tr>
+          <th>Materia</th>
+          <th>Plan de estudio</th>
+          <th>Año</th>
+          <th>Régimen</th>
+          <th>Horas semanales</th>
+          <th>Estado</th>
+          <th class="subjects-actions-col">Acciones</th>
+        </tr>
+      </ng-template>
+
+      <ng-template #body let-subject>
+        <tr>
+          <td class="subjects-name">{{ subject.name }}</td>
+          <td class="subjects-plan">{{ subject.studyPlan.name }}</td>
+          <td>{{ subject.year }}</td>
+          <td>{{ subject.regime.name }}</td>
+          <td>{{ subject.weeklyHours }}</td>
+          <td>
+            <p-tag
+              icon="pi pi-circle-fill"
+              [value]="statusLabel(subject)"
+              [severity]="statusSeverity(subject)"
+              [rounded]="true"
+            />
+          </td>
+          <td class="subjects-actions-col">
+            <div class="subjects-actions">
+              <p-button
+                icon="pi pi-eye"
+                [outlined]="true"
+                [ariaLabel]="'Ver ' + subject.name"
+                (onClick)="goToDetail(subject)"
+              />
+              <p-button
+                icon="pi pi-ellipsis-v"
+                severity="secondary"
+                [outlined]="true"
+                [ariaLabel]="'Más acciones para ' + subject.name"
+                (onClick)="openRowMenu($event, rowMenu, subject)"
+              />
+            </div>
+          </td>
+        </tr>
+      </ng-template>
+
+      <ng-template #emptymessage>
+        <tr>
+          <td colspan="7">
+            {{
+              subjects().length
+                ? 'Ninguna materia coincide con la búsqueda.'
+                : 'No hay materias registradas.'
+            }}
+          </td>
+        </tr>
+      </ng-template>
+    </p-table>
+  </p-card>
+
+  <p-menu #rowMenu [model]="rowMenuItems()" [popup]="true" appendTo="body" />
+  <p-confirmdialog />
+</section>
