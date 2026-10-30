@@ -162,6 +162,9 @@ export const appConfig: ApplicationConfig = {
     providePrimeNG({
       theme: {
         preset: InstitutionalAura,
+        // La app solo tiene diseño claro: sin esto, PrimeNG copia el modo
+        // oscuro del sistema y los desplegables y campos salen oscuros.
+        options: { darkModeSelector: false },
       },
     }),
     provideHttpClient(withInterceptors([authInterceptor])),

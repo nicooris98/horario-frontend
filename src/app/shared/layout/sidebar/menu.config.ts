@@ -22,6 +22,11 @@ export const MENU_ITEMS: MenuEntry[] = [
         routerLink: '/administracion/usuarios',
         permission: 'users.read',
       },
+      {
+        label: 'Materias',
+        icon: 'pi pi-book',
+        routerLink: '/administracion/materias',
+      },
     ],
   },
 ];

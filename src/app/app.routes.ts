@@ -55,6 +55,36 @@ export const routes: Routes = [
             (m) => m.UserManagement,
           ),
       },
+      // Materias: el backend todavía no define permisos "subjects.*",
+      // así que alcanza con estar logueado (authGuard del layout).
+      {
+        path: 'administracion/materias',
+        loadComponent: () =>
+          import('./features/subjects/pages/subject-management/subject-management').then(
+            (m) => m.SubjectManagement,
+          ),
+      },
+      {
+        path: 'administracion/materias/nueva',
+        loadComponent: () =>
+          import('./features/subjects/pages/subject-form/subject-form').then(
+            (m) => m.SubjectFormPage,
+          ),
+      },
+      {
+        path: 'administracion/materias/:id',
+        loadComponent: () =>
+          import('./features/subjects/pages/subject-detail/subject-detail').then(
+            (m) => m.SubjectDetail,
+          ),
+      },
+      {
+        path: 'administracion/materias/:id/editar',
+        loadComponent: () =>
+          import('./features/subjects/pages/subject-form/subject-form').then(
+            (m) => m.SubjectFormPage,
+          ),
+      },
       {
         path: '',
         pathMatch: 'full',

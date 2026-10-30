@@ -1,0 +1,56 @@
+:host {
+  display: block;
+  width: 100%;
+  min-width: 0;
+}
+
+.subjects-error {
+  display: block;
+  margin-bottom: 1rem;
+}
+
+/* Se acomodan según el ancho disponible (no el de la ventana),
+   así no se cortan cuando el menú lateral está abierto. */
+.subjects-filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin-bottom: 1.25rem;
+}
+
+.subjects-search {
+  flex: 2 1 16rem;
+}
+
+.subjects-filters p-select {
+  flex: 1 1 10rem;
+  min-width: 0;
+}
+
+.subjects-filters input {
+  width: 100%;
+}
+
+.subjects-name {
+  font-weight: 600;
+}
+
+.subjects-plan {
+  min-width: 12rem;
+  color: var(--p-text-muted-color);
+  font-size: 0.875rem;
+}
+
+.subjects-actions-col {
+  text-align: center;
+}
+
+.subjects-actions {
+  display: inline-flex;
+  gap: 0.5rem;
+}
+
+/* Achica el punto del tag de estado para que se lea como indicador. */
+:host ::ng-deep .p-tag-icon {
+  font-size: 0.5rem;
+}
