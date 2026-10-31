@@ -13,6 +13,7 @@ export const routes: Routes = [
       import('./features/auth/pages/verify-code/verify-code').then((c) => c.VerifyCode),
   },
   {
+
     path: 'activate-account',
     loadComponent: () =>
       import('./features/auth/pages/activate-account/activate-account').then(
@@ -20,6 +21,7 @@ export const routes: Routes = [
       ),
   },
   {
+
     path: '',
     pathMatch: 'full',
     redirectTo: 'login',
