@@ -30,8 +30,6 @@ export class Api {
   delete<T>(endpoint: string) {
     return this.http.delete<T>(`${this.baseUrl}/${endpoint}`);
   }
-  patch<T>(endpoint: string, data: any) {
-  return this.http.patch<T>(`${this.baseUrl}/${endpoint}`, data);
-}
+
 
 }
