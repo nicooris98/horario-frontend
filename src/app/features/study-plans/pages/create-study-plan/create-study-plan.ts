@@ -8,9 +8,8 @@ import { CardModule } from 'primeng/card';
 import { Message } from 'primeng/message';
 import { Select } from 'primeng/select';
 import { StudyPlans } from '../../services/study-plan';
-
-import { Degree } from '../../interfaces/degree';
 import { Degrees } from '../../services/degrees';
+import { Degree } from '../../interfaces/degree';
 
 interface CreateStudyPlanForm {
   name: FormControl<string>;
@@ -82,6 +81,10 @@ export class CreateStudyPlan implements OnInit {
       return;
     }
 
+    this.submit(false);
+  }
+
+  private submit(replaceCurrentVigente: boolean): void {
     const value = this.studyPlanForm.getRawValue();
 
     this.loading.set(true);
@@ -95,15 +98,33 @@ export class CreateStudyPlan implements OnInit {
         validityYear: value.validityYear!,
         startDate: value.startDate,
         endDate: value.endDate || null,
+        replaceCurrentVigente,
       })
       .subscribe({
         next: () => {
           this.loading.set(false);
-          this.successMessage.set('Plan de estudio creado correctamente.');
+          this.successMessage.set(
+            replaceCurrentVigente
+              ? 'Plan de estudio creado y marcado como vigente. El plan anterior pasó a no vigente.'
+              : 'Plan de estudio creado correctamente.',
+          );
           setTimeout(() => this.router.navigate(['/academico/planes-estudio']), 1500);
         },
         error: (error: HttpErrorResponse) => {
           this.loading.set(false);
+
+          if (error.status === 409 && error.error?.code === 'VIGENTE_EXISTENTE') {
+            const currentName = error.error?.currentPlan?.name;
+            const accepted = confirm(
+              `La carrera ya tiene un plan vigente: ${currentName}.\n\n` +
+                `¿Querés que este plan pase a ser el vigente? "${currentName}" quedará como no vigente.`,
+            );
+            if (accepted) {
+              this.submit(true);
+            }
+            return;
+          }
+
           const msg = error.error?.message;
           const text = Array.isArray(msg) ? msg.join(' ') : msg;
 

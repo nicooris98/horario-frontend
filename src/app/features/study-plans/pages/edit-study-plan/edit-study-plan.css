@@ -60,3 +60,31 @@
   justify-content: flex-end;
   gap: 0.75rem;
 }
+
+.archive-card {
+  display: block;
+  margin-top: 1.5rem;
+}
+
+.archive-title {
+  margin: 0 0 0.75rem;
+  color: var(--p-text-color);
+  font-size: 1.125rem;
+  font-weight: 600;
+}
+
+.archive-text {
+  margin: 0.75rem 0 1rem;
+  color: var(--p-text-muted-color);
+  font-size: 0.9375rem;
+  line-height: 1.5;
+}
+.status-section {
+  margin-top: 1rem;
+}
+
+.status-section + .status-section {
+  margin-top: 1.25rem;
+  padding-top: 1.25rem;
+  border-top: 1px solid var(--p-content-border-color);
+}

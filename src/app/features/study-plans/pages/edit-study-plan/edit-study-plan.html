@@ -96,4 +96,71 @@
       </div>
     </p-card>
   </form>
+
+  <p-card class="archive-card">
+    <h2 class="archive-title">Estado del plan</h2>
+
+    <p-tag
+      [value]="status() === 'VIGENTE' ? 'Vigente' : status() === 'NO_VIGENTE' ? 'No vigente' : 'Archivado'"
+      [severity]="status() === 'VIGENTE' ? 'success' : status() === 'NO_VIGENTE' ? 'warn' : 'secondary'"
+    />
+
+    @if (status() === 'ARCHIVADO') {
+      <p class="archive-text">
+        Este plan está archivado: no se puede usar en nuevas configuraciones ni volver a otro estado.
+      </p>
+    } @else {
+      <section class="status-section">
+        @if (status() === 'VIGENTE') {
+          <p class="archive-text">Este es el plan vigente de la carrera. Solo puede haber uno.</p>
+          <p-button
+            label="Pasar a no vigente"
+            icon="pi pi-arrow-down"
+            severity="secondary"
+            [outlined]="true"
+            [loading]="statusLoading()"
+            [disabled]="statusLoading() || loadingPlan()"
+            (onClick)="changeStatus('NO_VIGENTE')"
+          />
+        } @else {
+          <p class="archive-text">
+            Si la carrera ya tiene un plan vigente, te vamos a pedir confirmación para reemplazarlo.
+          </p>
+          <p-button
+            label="Marcar como vigente"
+            icon="pi pi-check-circle"
+            [loading]="statusLoading()"
+            [disabled]="statusLoading() || loadingPlan()"
+            (onClick)="changeStatus('VIGENTE')"
+          />
+        }
+
+        @if (statusError()) {
+          <p-message class="form-message" severity="error" role="alert">{{ statusError() }}</p-message>
+        }
+      </section>
+
+      <section class="status-section">
+        <p class="archive-text">
+          Archivar un plan que dejó de utilizarse impide usarlo en nuevas configuraciones. No se
+          elimina: su historial sigue consultable. No se puede archivar si tiene divisiones abiertas
+          en el ciclo lectivo vigente.
+        </p>
+
+        @if (archiveError()) {
+          <p-message class="form-message" severity="error" role="alert">{{ archiveError() }}</p-message>
+        }
+
+        <p-button
+          label="Archivar plan"
+          icon="pi pi-inbox"
+          severity="danger"
+          [outlined]="true"
+          [loading]="archiving()"
+          [disabled]="archiving() || loadingPlan()"
+          (onClick)="archivePlan()"
+        />
+      </section>
+    }
+  </p-card>
 </section>

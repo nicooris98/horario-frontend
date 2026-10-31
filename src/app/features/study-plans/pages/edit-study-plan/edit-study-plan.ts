@@ -7,6 +7,7 @@ import { ButtonModule } from 'primeng/button';
 import { CardModule } from 'primeng/card';
 import { Message } from 'primeng/message';
 import { Select } from 'primeng/select';
+import { TagModule } from 'primeng/tag';
 import { StudyPlans } from '../../services/study-plan';
 import { Degrees } from '../../services/degrees';
 import { Degree } from '../../interfaces/degree';
@@ -23,7 +24,7 @@ interface EditStudyPlanForm {
 @Component({
   selector: 'app-edit-study-plan',
   standalone: true,
-  imports: [ReactiveFormsModule, InputTextModule, ButtonModule, CardModule, Message, Select],
+  imports: [ReactiveFormsModule, InputTextModule, ButtonModule, CardModule, Message, Select, TagModule],
   templateUrl: './edit-study-plan.html',
   styleUrl: './edit-study-plan.css',
 })
@@ -41,6 +42,11 @@ export class EditStudyPlan implements OnInit {
   loadingPlan = signal(true);
   errorMessage = signal('');
   successMessage = signal('');
+  status = signal('');
+  archiving = signal(false);
+  archiveError = signal('');
+  statusLoading = signal(false);
+  statusError = signal('');
 
   studyPlanForm!: FormGroup<EditStudyPlanForm>;
 
@@ -94,6 +100,7 @@ export class EditStudyPlan implements OnInit {
           endDate: plan.endDate ?? '',
         });
         this.studyPlanForm.markAsPristine();
+        this.status.set(plan.status);
         this.loadingPlan.set(false);
       },
       error: (error: HttpErrorResponse) => {
@@ -151,7 +158,82 @@ export class EditStudyPlan implements OnInit {
       });
   }
 
+  archivePlan(): void {
+    if (
+      !confirm(
+        '¿Archivar este plan de estudio? No se elimina: queda como no vigente y conserva su historial.',
+      )
+    ) {
+      return;
+    }
+
+    this.archiving.set(true);
+    this.archiveError.set('');
+
+    this.studyPlansService.delete(this.planId).subscribe({
+      next: (plan) => {
+        this.archiving.set(false);
+        this.status.set(plan.status);
+        this.successMessage.set('Plan de estudio archivado correctamente.');
+        setTimeout(() => this.router.navigate(['/academico/planes-estudio']), 1500);
+      },
+      error: (error: HttpErrorResponse) => {
+        this.archiving.set(false);
+        const msg = error.error?.message;
+        const text = Array.isArray(msg) ? msg.join(' ') : msg;
+
+        if (typeof text === 'string' && text.length > 0) {
+          this.archiveError.set(text);
+        } else if (error.status === 403) {
+          this.archiveError.set('No tenés permisos para archivar planes de estudio.');
+        } else {
+          this.archiveError.set('No se pudo archivar el plan de estudio.');
+        }
+      },
+    });
+  }
+
   cancel(): void {
     this.router.navigate(['/academico/planes-estudio']);
   }
+      changeStatus(newStatus: 'VIGENTE' | 'NO_VIGENTE', replaceCurrentVigente = false): void {
+    this.statusLoading.set(true);
+    this.statusError.set('');
+
+    this.studyPlansService
+      .update(this.planId, { status: newStatus, replaceCurrentVigente })
+      .subscribe({
+        next: (plan) => {
+          this.statusLoading.set(false);
+          this.status.set(plan.status);
+        },
+        error: (error: HttpErrorResponse) => {
+          this.statusLoading.set(false);
+
+          if (error.status === 409 && error.error?.code === 'VIGENTE_EXISTENTE') {
+            const currentName = error.error?.currentPlan?.name;
+            const accepted = confirm(
+              `La carrera ya tiene un plan vigente: ${currentName}.\n\n` +
+                `¿Querés que este plan pase a ser el vigente? "${currentName}" quedará como no vigente.`,
+            );
+            if (accepted) {
+              this.changeStatus('VIGENTE', true);
+            }
+            return;
+          }
+
+          const msg = error.error?.message;
+          const text = Array.isArray(msg) ? msg.join(' ') : msg;
+
+          if (typeof text === 'string' && text.length > 0) {
+            this.statusError.set(text);
+          } else if (error.status === 403) {
+            this.statusError.set('No tenés permisos para cambiar el estado del plan.');
+          } else {
+            this.statusError.set('No se pudo cambiar el estado del plan.');
+          }
+        },
+      });
+  }
+  
 }

@@ -41,10 +41,10 @@
           <td>{{ plan.startDate }}</td>
           <td>{{ plan.endDate ?? '—' }}</td>
           <td>
-            <p-tag
-              [value]="plan.status === 'ACTIVO' ? 'Activo' : 'Inactivo'"
-              [severity]="plan.status === 'ACTIVO' ? 'success' : 'secondary'"
-            />
+          <p-tag
+          [value]="plan.status === 'VIGENTE' ? 'Vigente' : plan.status === 'NO_VIGENTE' ? 'No vigente' : 'Archivado'"
+          [severity]="plan.status === 'VIGENTE' ? 'success' : plan.status === 'NO_VIGENTE' ? 'warn' : 'secondary'"
+          />
           </td>
           <td class="study-plan-actions">
             <p-button
@@ -54,15 +54,7 @@
               ariaLabel="Editar plan"
               (onClick)="editPlan(plan.id)"
             />
-            <p-button
-              icon="pi pi-trash"
-              severity="danger"
-              [text]="true"
-              [rounded]="true"
-              ariaLabel="Dar de baja plan"
-              [disabled]="plan.status === 'INACTIVO'"
-              (onClick)="deletePlan(plan.id)"
-            />
+
           </td>
         </tr>
       </ng-template>

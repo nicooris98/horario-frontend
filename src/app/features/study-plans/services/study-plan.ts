@@ -18,7 +18,7 @@ export class StudyPlans {
     return this.api.post<StudyPlan>('study-plans', data);
   }
 
-  update(id: number, data: CreateStudyPlanRequest) {
+  update(id: number, data: Partial<CreateStudyPlanRequest>) {
     return this.api.patch<StudyPlan>(`study-plans/${id}`, data);
   }
 
