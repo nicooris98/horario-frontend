@@ -15,7 +15,7 @@ export const MENU_ITEMS: MenuEntry[] = [
   {
     label: 'Administración',
     icon: 'pi pi-cog',
-    items: [
+        items: [
       {
         label: 'Gestión de usuarios',
         icon: 'pi pi-users',
@@ -27,6 +27,11 @@ export const MENU_ITEMS: MenuEntry[] = [
         icon: 'pi pi-shield',
         routerLink: '/administracion/roles',
         permission: 'roles.read',
+      },
+      {
+        label: 'Materias',
+        icon: 'pi pi-book',
+        routerLink: '/administracion/materias',
       },
     ],
   },

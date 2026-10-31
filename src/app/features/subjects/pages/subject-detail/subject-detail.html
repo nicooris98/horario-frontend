@@ -1,0 +1,94 @@
+<section aria-labelledby="subject-detail-title">
+  <p-breadcrumb
+    class="page-breadcrumb"
+    [home]="breadcrumbHome"
+    [model]="breadcrumbItems()"
+    [dt]="breadcrumbTheme"
+  />
+
+  <header class="page-header">
+    <div class="page-heading">
+      <p-button
+        icon="pi pi-arrow-left"
+        severity="secondary"
+        [outlined]="true"
+        ariaLabel="Volver al listado"
+        (onClick)="goBack()"
+      />
+      <div>
+        <div class="detail-title-row">
+          <h1 id="subject-detail-title" class="page-title">
+            Detalle de la materia{{ subject() ? ': ' + subject()!.name : '' }}
+          </h1>
+          @if (subject(); as current) {
+            <p-tag
+              icon="pi pi-circle-fill"
+              [value]="statusLabel(current)"
+              [severity]="statusSeverity(current)"
+              [rounded]="true"
+            />
+          }
+        </div>
+        <p class="page-subtitle">Consultá la información completa de la materia.</p>
+      </div>
+    </div>
+
+    @if (subject()) {
+      <p-button
+        label="Editar materia"
+        icon="pi pi-pencil"
+        [outlined]="true"
+        (onClick)="goToEdit()"
+      />
+    }
+  </header>
+
+  @if (errorMessage()) {
+    <p-message class="detail-error" severity="error" role="alert">
+      {{ errorMessage() }}
+    </p-message>
+  }
+
+  @if (subject(); as current) {
+    <p-card styleClass="detail-highlights">
+      <ul class="highlights">
+        @for (item of highlights(); track item.label) {
+          <li class="highlight">
+            <span class="highlight-icon" aria-hidden="true"><i [class]="item.icon"></i></span>
+            <span>
+              <strong class="highlight-value">{{ item.value }}</strong>
+              <span class="highlight-label">{{ item.label }}</span>
+            </span>
+          </li>
+        }
+      </ul>
+    </p-card>
+
+    <p-card>
+      <h2 class="detail-section-title">
+        <i class="pi pi-file" aria-hidden="true"></i>
+        Información de la materia
+      </h2>
+
+      <dl class="detail-list">
+        @for (row of rows(); track row.label) {
+          <div class="detail-row">
+            <dt>{{ row.label }}</dt>
+            <dd>{{ row.value }}</dd>
+          </div>
+        }
+        <div class="detail-row">
+          <dt>Estado</dt>
+          <dd>
+            <p-tag
+              icon="pi pi-circle-fill"
+              [value]="statusLabel(current)"
+              [severity]="statusSeverity(current)"
+              [rounded]="true"
+            />
+          </dd>
+        </div>
+      </dl>
+    </p-card>
+  }
+</section>
