@@ -13,6 +13,13 @@ export const routes: Routes = [
       import('./features/auth/pages/verify-code/verify-code').then((c) => c.VerifyCode),
   },
   {
+    path: 'activate-account',
+    loadComponent: () =>
+      import('./features/auth/pages/activate-account/activate-account').then(
+        (c) => c.ActivateAccount,
+      ),
+  },
+  {
     path: '',
     pathMatch: 'full',
     redirectTo: 'login',
@@ -31,6 +38,25 @@ export const routes: Routes = [
         loadComponent: () =>
           import('./features/users/pages/create-user/create-user').then(
             (m) => m.CreateUser,
+          ),
+        
+      },
+      {
+        path: 'administracion/roles',
+        canActivate: [permissionGuard],
+        data: { permission: 'roles.read' },
+        loadComponent: () =>
+          import('./features/roles/pages/role-management/role-management').then(
+            (m) => m.RoleManagement,
+          ),
+      },
+      {
+        path: 'administracion/usuarios/:id',
+        canActivate: [permissionGuard],
+        data: { permission: 'users.read' },
+        loadComponent: () =>
+          import('./features/users/pages/user-detail/user-detail').then(
+            (m) => m.UserDetail,
           ),
       },
       {

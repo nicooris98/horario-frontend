@@ -38,3 +38,12 @@ input:-webkit-autofill:active {
   -webkit-box-shadow: 0 0 0 1000px var(--p-form-field-background) inset;
   -webkit-text-fill-color: var(--p-form-field-color);
 }
+
+.p-skeleton {
+  background-color: #6b7280 !important;
+}
+
+.p-skeleton::after {
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.35), transparent) !important;
+}
+

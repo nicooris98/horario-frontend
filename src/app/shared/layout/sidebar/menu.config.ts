@@ -22,6 +22,12 @@ export const MENU_ITEMS: MenuEntry[] = [
         routerLink: '/administracion/usuarios',
         permission: 'users.read',
       },
+      {
+        label: 'Gestión de roles',
+        icon: 'pi pi-shield',
+        routerLink: '/administracion/roles',
+        permission: 'roles.read',
+      },
     ],
   },
 ];
