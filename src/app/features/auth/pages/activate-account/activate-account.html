@@ -1,0 +1,43 @@
+<main class="login-layout">
+  <section class="login-brand" aria-labelledby="brand-title">
+    <div class="brand-lockup">
+      <i class="brand-mark pi pi-graduation-cap" aria-hidden="true"></i>
+      <div class="brand-copy">
+        <h1 id="brand-title">SAHD</h1>
+        <p class="brand-institution">Sistema de Administración de Horarios Docentes</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="login-form-container" aria-label="Activación de cuenta">
+    <p-card class="login-card">
+      <header class="login-card-heading">
+        <h2>Activación de cuenta</h2>
+      </header>
+
+      @if (loading()) {
+        <p class="activation-note">Validando tu enlace…</p>
+      } @else if (success()) {
+        <p-message severity="success" icon="pi pi-check-circle" styleClass="activation-message" role="status">
+          <span class="activation-message-title">{{ message() }}</span>
+          <span class="activation-message-text">Ya podés ingresar al sistema.</span>
+        </p-message>
+      } @else {
+        <p-message severity="error" icon="pi pi-times-circle" styleClass="activation-message" role="alert">
+          <span class="activation-message-title">No se pudo activar</span>
+          <span class="activation-message-text">{{ message() }}</span>
+        </p-message>
+      }
+
+      @if (!loading()) {
+        <p-button
+          type="button"
+          label="Ir al login"
+          icon="pi pi-sign-in"
+          [fluid]="true"
+          (onClick)="goToLogin()"
+        />
+      }
+    </p-card>
+  </section>
+</main>

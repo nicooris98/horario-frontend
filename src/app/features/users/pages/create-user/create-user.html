@@ -1,4 +1,4 @@
-<section class="create-user-page" aria-labelledby="create-user-title">
+﻿<section class="create-user-page" aria-labelledby="create-user-title">
   <header class="create-user-header">
     <h1 id="create-user-title" class="create-user-title">Agregar usuario</h1>
     <p class="create-user-subtitle">
@@ -41,6 +41,23 @@
           } @else if (userForm.controls.email.hasError('email')) {
             <small class="field-error" role="alert">Ingresá un correo electrónico válido.</small>
           }
+        }
+      </div>
+
+      <div class="field">
+        <label for="roleId">Rol</label>
+        <p-select
+          inputId="roleId"
+          formControlName="roleId"
+          [options]="roles()"
+          optionLabel="name"
+          optionValue="id"
+          placeholder="Seleccioná un rol"
+          styleClass="w-full create-user-role-select"
+          panelStyleClass="create-user-role-panel"
+        />
+        @if (userForm.controls.roleId.touched && userForm.controls.roleId.hasError('required')) {
+          <small class="field-error" role="alert">El rol es obligatorio.</small>
         }
       </div>
 
