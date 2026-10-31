@@ -35,4 +35,9 @@ export const MENU_ITEMS: MenuEntry[] = [
       },
     ],
   },
+  {
+  label: 'Planes de estudio',
+  icon: 'pi pi-book',
+  routerLink: '/academico/planes-estudio',
+}
 ];

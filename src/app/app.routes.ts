@@ -118,6 +118,33 @@ export const routes: Routes = [
         pathMatch: 'full',
         redirectTo: 'dashboard',
       },
+            {
+        path: 'academico/planes-estudio/nuevo',
+        canActivate: [permissionGuard],
+        data: { permission: 'study-plans.create' },
+        loadComponent: () =>
+          import('./features/study-plans/pages/create-study-plan/create-study-plan').then(
+            (m) => m.CreateStudyPlan,
+          ),
+      },
+      {
+        path: 'academico/planes-estudio/:id/editar',
+        canActivate: [permissionGuard],
+        data: { permission: 'study-plans.update' },
+        loadComponent: () =>
+          import('./features/study-plans/pages/edit-study-plan/edit-study-plan').then(
+            (m) => m.EditStudyPlan,
+          ),
+      },
+      {
+        path: 'academico/planes-estudio',
+        canActivate: [permissionGuard],
+        data: { permission: 'study-plans.read' },
+        loadComponent: () =>
+          import('./features/study-plans/pages/study-plan-management/study-plan-management').then(
+            (m) => m.StudyPlanManagement,
+          ),
+      },
     ],
   },
   {
