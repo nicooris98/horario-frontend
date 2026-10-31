@@ -71,13 +71,12 @@ export class CreateUser implements OnInit {
         },
         error: (error: HttpErrorResponse) => {
           this.loading.set(false);
-          const msg = error.error?.message;
-          const text = Array.isArray(msg) ? msg.join(' ') : msg;
 
           if (error.status === 409) {
             this.errorMessage.set('Ya existe un usuario con ese correo electrónico.');
-          } else if (typeof text === 'string' && text.length > 0) {
-            this.errorMessage.set(text);
+          } else if (error.status === 400) {
+            const msg = error.error?.message;
+            this.errorMessage.set(Array.isArray(msg) ? msg.join(' ') : msg ?? 'Datos inválidos.');
           } else if (error.status === 403) {
             this.errorMessage.set('No tenés permisos para crear usuarios.');
           } else {
