@@ -1,0 +1,128 @@
+<section class="degree-page" aria-labelledby="degree-list-title">
+  <header class="degree-page-header">
+    <div>
+      <p class="eyebrow">Gestión académica</p>
+      <h1 id="degree-list-title">Carreras</h1>
+    </div>
+
+    <button
+      pButton
+      type="button"
+      label="Nueva carrera"
+      icon="pi pi-plus"
+      severity="primary"
+      (click)="goToCreate()"
+    ></button>
+  </header>
+
+  <div class="degree-toolbar">
+    <span class="p-input-icon-left degree-search">
+      <i class="pi pi-search"></i>
+      <input
+        pInputText
+        type="search"
+        [(ngModel)]="searchText"
+        placeholder="Buscar carrera"
+        aria-label="Buscar carrera"
+      />
+    </span>
+
+    <p-select
+      [options]="statusOptions"
+      optionLabel="label"
+      optionValue="value"
+      [(ngModel)]="statusFilter"
+      placeholder="Filtrar por estado"
+      aria-label="Filtrar por estado"
+      styleClass="degree-filter"
+    ></p-select>
+  </div>
+
+  @if (error()) {
+    <div class="degree-alert" role="alert">
+      {{ error() }}
+      <button pButton type="button" label="Reintentar" severity="secondary" (click)="loadDegrees()"></button>
+    </div>
+  }
+
+  <div class="degree-table-card">
+    <p-table [value]="filteredDegrees()" [loading]="loading()" [showCurrentPageReport]="true" styleClass="degree-table">
+      <ng-template pTemplate="header">
+        <tr>
+          <th>Nombre de carrera</th>
+          <th>Duración (años)</th>
+          <th>Estado</th>
+          <th>Acciones</th>
+        </tr>
+      </ng-template>
+
+      <ng-template pTemplate="body" let-degree>
+        <tr>
+          <td>{{ degree.name }}</td>
+          <td>{{ degree.durationYears }}</td>
+          <td>
+            <p-tag [severity]="statusSeverity(degree.status)" [value]="statusLabel(degree.status)"></p-tag>
+          </td>
+          <td class="degree-actions">
+            <button
+              pButton
+              type="button"
+              icon="pi pi-eye"
+              severity="secondary"
+              rounded
+              text
+              aria-label="Ver detalle de la carrera"
+              (click)="goToDetail(degree.id)"
+            ></button>
+            <button
+              pButton
+              type="button"
+              icon="pi pi-pencil"
+              severity="secondary"
+              rounded
+              text
+              aria-label="Editar carrera"
+              (click)="goToEdit(degree.id)"
+            ></button>
+            <button
+              pButton
+              type="button"
+              icon="pi pi-trash"
+              severity="danger"
+              rounded
+              text
+              aria-label="Inactivar carrera"
+              (click)="openDeleteDialog(degree)"
+            ></button>
+          </td>
+        </tr>
+      </ng-template>
+
+      <ng-template pTemplate="emptymessage">
+        <tr>
+          <td colspan="4" class="empty-state">No se encontraron carreras con los filtros aplicados.</td>
+        </tr>
+      </ng-template>
+    </p-table>
+  </div>
+</section>
+
+<p-dialog
+  [visible]="pendingDelete() !== null"
+  [modal]="true"
+  [closable]="true"
+  header="Inactivar carrera"
+  (onHide)="cancelDelete()"
+>
+  <div class="dialog-content">
+    <p>
+      ¿Deseás inactivar la carrera <strong>{{ pendingDelete()?.name }}</strong>? Esta acción dejará la
+      carrera fuera de los selectores activos.
+    </p>
+  </div>
+
+  <ng-template pTemplate="footer">
+    <button pButton type="button" label="Cancelar" severity="secondary" (click)="cancelDelete()"></button>
+    <button pButton type="button" label="Confirmar" severity="danger" (click)="confirmDelete()"></button>
+  </ng-template>
+</p-dialog>

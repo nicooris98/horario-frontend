@@ -1,0 +1,94 @@
+:host {
+  position: fixed;
+  top: 0;
+  right: 0;
+  z-index: 30;
+  display: block;
+  width: min(42rem, 48vw);
+  min-width: 320px;
+  height: 100dvh;
+  background: rgba(255, 255, 255, 0.97);
+  border-left: 1px solid rgba(17, 24, 39, 0.1);
+  box-shadow: -18px 0 42px rgba(15, 43, 85, 0.16);
+}
+
+.degree-form-page {
+  height: 100%;
+  padding: 1.5rem;
+  overflow-y: auto;
+}
+
+.degree-form-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.eyebrow {
+  margin: 0 0 0.35rem;
+  color: var(--p-primary-color);
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  font-size: 0.74rem;
+}
+
+h1 {
+  margin: 0;
+  font-size: clamp(1.8rem, 3vw, 2.5rem);
+  color: var(--p-primary-900);
+}
+
+.degree-form-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1.25rem;
+}
+
+.field-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+label {
+  color: var(--p-text-color);
+  font-weight: 600;
+}
+
+.field-error {
+  color: var(--p-red-500);
+  font-size: 0.75rem;
+}
+
+.degree-form-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.75rem;
+  margin-top: 1.5rem;
+}
+
+.degree-alert {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 0.9rem 1rem;
+  border-radius: 0.75rem;
+  background: rgba(255, 171, 0, 0.12);
+  color: var(--p-orange-700);
+  margin-bottom: 1rem;
+}
+
+@media (max-width: 900px) {
+  .degree-form-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .degree-form-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}

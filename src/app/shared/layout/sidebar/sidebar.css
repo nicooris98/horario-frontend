@@ -79,6 +79,41 @@
   width: 100%;
 }
 
+.degree-menu-wrap {
+  display: block;
+  margin-top: 7.2rem;
+  padding: 0 0.5rem;
+}
+
+.degree-menu {
+  width: 100%;
+}
+
+.degree-menu :deep(.p-panelmenu-panel) {
+  background: transparent;
+  border: none;
+  box-shadow: none;
+}
+
+.degree-menu :deep(.p-panelmenu-header > button),
+.degree-menu :deep(.p-panelmenu-item-link) {
+  background: transparent;
+  border: none;
+  box-shadow: none;
+  color: rgb(255 255 255 / 88%);
+}
+
+.degree-menu :deep(.p-panelmenu-item-link:hover),
+.degree-menu :deep(.p-panelmenu-header > button:hover) {
+  background: rgba(255, 255, 255, 0.08);
+  color: #fff;
+}
+
+.degree-menu :deep(.p-panelmenu-submenu) {
+  margin-left: 0.6rem;
+  border-left: 1px solid rgba(255, 255, 255, 0.18);
+}
+
 .sidebar-administration {
   margin-top: auto;
 }
@@ -107,7 +142,9 @@
     height: calc(100dvh - 4rem);
     transform: translateX(-102%);
     visibility: hidden;
-    transition: transform 180ms ease, visibility 180ms ease;
+    transition:
+      transform 180ms ease,
+      visibility 180ms ease;
   }
 
   .sidebar.open {
