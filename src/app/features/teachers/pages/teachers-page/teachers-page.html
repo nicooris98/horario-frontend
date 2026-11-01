@@ -1,0 +1,204 @@
+<p-toast></p-toast>
+<p-confirmDialog></p-confirmDialog>
+
+<p-toolbar styleClass="mb-4">
+  <ng-template #start>
+    <div class="flex gap-2">
+      <input
+        pInputText
+        type="text"
+        [(ngModel)]="filterDni"
+        (ngModelChange)="onFilterChange()"
+        (keyup.enter)="load()"
+        placeholder="Filtrar por DNI"
+      />
+      <input
+        pInputText
+        type="text"
+        [(ngModel)]="filterLastName"
+        (ngModelChange)="onFilterChange()"
+        (keyup.enter)="load()"
+        placeholder="Filtrar por apellido"
+      />
+      <button pButton label="Buscar" icon="pi pi-search" (click)="load()"></button>
+      <button pButton label="Limpiar" icon="pi pi-times" class="p-button-secondary" (click)="clearFilters()"></button>
+    </div>
+  </ng-template>
+  <ng-template #end>
+    <button pButton label="Nuevo Docente" icon="pi pi-plus" (click)="openNew()"></button>
+  </ng-template>
+</p-toolbar>
+
+<p-table [value]="teachers" [loading]="loading" [paginator]="true" [rows]="10" [rowsPerPageOptions]="[10, 20, 50]" [rowTrackBy]="trackByTeacher">
+  <ng-template #header>
+    <tr>
+      <th>DNI</th>
+      <th>Apellido</th>
+      <th>Nombre</th>
+      <th>Teléfono</th>
+      <th>Email</th>
+      <th>Legajo</th>
+      <th>Asignaciones</th>
+      <th>Estado</th>
+      <th>Acciones</th>
+    </tr>
+  </ng-template>
+  <ng-template #body let-t>
+    <tr>
+      <td>{{ t.dni }}</td>
+      <td>{{ t.lastName }}</td>
+      <td>{{ t.firstName }}</td>
+      <td>{{ t.phone }}</td>
+      <td>{{ t.email }}</td>
+      <td>{{ t.fileNumber }}</td>
+      <td>
+        <span
+          [title]="(t.currentAssignments?.length || 0) > 0 ? getAssignmentsTooltip(t) : 'Sin asignaciones'"
+          style="cursor: default;"
+        >
+          {{ t.currentAssignments?.length || 0 }}
+        </span>
+      </td>
+      <td>
+        @if (t.status === 'ACTIVO') {
+          <span class="badge badge-activo">ACTIVO</span>
+        } @else {
+          <span class="badge badge-inactivo">{{ t.status || 'INACTIVO' }}</span>
+        }
+      </td>
+      <td>
+        <button
+          pButton
+          icon="pi pi-pencil"
+          class="p-button-rounded p-button-text"
+          title="Editar"
+          aria-label="Editar"
+          (click)="edit(t)"
+        ></button>
+        @if (t.status === 'INACTIVO') {
+          <button
+            pButton
+            icon="pi pi-check"
+            class="p-button-rounded p-button-text p-button-success"
+            title="Reactivar"
+            aria-label="Reactivar"
+            (click)="reactivate(t)"
+          ></button>
+        } @else {
+          <button
+            pButton
+            icon="pi pi-ban"
+            class="p-button-rounded p-button-text p-button-danger"
+            title="Desactivar"
+            aria-label="Desactivar"
+            (click)="deactivate(t)"
+          ></button>
+        }
+      </td>
+    </tr>
+  </ng-template>
+  <ng-template #emptymessage>
+    <tr>
+      <td colspan="9">
+        {{ hasActiveFilters() ? 'Sin resultados para los filtros aplicados' : 'Sin docentes cargados' }}
+      </td>
+    </tr>
+  </ng-template>
+</p-table>
+
+<p-dialog
+  [(visible)]="displayDialog"
+  [style]="{ width: '92vw', maxWidth: '450px' }"
+  header="Docente"
+  [modal]="true"
+>
+  <div class="flex flex-column gap-3">
+    <div>
+      <label class="block mb-1">DNI</label>
+      <input
+        pInputText
+        [(ngModel)]="teacher.dni"
+        class="w-full"
+        [class.field-invalid]="hasError('dni')"
+        placeholder="7 u 8 dígitos"
+      />
+      @if (hasError('dni')) {
+        <small class="block p-error">{{ errors['dni'] }}</small>
+      }
+    </div>
+    <div>
+      <label class="block mb-1">Apellido</label>
+      <input
+        pInputText
+        [(ngModel)]="teacher.lastName"
+        class="w-full"
+        [class.field-invalid]="hasError('lastName')"
+      />
+      @if (hasError('lastName')) {
+        <small class="block p-error">{{ errors['lastName'] }}</small>
+      }
+    </div>
+    <div>
+      <label class="block mb-1">Nombre</label>
+      <input
+        pInputText
+        [(ngModel)]="teacher.firstName"
+        class="w-full"
+        [class.field-invalid]="hasError('firstName')"
+      />
+      @if (hasError('firstName')) {
+        <small class="block p-error">{{ errors['firstName'] }}</small>
+      }
+    </div>
+    <div>
+      <label class="block mb-1">Teléfono</label>
+      <input
+        pInputText
+        [(ngModel)]="teacher.phone"
+        class="w-full"
+        [class.field-invalid]="hasError('contact')"
+      />
+    </div>
+    <div>
+      <label class="block mb-1">Email</label>
+      <input
+        pInputText
+        [(ngModel)]="teacher.email"
+        class="w-full"
+        [class.field-invalid]="hasError('email') || hasError('contact')"
+      />
+      @if (hasError('email')) {
+        <small class="block p-error">{{ errors['email'] }}</small>
+      }
+    </div>
+    <div>
+      <label class="block mb-1">Legajo</label>
+      <input
+        pInputText
+        type="number"
+        min="1"
+        step="1"
+        [(ngModel)]="teacher.fileNumber"
+        placeholder="Legajo"
+        class="w-full"
+        [class.field-invalid]="hasError('fileNumber')"
+      />
+      @if (hasError('fileNumber')) {
+        <small class="block p-error">{{ errors['fileNumber'] }}</small>
+      }
+    </div>
+    <div>
+      <label class="block mb-1">Estado</label>
+      <p-select [options]="statusOptions" [(ngModel)]="status" optionLabel="label" optionValue="label" class="w-full" />
+    </div>
+    @if (hasError('contact')) {
+      <small class="block p-error">{{ errors['contact'] }}</small>
+    }
+    <small class="block">El teléfono o el email son obligatorios.</small>
+  </div>
+
+  <ng-template #footer>
+    <button pButton label="Cancelar" class="p-button-text" (click)="displayDialog = false"></button>
+    <button pButton label="Guardar" (click)="save()"></button>
+  </ng-template>
+</p-dialog>
