@@ -1,0 +1,43 @@
+:host {
+  display: block;
+  width: 100%;
+  min-width: 0;
+}
+
+.degrees-error {
+  display: block;
+  margin-bottom: 1rem;
+}
+
+.degrees-filters {
+  margin-bottom: 1.25rem;
+}
+
+.degrees-search input {
+  width: 100%;
+}
+
+.degrees-name {
+  font-weight: 600;
+}
+
+.degrees-center {
+  text-align: center;
+}
+
+.degrees-form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.degrees-form-error {
+  color: var(--p-red-500);
+}
+
+.degrees-form-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.5rem;
+  margin-top: 1rem;
+}

@@ -41,7 +41,7 @@ export const routes: Routes = [
           import('./features/users/pages/create-user/create-user').then(
             (m) => m.CreateUser,
           ),
-        
+
       },
       {
         path: 'administracion/roles',
@@ -81,6 +81,13 @@ export const routes: Routes = [
         loadComponent: () =>
           import('./features/users/pages/user-management/user-management').then(
             (m) => m.UserManagement,
+          ),
+      },
+      {
+        path: 'academico/carreras',
+        loadComponent: () =>
+          import('./features/degrees/pages/degree-management/degree-management').then(
+            (m) => m.DegreeManagement,
           ),
       },
       // Materias: el backend todavía no define permisos "subjects.*",

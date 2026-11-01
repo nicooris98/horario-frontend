@@ -13,6 +13,23 @@ export const MENU_ITEMS: MenuEntry[] = [
     routerLink: '/dashboard',
   },
   {
+    label: 'Gestión académica',
+    icon: 'pi pi-building-columns',
+    items: [
+      {
+        label: 'Carreras',
+        icon: 'pi pi-building',
+        routerLink: '/academico/carreras',
+      },
+      {
+        label: 'Planes de estudio',
+        icon: 'pi pi-book',
+        routerLink: '/academico/planes-estudio',
+        permission: 'study-plans.read',
+      },
+    ],
+  },
+  {
     label: 'Administración',
     icon: 'pi pi-cog',
         items: [

@@ -1,0 +1,111 @@
+<section aria-labelledby="degree-management-title">
+  <p-breadcrumb
+    class="page-breadcrumb"
+    [home]="breadcrumbHome"
+    [model]="breadcrumbItems"
+    [dt]="breadcrumbTheme"
+  />
+
+  <header class="page-header">
+    <div>
+      <h1 id="degree-management-title" class="page-title">Carreras</h1>
+      <p class="page-subtitle">Oferta académica de la institución.</p>
+    </div>
+
+    <p-button label="Nueva carrera" icon="pi pi-plus" (onClick)="openCreate()" />
+  </header>
+
+  @if (errorMessage()) {
+    <p-message class="degrees-error" severity="error" role="alert">
+      {{ errorMessage() }}
+    </p-message>
+  }
+
+  <p-card>
+    <div class="degrees-filters" role="search">
+      <p-iconfield class="degrees-search">
+        <p-inputicon class="pi pi-search" />
+        <input
+          type="text"
+          pInputText
+          placeholder="Buscar por nombre de carrera..."
+          aria-label="Buscar por nombre de carrera"
+          [ngModel]="search()"
+          (ngModelChange)="search.set($event)"
+        />
+      </p-iconfield>
+    </div>
+
+    <p-table [value]="filteredDegrees()" [paginator]="true" [rows]="10">
+      <ng-template #header>
+        <tr>
+          <th>Carrera</th>
+          <th class="degrees-center">Planes vigentes</th>
+          <th class="degrees-center">Acciones</th>
+        </tr>
+      </ng-template>
+
+      <ng-template #body let-degree>
+        <tr>
+          <td class="degrees-name">{{ degree.name }}</td>
+          <td class="degrees-center">{{ vigenteCount(degree) }}</td>
+          <td class="degrees-center">
+            <p-button
+              icon="pi pi-pencil"
+              [outlined]="true"
+              [ariaLabel]="'Editar ' + degree.name"
+              (onClick)="openEdit(degree)"
+            />
+          </td>
+        </tr>
+      </ng-template>
+
+      <ng-template #emptymessage>
+        <tr>
+          <td colspan="3">
+            {{
+              degrees().length
+                ? 'Ninguna carrera coincide con la búsqueda.'
+                : 'No hay carreras registradas.'
+            }}
+          </td>
+        </tr>
+      </ng-template>
+    </p-table>
+  </p-card>
+
+  <p-dialog
+    [header]="editingDegree() ? 'Editar carrera' : 'Nueva carrera'"
+    [visible]="dialogVisible()"
+    (visibleChange)="dialogVisible.set($event)"
+    [modal]="true"
+    [style]="{ width: '28rem' }"
+  >
+    <form class="degrees-form" (ngSubmit)="save()">
+      <label for="degree-name">Nombre</label>
+      <input
+        id="degree-name"
+        name="name"
+        type="text"
+        pInputText
+        placeholder="Profesorado de Educación Primaria"
+        [ngModel]="nameInput()"
+        (ngModelChange)="nameInput.set($event); formError.set('')"
+      />
+
+      @if (formError()) {
+        <small class="degrees-form-error" role="alert">{{ formError() }}</small>
+      }
+
+      <div class="degrees-form-actions">
+        <p-button
+          label="Cancelar"
+          severity="secondary"
+          [outlined]="true"
+          (onClick)="dialogVisible.set(false)"
+        />
+        <p-button type="submit" label="Guardar" [loading]="saving()" />
+      </div>
+    </form>
+  </p-dialog>
+</section>
