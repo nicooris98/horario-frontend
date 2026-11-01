@@ -90,6 +90,13 @@ export const routes: Routes = [
             (m) => m.DegreeManagement,
           ),
       },
+      {
+        path: 'configuracion/turnos',
+        loadComponent: () =>
+          import('./features/shifts/pages/shift-management/shift-management').then(
+            (m) => m.ShiftManagement,
+          ),
+      },
       // Materias: el backend todavía no define permisos "subjects.*",
       // así que alcanza con estar logueado (authGuard del layout).
       {

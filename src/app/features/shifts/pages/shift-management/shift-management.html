@@ -1,0 +1,127 @@
+<section aria-labelledby="shift-management-title">
+  <p-breadcrumb
+    class="page-breadcrumb"
+    [home]="breadcrumbHome"
+    [model]="breadcrumbItems"
+    [dt]="breadcrumbTheme"
+  />
+
+  <header class="page-header">
+    <div>
+      <h1 id="shift-management-title" class="page-title">Turnos</h1>
+      <p class="page-subtitle">Catálogo de turnos de la institución.</p>
+    </div>
+
+    <p-button label="Nuevo turno" icon="pi pi-plus" (onClick)="openCreate()" />
+  </header>
+
+  @if (errorMessage()) {
+    <p-message class="shifts-error" severity="error" role="alert">
+      {{ errorMessage() }}
+    </p-message>
+  }
+
+  <p-card>
+    <div class="shifts-filters" role="search">
+      <p-iconfield class="shifts-search">
+        <p-inputicon class="pi pi-search" />
+        <input
+          type="text"
+          pInputText
+          placeholder="Buscar por nombre de turno..."
+          aria-label="Buscar por nombre de turno"
+          [ngModel]="search()"
+          (ngModelChange)="search.set($event)"
+        />
+      </p-iconfield>
+    </div>
+
+    <p-table [value]="filteredShifts()" [paginator]="true" [rows]="10">
+      <ng-template #header>
+        <tr>
+          <th>Turno</th>
+          <th class="shifts-center">Estado</th>
+          <th class="shifts-center">Acciones</th>
+        </tr>
+      </ng-template>
+
+      <ng-template #body let-shift>
+        <tr>
+          <td class="shifts-name">{{ shift.name }}</td>
+          <td class="shifts-center">
+            <p-tag
+              [value]="isActive(shift) ? 'Activo' : 'Inactivo'"
+              [severity]="isActive(shift) ? 'success' : 'danger'"
+            />
+          </td>
+          <td class="shifts-center">
+            <div class="shifts-actions">
+              <p-button
+                icon="pi pi-pencil"
+                [outlined]="true"
+                [ariaLabel]="'Editar ' + shift.name"
+                (onClick)="openEdit(shift)"
+              />
+              <p-button
+                [icon]="isActive(shift) ? 'pi pi-ban' : 'pi pi-check-circle'"
+                [severity]="isActive(shift) ? 'danger' : 'success'"
+                [outlined]="true"
+                [ariaLabel]="(isActive(shift) ? 'Desactivar ' : 'Activar ') + shift.name"
+                (onClick)="confirmStatusChange(shift)"
+              />
+            </div>
+          </td>
+        </tr>
+      </ng-template>
+
+      <ng-template #emptymessage>
+        <tr>
+          <td colspan="3">
+            {{
+              shifts().length
+                ? 'Ningún turno coincide con la búsqueda.'
+                : 'No hay turnos registrados.'
+            }}
+          </td>
+        </tr>
+      </ng-template>
+    </p-table>
+  </p-card>
+
+  <p-dialog
+    [header]="editingShift() ? 'Editar turno' : 'Nuevo turno'"
+    [visible]="dialogVisible()"
+    (visibleChange)="dialogVisible.set($event)"
+    [modal]="true"
+    [style]="{ width: '28rem' }"
+  >
+    <form class="shifts-form" (ngSubmit)="save()">
+      <label for="shift-name">Nombre</label>
+      <input
+        id="shift-name"
+        name="name"
+        type="text"
+        pInputText
+        placeholder="Vespertino"
+        [ngModel]="nameInput()"
+        (ngModelChange)="nameInput.set($event); formError.set('')"
+      />
+
+      @if (formError()) {
+        <small class="shifts-form-error" role="alert">{{ formError() }}</small>
+      }
+
+      <div class="shifts-form-actions">
+        <p-button
+          label="Cancelar"
+          severity="secondary"
+          [outlined]="true"
+          (onClick)="dialogVisible.set(false)"
+        />
+        <p-button type="submit" label="Guardar" [loading]="saving()" />
+      </div>
+    </form>
+  </p-dialog>
+
+  <p-confirmdialog />
+</section>

@@ -30,6 +30,17 @@ export const MENU_ITEMS: MenuEntry[] = [
     ],
   },
   {
+    label: 'Configuración institucional',
+    icon: 'pi pi-sliders-h',
+    items: [
+      {
+        label: 'Turnos',
+        icon: 'pi pi-sun',
+        routerLink: '/configuracion/turnos',
+      },
+    ],
+  },
+  {
     label: 'Administración',
     icon: 'pi pi-cog',
         items: [
