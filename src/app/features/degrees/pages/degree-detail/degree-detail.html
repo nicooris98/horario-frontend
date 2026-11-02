@@ -1,0 +1,73 @@
+<section class="degree-detail-page" aria-labelledby="degree-detail-title">
+  <header class="degree-detail-header">
+    <div>
+      <p class="eyebrow">Detalle académico</p>
+      <h1 id="degree-detail-title">Carrera</h1>
+    </div>
+
+    <div class="degree-detail-actions">
+      <button pButton type="button" label="Volver" icon="pi pi-arrow-left" severity="secondary" (click)="goBack()"></button>
+      <button pButton type="button" label="Editar" icon="pi pi-pencil" (click)="goEdit()"></button>
+    </div>
+  </header>
+
+  @if (error()) {
+    <div class="degree-alert" role="alert">{{ error() }}</div>
+  }
+
+  @if (loading()) {
+    <div class="loading-state">Cargando carrera...</div>
+  } @else if (degree(); as current) {
+    <div class="detail-grid">
+      <p-card>
+        <div class="detail-header">
+          <div>
+            <span class="detail-label">Nombre</span>
+            <h2>{{ current.name }}</h2>
+          </div>
+          <p-tag [severity]="statusSeverity(current.status)" [value]="statusLabel(current.status)"></p-tag>
+        </div>
+
+        <dl class="detail-list">
+          <div>
+            <dt>Duración</dt>
+            <dd>{{ current.durationYears }} años</dd>
+          </div>
+          <div>
+            <dt>Planes de estudio</dt>
+            <dd>{{ current.studyPlans?.length ?? 0 }}</dd>
+          </div>
+          <div>
+            <dt>Última actualización</dt>
+            <dd>{{ current.updatedAt | date: 'dd/MM/yyyy' }}</dd>
+          </div>
+        </dl>
+      </p-card>
+
+      <p-card>
+        <div class="plan-header">
+          <h3>Planes de estudio asociados</h3>
+          <span class="plan-count">{{ current.studyPlans?.length ?? 0 }}</span>
+        </div>
+
+        @if ((current.studyPlans ?? []).length > 0) {
+          <ul class="plan-list">
+            @for (plan of current.studyPlans; track plan.id) {
+              <li>
+                <div>
+                  <strong>{{ plan.name }}</strong>
+                  <small>{{ plan.active ? 'Activo' : 'Inactivo' }}</small>
+                </div>
+                <span class="plan-status {{ plan.active ? 'active' : 'inactive' }}">
+                  {{ plan.active ? 'Activo' : 'Inactivo' }}
+                </span>
+              </li>
+            }
+          </ul>
+        } @else {
+          <p class="empty-state">No hay planes de estudio asociados para esta carrera.</p>
+        }
+      </p-card>
+    </div>
+  }
+</section>

@@ -1,0 +1,87 @@
+<section class="degree-form-page" aria-labelledby="degree-form-title">
+  <p-card>
+    <div class="degree-form-header">
+      <div>
+        <p class="eyebrow">{{ isEditMode() ? 'Editar' : 'Registrar' }}</p>
+        <h1 id="degree-form-title">{{ isEditMode() ? 'Carrera' : 'Nueva carrera' }}</h1>
+      </div>
+      <button pButton type="button" label="Volver" icon="pi pi-arrow-left" severity="secondary" (click)="cancel()"></button>
+    </div>
+
+    @if (error()) {
+      <div class="degree-alert" role="alert">{{ error() }}</div>
+    }
+
+    <form [formGroup]="form" (ngSubmit)="save()" novalidate>
+      <div class="degree-form-grid">
+        <div class="field-group">
+          <label for="degree-name">Nombre de la carrera</label>
+          <input
+            id="degree-name"
+            pInputText
+            formControlName="name"
+            autocomplete="off"
+            [attr.aria-invalid]="form.controls.name.touched && form.controls.name.invalid"
+          />
+
+          @if (form.controls.name.touched && form.controls.name.hasError('required')) {
+            <small class="field-error">El nombre es obligatorio.</small>
+          }
+
+          @if (form.controls.name.touched && form.controls.name.hasError('minlength')) {
+            <small class="field-error">El nombre debe tener al menos 2 caracteres.</small>
+          }
+
+          @if (form.controls.name.touched && form.controls.name.hasError('uniqueName')) {
+            <small class="field-error">Ya existe una carrera con este nombre.</small>
+          }
+        </div>
+
+        <div class="field-group">
+          <label for="degree-duration">Duración en años</label>
+          <p-inputNumber
+            id="degree-duration"
+            formControlName="durationYears"
+            mode="decimal"
+            [min]="0.5"
+            [minFractionDigits]="1"
+            [maxFractionDigits]="2"
+            [useGrouping]="false"
+          ></p-inputNumber>
+
+          @if (form.controls.durationYears.touched && form.controls.durationYears.hasError('required')) {
+            <small class="field-error">La duración es obligatoria.</small>
+          }
+
+          @if (form.controls.durationYears.touched && form.controls.durationYears.hasError('min')) {
+            <small class="field-error">La duración mínima es de 0.5 años.</small>
+          }
+        </div>
+
+        <div class="field-group">
+          <label for="degree-status">Estado</label>
+          <p-select
+            id="degree-status"
+            formControlName="status"
+            [options]="statusOptions"
+            optionLabel="label"
+            optionValue="value"
+            placeholder="Seleccionar estado"
+          ></p-select>
+        </div>
+      </div>
+
+      <div class="degree-form-actions">
+        <button pButton type="button" label="Cancelar" severity="secondary" (click)="cancel()"></button>
+        <button
+          pButton
+          type="submit"
+          [label]="isEditMode() ? 'Guardar cambios' : 'Registrar carrera'"
+          [loading]="isSubmitting()"
+        ></button>
+      </div>
+    </form>
+  </p-card>
+</section>
+
+<p-confirmDialog />
