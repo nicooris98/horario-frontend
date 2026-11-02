@@ -38,6 +38,11 @@ export const MENU_ITEMS: MenuEntry[] = [
         icon: 'pi pi-sun',
         routerLink: '/configuracion/turnos',
       },
+      {
+        label: 'Estructura horaria',
+        icon: 'pi pi-clock',
+        routerLink: '/configuracion/estructura-horaria',
+      },
     ],
   },
   {

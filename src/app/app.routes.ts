@@ -97,6 +97,13 @@ export const routes: Routes = [
             (m) => m.ShiftManagement,
           ),
       },
+      {
+        path: 'configuracion/estructura-horaria',
+        loadComponent: () =>
+          import('./features/class-hours/pages/class-hour-management/class-hour-management').then(
+            (m) => m.ClassHourManagement,
+          ),
+      },
       // Materias: el backend todavía no define permisos "subjects.*",
       // así que alcanza con estar logueado (authGuard del layout).
       {
