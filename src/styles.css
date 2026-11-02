@@ -31,8 +31,8 @@ input:focus-visible,
   outline-offset: 2px;
 }
 
-/* Encabezado de las pÃ¡ginas de gestiÃ³n (tÃ­tulo, subtÃ­tulo y acciÃ³n principal).
-   Es el mismo patrÃ³n que repiten las vistas de usuarios. */
+/* Encabezado de las p+íginas de gesti+¦n (t+¡tulo, subt+¡tulo y acci+¦n principal).
+   Es el mismo patr+¦n que repiten las vistas de usuarios. */
 .page-header {
   display: flex;
   align-items: flex-start;
@@ -114,3 +114,95 @@ input:-webkit-autofill:active {
   background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.35), transparent) !important;
 }
 
+/* Utilidades mínimas (no hay Tailwind en el proyecto). */
+.flex {
+  display: flex;
+}
+
+.flex-column {
+  flex-direction: column;
+}
+
+.gap-2 {
+  gap: 0.5rem;
+}
+
+.gap-3 {
+  gap: 0.75rem;
+}
+
+.block {
+  display: block;
+}
+
+.w-full {
+  width: 100%;
+}
+
+.mb-1 {
+  margin-bottom: 0.25rem;
+}
+
+.mb-4 {
+  margin-bottom: 1rem;
+}
+
+.mt-1 {
+  margin-top: 0.25rem;
+}
+
+.mt-2 {
+  margin-top: 0.5rem;
+}
+
+.mt-4 {
+  margin-top: 1rem;
+}
+
+.mb-2 {
+  margin-bottom: 0.5rem;
+}
+
+.text-xl {
+  font-size: 1.25rem;
+}
+
+.font-bold {
+  font-weight: 700;
+}
+
+.p-error {
+  color: #dc2626;
+}
+
+.field-invalid {
+  border-color: #dc2626 !important;
+}
+
+.badge {
+  display: inline-block;
+  padding: 0.25rem 0.5rem;
+  border-radius: 0.25rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+
+.badge-activo {
+  background-color: #dcfce7;
+  color: #166534;
+}
+
+.badge-inactivo {
+  background-color: #fee2e2;
+  color: #991b1b;
+}
+
+.badge-vigente {
+  background-color: #dcfce7;
+  color: #166534;
+}
+
+.badge-vencida {
+  background-color: #fef3c7;
+  color: #92400e;
+}
