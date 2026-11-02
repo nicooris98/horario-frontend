@@ -13,6 +13,11 @@ export const MENU_ITEMS: MenuEntry[] = [
     routerLink: '/dashboard',
   },
   {
+    label: 'Docentes',
+    icon: 'pi pi-users',
+    routerLink: '/docentes',
+  },
+  {
     label: 'Administración',
     icon: 'pi pi-cog',
         items: [
