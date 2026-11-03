@@ -7,6 +7,7 @@ import { ButtonModule } from 'primeng/button';
 import { CardModule } from 'primeng/card';
 import { Message } from 'primeng/message';
 import { TagModule } from 'primeng/tag';
+import { Auth } from '../../../auth/services/auth';
 import { Subject } from '../../interfaces/subject';
 import { Subjects } from '../../services/subjects';
 import {
@@ -33,6 +34,7 @@ interface DetailRow {
 })
 export class SubjectDetail implements OnInit {
   private readonly subjectsService = inject(Subjects);
+  private readonly auth = inject(Auth);
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
 
@@ -43,6 +45,7 @@ export class SubjectDetail implements OnInit {
 
   readonly subject = signal<Subject | null>(null);
   readonly errorMessage = signal('');
+  readonly canUpdate = computed(() => this.auth.hasPermission('subjects.update'));
 
   readonly breadcrumbItems = computed<MenuItem[]>(() =>
     subjectsBreadcrumb({ label: this.subject()?.name ?? 'Detalle' }),
@@ -86,11 +89,7 @@ export class SubjectDetail implements OnInit {
     this.subjectsService.getById(id).subscribe({
       next: (subject) => this.subject.set(subject),
       error: (error: HttpErrorResponse) =>
-        this.errorMessage.set(
-          error.status === 404
-            ? 'No se encontró la materia solicitada.'
-            : 'Ocurrió un error al cargar la materia.',
-        ),
+        this.errorMessage.set(this.describeLoadError(error)),
     });
   }
 
@@ -100,6 +99,21 @@ export class SubjectDetail implements OnInit {
 
   goToEdit(): void {
     const subject = this.subject();
-    if (subject) this.router.navigate([SUBJECTS_ROUTE, subject.id, 'editar']);
+    if (subject && this.canUpdate()) {
+      this.router.navigate([SUBJECTS_ROUTE, subject.id, 'editar']);
+    }
+  }
+
+  private describeLoadError(error: HttpErrorResponse): string {
+    if (error.status === 0) {
+      return 'No se pudo conectar con el servidor.';
+    }
+    if (error.status === 403) {
+      return 'No tenés permisos para consultar esta materia.';
+    }
+    if (error.status === 404) {
+      return 'No se encontró la materia solicitada.';
+    }
+    return 'Ocurrió un error al cargar la materia.';
   }
 }

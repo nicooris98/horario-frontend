@@ -7,6 +7,7 @@ import {
   FormGroup,
   ReactiveFormsModule,
   ValidationErrors,
+  ValidatorFn,
   Validators,
 } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -39,13 +40,46 @@ interface SubjectForm {
   maxTeachers: FormControl<number | null>;
 }
 
-// El backend no fija un tope de años; se ofrecen los de una carrera típica
-// y se suma el de la materia si estuviera fuera de ese rango.
-const DEFAULT_YEARS = [1, 2, 3, 4, 5];
+interface StudyPlanOption extends StudyPlan {
+  label: string;
+}
+
+interface YearOption {
+  value: number;
+  label: string;
+}
+
 const ACTIVE_STATUS = 'ACTIVO';
 
 function notBlank(control: AbstractControl<string>): ValidationErrors | null {
   return control.value?.trim() ? null : { required: true };
+}
+
+function getStudyPlanDurationYears(plan: StudyPlan | null | undefined): number | null {
+  if (!plan) return null;
+  const raw = plan.durationYears ?? plan.degree?.durationYears ?? plan.career?.durationYears;
+  if (typeof raw !== 'number' || !Number.isFinite(raw)) return null;
+  const duration = Math.trunc(raw);
+  return duration >= 1 ? duration : null;
+}
+
+function formatStudyPlanLabel(plan: StudyPlan): string {
+  const duration = getStudyPlanDurationYears(plan);
+  if (duration === null) return plan.name;
+  const unit = duration === 1 ? 'año' : 'años';
+  return `${plan.name} (${duration} ${unit})`;
+}
+
+function extractBackendMessage(error: HttpErrorResponse): string | null {
+  const message = error.error?.message;
+  if (Array.isArray(message)) {
+    const joined = message.filter((item) => typeof item === 'string' && item.trim()).join(' ');
+    return joined || null;
+  }
+  if (typeof message === 'string' && message.trim()) {
+    return message.trim();
+  }
+  return null;
 }
 
 @Component({
@@ -78,6 +112,7 @@ export class SubjectFormPage implements OnInit {
   readonly isEdit = computed(() => this.subjectId() !== null);
   readonly subject = signal<Subject | null>(null);
   readonly studyPlans = signal<StudyPlan[]>([]);
+  readonly selectedStudyPlanId = signal<number | null>(null);
   readonly regimes = signal<Regime[]>([]);
   readonly saving = signal(false);
   readonly errorMessage = signal('');
@@ -88,7 +123,10 @@ export class SubjectFormPage implements OnInit {
       validators: [notBlank, Validators.maxLength(255)],
     }),
     studyPlanId: new FormControl<number | null>(null, Validators.required),
-    year: new FormControl<number | null>(null, Validators.required),
+    year: new FormControl<number | null>({ value: null, disabled: true }, [
+      Validators.required,
+      Validators.min(1),
+    ]),
     regimeId: new FormControl<number | null>(null, Validators.required),
     weeklyHours: new FormControl<number | null>(null, [Validators.required, Validators.min(1)]),
     allowsMultipleTeachers: new FormControl(false, { nonNullable: true }),
@@ -108,21 +146,43 @@ export class SubjectFormPage implements OnInit {
   });
 
   // Planes activos, más el plan actual de la materia aunque esté inactivo.
-  readonly studyPlanOptions = computed(() => {
+  readonly studyPlanOptions = computed<StudyPlanOption[]>(() => {
     const currentId = this.subject()?.studyPlan.id;
-    return this.studyPlans().filter(
-      (plan) => plan.status === ACTIVE_STATUS || plan.id === currentId,
+    return this.studyPlans()
+      .filter((plan) => plan.status === ACTIVE_STATUS || plan.id === currentId)
+      .map((plan) => ({
+        ...plan,
+        label: formatStudyPlanLabel(plan),
+      }));
+  });
+
+  readonly selectedStudyPlan = computed<StudyPlan | null>(() => {
+    const id = this.selectedStudyPlanId();
+    if (id === null) return null;
+    return (
+      this.studyPlans().find((plan) => plan.id === id) ??
+      (this.subject()?.studyPlan.id === id ? this.subject()!.studyPlan : null)
     );
   });
 
-  readonly yearOptions = computed(() => {
-    const current = this.subject()?.year;
-    const years =
-      current && !DEFAULT_YEARS.includes(current)
-        ? [...DEFAULT_YEARS, current].sort((a, b) => a - b)
-        : DEFAULT_YEARS;
-    return years.map((year) => ({ value: year, label: `${year}° año` }));
+  readonly selectedPlanDurationYears = computed<number | null>(() =>
+    getStudyPlanDurationYears(this.selectedStudyPlan()),
+  );
+
+  readonly yearOptions = computed<YearOption[]>(() => {
+    const duration = this.selectedPlanDurationYears();
+    if (duration === null) return [];
+    return Array.from({ length: duration }, (_, index) => {
+      const year = index + 1;
+      return { value: year, label: `${year}° Año` };
+    });
   });
+
+  readonly yearPlaceholder = computed<string>(() =>
+    this.selectedStudyPlanId() === null
+      ? 'Primero seleccioná un plan de estudio'
+      : 'Seleccioná el año de cursado',
+  );
 
   ngOnInit(): void {
     const rawId = this.route.snapshot.paramMap.get('id');
@@ -135,6 +195,10 @@ export class SubjectFormPage implements OnInit {
       }
       this.subjectId.set(id);
     }
+
+    this.form.controls.studyPlanId.valueChanges
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe((studyPlanId) => this.onStudyPlanChange(studyPlanId));
 
     // Sin "permite múltiples docentes" no hay máximo que cargar.
     this.form.controls.allowsMultipleTeachers.valueChanges
@@ -162,27 +226,61 @@ export class SubjectFormPage implements OnInit {
         if (subject) this.fillForm(subject);
       },
       error: (error: HttpErrorResponse) => {
-        this.errorMessage.set(
-          error.status === 404
-            ? 'No se encontró la materia solicitada.'
-            : 'Ocurrió un error al cargar los datos del formulario.',
-        );
+        this.errorMessage.set(this.describeLoadError(error));
       },
     });
   }
 
   private fillForm(subject: Subject): void {
     this.subject.set(subject);
-    this.form.setValue({
-      name: subject.name,
-      studyPlanId: subject.studyPlan.id,
-      year: subject.year,
-      regimeId: subject.regime.id,
-      weeklyHours: subject.weeklyHours,
-      allowsMultipleTeachers: subject.allowsMultipleTeachers,
-      maxTeachers: subject.maxTeachers,
-    });
+    this.selectedStudyPlanId.set(subject.studyPlan.id);
+
+    this.form.setValue(
+      {
+        name: subject.name,
+        studyPlanId: subject.studyPlan.id,
+        year: subject.year,
+        regimeId: subject.regime.id,
+        weeklyHours: subject.weeklyHours,
+        allowsMultipleTeachers: subject.allowsMultipleTeachers,
+        maxTeachers: subject.maxTeachers,
+      },
+      { emitEvent: false },
+    );
+
+    this.syncYearControl(subject.studyPlan.id, false);
     this.syncMaxTeachers(subject.allowsMultipleTeachers);
+  }
+
+  private onStudyPlanChange(studyPlanId: number | null): void {
+    this.selectedStudyPlanId.set(studyPlanId);
+    this.syncYearControl(studyPlanId, true);
+  }
+
+  private syncYearControl(studyPlanId: number | null, resetYear: boolean): void {
+    const yearControl = this.form.controls.year;
+
+    if (resetYear) {
+      yearControl.setValue(null, { emitEvent: false });
+      yearControl.markAsUntouched();
+      yearControl.markAsPristine();
+    }
+
+    const duration = this.selectedPlanDurationYears();
+    const validators: ValidatorFn[] = [Validators.required, Validators.min(1)];
+    if (duration !== null) {
+      validators.push(Validators.max(duration));
+    }
+    yearControl.setValidators(validators);
+
+    if (studyPlanId !== null && duration !== null) {
+      yearControl.enable({ emitEvent: false });
+    } else {
+      yearControl.setValue(null, { emitEvent: false });
+      yearControl.disable({ emitEvent: false });
+    }
+
+    yearControl.updateValueAndValidity({ emitEvent: false });
   }
 
   private syncMaxTeachers(allows: boolean): void {
@@ -236,13 +334,40 @@ export class SubjectFormPage implements OnInit {
     this.router.navigate(id === null ? [SUBJECTS_ROUTE] : [SUBJECTS_ROUTE, id]);
   }
 
-  private describeError(error: HttpErrorResponse): string {
-    if (error.status === 400) {
-      const message = error.error?.message;
-      return Array.isArray(message) ? message.join(' ') : (message ?? 'Datos inválidos.');
+  private describeLoadError(error: HttpErrorResponse): string {
+    if (error.status === 0) {
+      return 'No se pudo conectar con el servidor.';
+    }
+    if (error.status === 403) {
+      return 'No tenés permisos para realizar esta acción.';
     }
     if (error.status === 404) {
-      return 'El plan de estudio, el régimen o la materia ya no existen.';
+      return 'No se encontró la materia solicitada.';
+    }
+    return 'Ocurrió un error al cargar los datos del formulario.';
+  }
+
+  private describeError(error: HttpErrorResponse): string {
+    if (error.status === 0) {
+      return 'No se pudo conectar con el servidor.';
+    }
+    if (error.status === 400) {
+      return extractBackendMessage(error) ?? 'Datos inválidos.';
+    }
+    if (error.status === 403) {
+      return 'No tenés permisos para realizar esta acción.';
+    }
+    if (error.status === 404) {
+      return (
+        extractBackendMessage(error) ??
+        'El plan de estudio, el régimen o la materia ya no existen.'
+      );
+    }
+    if (error.status === 409) {
+      return (
+        extractBackendMessage(error) ??
+        'Ya existe una materia con ese nombre en el plan de estudio seleccionado.'
+      );
     }
     return this.isEdit()
       ? 'Ocurrió un error al guardar los cambios.'

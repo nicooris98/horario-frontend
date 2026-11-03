@@ -15,25 +15,23 @@
         ariaLabel="Volver al listado"
         (onClick)="goBack()"
       />
-      <div>
-        <div class="detail-title-row">
-          <h1 id="subject-detail-title" class="page-title">
-            Detalle de la materia{{ subject() ? ': ' + subject()!.name : '' }}
-          </h1>
-          @if (subject(); as current) {
-            <p-tag
-              icon="pi pi-circle-fill"
-              [value]="statusLabel(current)"
-              [severity]="statusSeverity(current)"
-              [rounded]="true"
-            />
-          }
-        </div>
-        <p class="page-subtitle">Consultá la información completa de la materia.</p>
+      <div class="detail-title-row">
+        <h1 id="subject-detail-title" class="page-title">
+          Detalle de la materia{{ subject() ? ': ' + subject()!.name : '' }}
+        </h1>
+        @if (subject(); as current) {
+          <p-tag
+            icon="pi pi-circle-fill"
+            [value]="statusLabel(current)"
+            [severity]="statusSeverity(current)"
+            [rounded]="true"
+          />
+        }
       </div>
+      <p class="page-subtitle">Consultá la información completa de la materia.</p>
     </div>
 
-    @if (subject()) {
+    @if (subject() && canUpdate()) {
       <p-button
         label="Editar materia"
         icon="pi pi-pencil"

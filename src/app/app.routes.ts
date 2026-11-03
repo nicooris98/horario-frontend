@@ -83,10 +83,10 @@ export const routes: Routes = [
             (m) => m.UserManagement,
           ),
       },
-      // Materias: el backend todavía no define permisos "subjects.*",
-      // así que alcanza con estar logueado (authGuard del layout).
       {
         path: 'administracion/materias',
+        canActivate: [permissionGuard],
+        data: { permission: 'subjects.read' },
         loadComponent: () =>
           import('./features/subjects/pages/subject-management/subject-management').then(
             (m) => m.SubjectManagement,
@@ -94,6 +94,8 @@ export const routes: Routes = [
       },
       {
         path: 'administracion/materias/nueva',
+        canActivate: [permissionGuard],
+        data: { permission: 'subjects.create' },
         loadComponent: () =>
           import('./features/subjects/pages/subject-form/subject-form').then(
             (m) => m.SubjectFormPage,
@@ -101,6 +103,8 @@ export const routes: Routes = [
       },
       {
         path: 'administracion/materias/:id',
+        canActivate: [permissionGuard],
+        data: { permission: 'subjects.read' },
         loadComponent: () =>
           import('./features/subjects/pages/subject-detail/subject-detail').then(
             (m) => m.SubjectDetail,
@@ -108,6 +112,8 @@ export const routes: Routes = [
       },
       {
         path: 'administracion/materias/:id/editar',
+        canActivate: [permissionGuard],
+        data: { permission: 'subjects.update' },
         loadComponent: () =>
           import('./features/subjects/pages/subject-form/subject-form').then(
             (m) => m.SubjectFormPage,
