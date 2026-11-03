@@ -1,28 +1,34 @@
-import { ChangeDetectionStrategy, Component, OnInit, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, OnInit, computed, inject, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
-import { ConfirmationService } from 'primeng/api';
+import { ConfirmationService, MenuItem } from 'primeng/api';
+import { BreadcrumbModule } from 'primeng/breadcrumb';
 import { ButtonModule } from 'primeng/button';
 import { CardModule } from 'primeng/card';
 import { ConfirmDialogModule } from 'primeng/confirmdialog';
 import { InputNumberModule } from 'primeng/inputnumber';
 import { InputTextModule } from 'primeng/inputtext';
+import { Message } from 'primeng/message';
 import { SelectModule } from 'primeng/select';
 import { Degree, DegreeRequest, DegreeStatus } from '../../models/degree.model';
 import { DegreeService } from '../../services/degree.service';
 import { uniqueDegreeNameValidator } from '../../validators/degree.validators';
+
+const DEGREES_ROUTE = '/administracion/carreras';
 
 @Component({
   selector: 'app-degree-form',
   standalone: true,
   imports: [
     ReactiveFormsModule,
-    InputTextModule,
-    InputNumberModule,
-    SelectModule,
+    BreadcrumbModule,
     ButtonModule,
     CardModule,
     ConfirmDialogModule,
+    InputNumberModule,
+    InputTextModule,
+    Message,
+    SelectModule,
   ],
   providers: [ConfirmationService],
   templateUrl: './degree-form.html',
@@ -41,6 +47,14 @@ export class DegreeFormComponent implements OnInit {
   readonly hasRelatedPlans = signal(false);
   readonly isSubmitting = this.degreeService.loading;
   readonly error = this.degreeService.error;
+
+  protected readonly breadcrumbHome: MenuItem = { icon: 'pi pi-home', routerLink: '/dashboard' };
+  protected readonly breadcrumbTheme = { root: { background: 'transparent', padding: '0' } };
+  protected readonly breadcrumbItems = computed<MenuItem[]>(() => [
+    { label: 'Administración' },
+    { label: 'Carreras', routerLink: DEGREES_ROUTE },
+    { label: this.isEditMode() ? 'Editar carrera' : 'Nueva carrera' },
+  ]);
 
   readonly statusOptions: Array<{ label: string; value: DegreeStatus }> = [
     { label: 'Activo', value: 'ACTIVE' },
@@ -99,6 +113,10 @@ export class DegreeFormComponent implements OnInit {
     this.submit(request);
   }
 
+  cancel(): void {
+    void this.router.navigate([DEGREES_ROUTE]);
+  }
+
   private loadDegree(id: number): void {
     this.degreeService.getDegreeById(id).subscribe({
       next: (degree) => {
@@ -118,13 +136,14 @@ export class DegreeFormComponent implements OnInit {
   }
 
   private submit(request: DegreeRequest): void {
-    const operation = this.isEditMode() && this.degreeId() !== null
-      ? this.degreeService.updateDegree(this.degreeId()!, request)
-      : this.degreeService.createDegree(request);
+    const operation =
+      this.isEditMode() && this.degreeId() !== null
+        ? this.degreeService.updateDegree(this.degreeId()!, request)
+        : this.degreeService.createDegree(request);
 
     operation.subscribe({
       next: () => {
-        void this.router.navigate(['/administracion/carreras']);
+        void this.router.navigate([DEGREES_ROUTE]);
       },
     });
   }
@@ -170,9 +189,5 @@ export class DegreeFormComponent implements OnInit {
       this.originalDegree.durationYears !== request.durationYears ||
       this.originalDegree.status !== request.status
     );
-  }
-
-  cancel(): void {
-    void this.router.navigate(['/administracion/carreras']);
   }
 }

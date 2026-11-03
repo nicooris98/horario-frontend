@@ -1,16 +1,22 @@
-import { CommonModule } from '@angular/common';
+import { DatePipe } from '@angular/common';
 import { ChangeDetectionStrategy, Component, OnInit, inject, signal } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
+import { MenuItem } from 'primeng/api';
+import { BreadcrumbModule } from 'primeng/breadcrumb';
 import { ButtonModule } from 'primeng/button';
 import { CardModule } from 'primeng/card';
+import { Message } from 'primeng/message';
+import { SkeletonModule } from 'primeng/skeleton';
 import { TagModule } from 'primeng/tag';
 import { Degree, DegreeStatus } from '../../models/degree.model';
 import { DegreeService } from '../../services/degree.service';
 
+const DEGREES_ROUTE = '/administracion/carreras';
+
 @Component({
   selector: 'app-degree-detail',
   standalone: true,
-  imports: [CommonModule, CardModule, ButtonModule, TagModule],
+  imports: [DatePipe, BreadcrumbModule, ButtonModule, CardModule, Message, SkeletonModule, TagModule],
   templateUrl: './degree-detail.html',
   styleUrl: './degree-detail.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -24,10 +30,18 @@ export class DegreeDetailComponent implements OnInit {
   readonly loading = this.degreeService.loading;
   readonly error = this.degreeService.error;
 
+  protected readonly breadcrumbHome: MenuItem = { icon: 'pi pi-home', routerLink: '/dashboard' };
+  protected readonly breadcrumbTheme = { root: { background: 'transparent', padding: '0' } };
+  protected readonly breadcrumbItems: MenuItem[] = [
+    { label: 'Administración' },
+    { label: 'Carreras', routerLink: DEGREES_ROUTE },
+    { label: 'Detalle' },
+  ];
+
   ngOnInit(): void {
     const id = Number(this.route.snapshot.paramMap.get('id'));
     if (!Number.isInteger(id) || id <= 0) {
-      void this.router.navigate(['/administracion/carreras']);
+      void this.router.navigate([DEGREES_ROUTE]);
       return;
     }
 
@@ -38,13 +52,13 @@ export class DegreeDetailComponent implements OnInit {
   }
 
   goBack(): void {
-    void this.router.navigate(['/administracion/carreras']);
+    void this.router.navigate([DEGREES_ROUTE]);
   }
 
   goEdit(): void {
     const current = this.degree();
     if (current) {
-      void this.router.navigate(['/administracion/carreras', current.id, 'editar']);
+      void this.router.navigate([DEGREES_ROUTE, current.id, 'editar']);
     }
   }
 

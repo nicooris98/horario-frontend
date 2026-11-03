@@ -12,16 +12,23 @@ import { TableModule } from 'primeng/table';
 import { TagModule } from 'primeng/tag';
 import { Degree, DegreeStatus } from '../../models/degree.model';
 import { DegreeService } from '../../services/degree.service';
+import { MenuItem } from 'primeng/api';
+import { BreadcrumbModule } from 'primeng/breadcrumb';
+import { CardModule } from 'primeng/card';
+import { SkeletonModule } from 'primeng/skeleton';
 
 @Component({
   selector: 'app-degree-list',
   standalone: true,
-  imports: [
+    imports: [
     CommonModule,
     FormsModule,
     TableModule,
     InputTextModule,
     ButtonModule,
+    BreadcrumbModule,
+    CardModule,
+    SkeletonModule,
     SelectModule,
     TagModule,
     DialogModule,
@@ -100,6 +107,14 @@ export class DegreeListComponent implements OnInit {
     });
   }
 
+  protected readonly breadcrumbHome: MenuItem = { icon: 'pi pi-home', routerLink: '/dashboard' };
+  protected readonly breadcrumbTheme = { root: { background: 'transparent', padding: '0' } };
+  protected readonly breadcrumbItems: MenuItem[] = [
+    { label: 'Administración' },
+    { label: 'Carreras' },
+  ];
+
+  
   statusLabel(value: DegreeStatus): string {
     return value === 'ACTIVE' ? 'Activo' : 'Inactivo';
   }

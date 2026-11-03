@@ -1,73 +1,142 @@
-<section class="degree-detail-page" aria-labelledby="degree-detail-title">
-  <header class="degree-detail-header">
-    <div>
-      <p class="eyebrow">Detalle académico</p>
-      <h1 id="degree-detail-title">Carrera</h1>
+<section aria-labelledby="degree-detail-title">
+  <p-breadcrumb
+    class="page-breadcrumb"
+    [home]="breadcrumbHome"
+    [model]="breadcrumbItems"
+    [dt]="breadcrumbTheme"
+  />
+
+  <header class="page-header">
+    <div class="page-heading">
+      <p-button
+        icon="pi pi-arrow-left"
+        severity="secondary"
+        [outlined]="true"
+        ariaLabel="Volver al listado"
+        (onClick)="goBack()"
+      />
+      <div class="detail-title-row">
+        <h1 id="degree-detail-title" class="page-title">
+          Detalle de la carrera{{ degree() ? ': ' + degree()!.name : '' }}
+        </h1>
+        @if (degree(); as current) {
+          <p-tag
+            icon="pi pi-circle-fill"
+            [value]="statusLabel(current.status)"
+            [severity]="statusSeverity(current.status)"
+            [rounded]="true"
+          />
+        }
+      </div>
+      <p class="page-subtitle">Consultá la información completa de la carrera.</p>
     </div>
 
-    <div class="degree-detail-actions">
-      <button pButton type="button" label="Volver" icon="pi pi-arrow-left" severity="secondary" (click)="goBack()"></button>
-      <button pButton type="button" label="Editar" icon="pi pi-pencil" (click)="goEdit()"></button>
-    </div>
+    @if (degree()) {
+      <p-button
+        label="Editar carrera"
+        icon="pi pi-pencil"
+        [outlined]="true"
+        (onClick)="goEdit()"
+      />
+    }
   </header>
 
   @if (error()) {
-    <div class="degree-alert" role="alert">{{ error() }}</div>
+    <p-message class="detail-error" severity="error" role="alert">
+      {{ error() }}
+    </p-message>
   }
 
   @if (loading()) {
-    <div class="loading-state">Cargando carrera...</div>
-  } @else if (degree(); as current) {
-    <div class="detail-grid">
-      <p-card>
-        <div class="detail-header">
-          <div>
-            <span class="detail-label">Nombre</span>
-            <h2>{{ current.name }}</h2>
+    <p-card>
+      <dl class="detail-list">
+        @for (_ of [1, 2, 3, 4]; track $index) {
+          <div class="detail-row">
+            <dt><p-skeleton width="8rem" /></dt>
+            <dd><p-skeleton width="12rem" /></dd>
           </div>
-          <p-tag [severity]="statusSeverity(current.status)" [value]="statusLabel(current.status)"></p-tag>
-        </div>
-
-        <dl class="detail-list">
-          <div>
-            <dt>Duración</dt>
-            <dd>{{ current.durationYears }} años</dd>
-          </div>
-          <div>
-            <dt>Planes de estudio</dt>
-            <dd>{{ current.studyPlans?.length ?? 0 }}</dd>
-          </div>
-          <div>
-            <dt>Última actualización</dt>
-            <dd>{{ current.updatedAt | date: 'dd/MM/yyyy' }}</dd>
-          </div>
-        </dl>
-      </p-card>
-
-      <p-card>
-        <div class="plan-header">
-          <h3>Planes de estudio asociados</h3>
-          <span class="plan-count">{{ current.studyPlans?.length ?? 0 }}</span>
-        </div>
-
-        @if ((current.studyPlans ?? []).length > 0) {
-          <ul class="plan-list">
-            @for (plan of current.studyPlans; track plan.id) {
-              <li>
-                <div>
-                  <strong>{{ plan.name }}</strong>
-                  <small>{{ plan.active ? 'Activo' : 'Inactivo' }}</small>
-                </div>
-                <span class="plan-status {{ plan.active ? 'active' : 'inactive' }}">
-                  {{ plan.active ? 'Activo' : 'Inactivo' }}
-                </span>
-              </li>
-            }
-          </ul>
-        } @else {
-          <p class="empty-state">No hay planes de estudio asociados para esta carrera.</p>
         }
-      </p-card>
-    </div>
+      </dl>
+    </p-card>
+  } @else if (degree(); as current) {
+    <p-card styleClass="detail-card">
+      <h2 class="detail-section-title">
+        <i class="pi pi-file" aria-hidden="true"></i>
+        Información de la carrera
+      </h2>
+
+      <dl class="detail-list">
+        <div class="detail-row">
+          <dt>Nombre</dt>
+          <dd>{{ current.name }}</dd>
+        </div>
+        <div class="detail-row">
+          <dt>Duración</dt>
+          <dd>{{ current.durationYears }} {{ current.durationYears === 1 ? 'año' : 'años' }}</dd>
+        </div>
+        <div class="detail-row">
+          <dt>Planes de estudio</dt>
+          <dd>{{ current.studyPlans?.length ?? 0 }}</dd>
+        </div>
+        <div class="detail-row">
+          <dt>Última actualización</dt>
+          <dd>{{ current.updatedAt ? (current.updatedAt | date: 'dd/MM/yyyy') : '—' }}</dd>
+        </div>
+        <div class="detail-row">
+          <dt>Estado</dt>
+          <dd>
+            <p-tag
+              icon="pi pi-circle-fill"
+              [value]="statusLabel(current.status)"
+              [severity]="statusSeverity(current.status)"
+              [rounded]="true"
+            />
+          </dd>
+        </div>
+      </dl>
+    </p-card>
+
+    <p-card>
+      <h2 class="detail-section-title">
+        <i class="pi pi-sitemap" aria-hidden="true"></i>
+        Planes de estudio asociados ({{ current.studyPlans?.length ?? 0 }})
+      </h2>
+
+      @if ((current.studyPlans ?? []).length > 0) {
+        <dl class="detail-list">
+          @for (plan of current.studyPlans; track plan.id) {
+            <div class="detail-row">
+              <dt>{{ plan.name }}</dt>
+              <dd>
+                <p-tag
+                  icon="pi pi-circle-fill"
+                  [value]="plan.active ? 'Activo' : 'Inactivo'"
+                  [severity]="plan.active ? 'success' : 'danger'"
+                  [rounded]="true"
+                />
+              </dd>
+            </div>
+          }
+        </dl>
+      } @else {
+        <div class="table-empty-state">
+          <span class="table-empty-icon" aria-hidden="true">
+            <i class="pi pi-sitemap"></i>
+          </span>
+          <p class="table-empty-title">Sin planes de estudio</p>
+          <p class="table-empty-description">No hay planes de estudio asociados para esta carrera.</p>
+        </div>
+      }
+    </p-card>
+  } @else if (!error()) {
+    <p-card>
+      <div class="table-empty-state">
+        <span class="table-empty-icon" aria-hidden="true">
+          <i class="pi pi-book"></i>
+        </span>
+        <p class="table-empty-title">Carrera no encontrada</p>
+        <p class="table-empty-description">Volvé al listado y elegí otra carrera.</p>
+      </div>
+    </p-card>
   }
 </section>
