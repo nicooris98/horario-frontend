@@ -6,10 +6,8 @@ import { API_CONFIG } from '../config/api.config';
   providedIn: 'root',
 })
 export class Api {
-
-  private readonly http= inject(HttpClient);
+  private readonly http = inject(HttpClient);
   private readonly baseUrl = API_CONFIG.baseUrl;
-
 
   get<T>(endpoint: string) {
     return this.http.get<T>(`${this.baseUrl}/${endpoint}`);
@@ -32,6 +30,4 @@ export class Api {
   delete<T>(endpoint: string) {
     return this.http.delete<T>(`${this.baseUrl}/${endpoint}`);
   }
-
-
 }
