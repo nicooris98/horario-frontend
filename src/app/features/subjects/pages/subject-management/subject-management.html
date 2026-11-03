@@ -1,4 +1,4 @@
-<section aria-labelledby="subject-management-title">
+<section class="table-page" aria-labelledby="subject-management-title">
   <p-breadcrumb
     class="page-breadcrumb"
     [home]="breadcrumbHome"
@@ -12,7 +12,9 @@
       <p class="page-subtitle">Administrá las materias y sus datos académicos.</p>
     </div>
 
-    <p-button label="Nueva materia" icon="pi pi-plus" (onClick)="goToCreate()" />
+    @if (canCreate()) {
+      <p-button label="Nueva materia" icon="pi pi-plus" (onClick)="goToCreate()" />
+    }
   </header>
 
   @if (errorMessage()) {
@@ -28,109 +30,260 @@
         <input
           type="text"
           pInputText
+          [fluid]="true"
           placeholder="Buscar por nombre de materia..."
           aria-label="Buscar por nombre de materia"
           [ngModel]="search()"
-          (ngModelChange)="search.set($event)"
+          (ngModelChange)="onSearchChange($event)"
         />
       </p-iconfield>
 
       <p-select
         [options]="studyPlanOptions()"
         [ngModel]="studyPlanFilter()"
-        (ngModelChange)="studyPlanFilter.set($event ?? null)"
+        (ngModelChange)="onStudyPlanFilterChange($event)"
         placeholder="Todos los planes"
         ariaLabel="Filtrar por plan de estudio"
         [showClear]="true"
+        [fluid]="true"
+        appendTo="body"
       />
 
       <p-select
         [options]="yearOptions()"
         [ngModel]="yearFilter()"
-        (ngModelChange)="yearFilter.set($event ?? null)"
+        (ngModelChange)="onYearFilterChange($event)"
         placeholder="Todos los años"
         ariaLabel="Filtrar por año de cursado"
         [showClear]="true"
+        [fluid]="true"
+        appendTo="body"
       />
 
       <p-select
         [options]="statusOptions"
         [ngModel]="statusFilter()"
-        (ngModelChange)="statusFilter.set($event ?? null)"
+        (ngModelChange)="onStatusFilterChange($event)"
         placeholder="Todos los estados"
         ariaLabel="Filtrar por estado"
         [showClear]="true"
+        [fluid]="true"
+        appendTo="body"
       />
     </div>
 
-    <p-table
-      [value]="filteredSubjects()"
-      [paginator]="true"
-      [rows]="10"
-      [rowsPerPageOptions]="[5, 10, 20]"
-      [showCurrentPageReport]="true"
-      currentPageReportTemplate="Mostrando {first} a {last} de {totalRecords} materias"
-      [tableStyle]="{ 'min-width': '52rem' }"
-    >
-      <ng-template #header>
-        <tr>
-          <th>Materia</th>
-          <th>Plan de estudio</th>
-          <th>Año</th>
-          <th>Régimen</th>
-          <th>Horas semanales</th>
-          <th>Estado</th>
-          <th class="subjects-actions-col">Acciones</th>
-        </tr>
-      </ng-template>
+    @if (!isMobile()) {
+      <p-table
+        [value]="filteredSubjects()"
+        [paginator]="true"
+        [first]="first()"
+        [rows]="rows()"
+        [rowsPerPageOptions]="rowsPerPageOptions"
+        [showCurrentPageReport]="true"
+        currentPageReportTemplate="Mostrando {first} a {last} de {totalRecords} materias"
+        [tableStyle]="{ 'min-width': '52rem' }"
+        (onPage)="onPageChange($event)"
+      >
+        <ng-template #header>
+          <tr>
+            <th>Materia</th>
+            <th>Plan de estudio</th>
+            <th>Año</th>
+            <th>Régimen</th>
+            <th>Horas semanales</th>
+            <th>Estado</th>
+            <th class="table-col-center">Acciones</th>
+          </tr>
+        </ng-template>
 
-      <ng-template #body let-subject>
-        <tr>
-          <td class="subjects-name">{{ subject.name }}</td>
-          <td class="subjects-plan">{{ subject.studyPlan.name }}</td>
-          <td>{{ subject.year }}</td>
-          <td>{{ subject.regime.name }}</td>
-          <td>{{ subject.weeklyHours }}</td>
-          <td>
-            <p-tag
-              icon="pi pi-circle-fill"
-              [value]="statusLabel(subject)"
-              [severity]="statusSeverity(subject)"
-              [rounded]="true"
-            />
-          </td>
-          <td class="subjects-actions-col">
-            <div class="subjects-actions">
-              <p-button
-                icon="pi pi-eye"
-                [outlined]="true"
-                [ariaLabel]="'Ver ' + subject.name"
-                (onClick)="goToDetail(subject)"
+        <ng-template #body let-subject>
+          <tr>
+            <td class="subjects-name">{{ subject.name }}</td>
+            <td class="subjects-plan">{{ subject.studyPlan.name }}</td>
+            <td>{{ subject.year }}</td>
+            <td>{{ subject.regime.name }}</td>
+            <td>{{ subject.weeklyHours }}</td>
+            <td>
+              <p-tag
+                icon="pi pi-circle-fill"
+                [value]="statusLabel(subject)"
+                [severity]="statusSeverity(subject)"
+                [rounded]="true"
               />
-              <p-button
-                icon="pi pi-ellipsis-v"
-                severity="secondary"
-                [outlined]="true"
-                [ariaLabel]="'Más acciones para ' + subject.name"
-                (onClick)="openRowMenu($event, rowMenu, subject)"
-              />
+            </td>
+            <td class="table-col-center">
+              <div class="subjects-actions">
+                <p-button
+                  icon="pi pi-eye"
+                  [outlined]="true"
+                  [ariaLabel]="'Ver ' + subject.name"
+                  (onClick)="goToDetail(subject)"
+                />
+                @if (hasRowMenuActions()) {
+                  <p-button
+                    icon="pi pi-ellipsis-v"
+                    severity="secondary"
+                    [outlined]="true"
+                    [ariaLabel]="'Más acciones para ' + subject.name"
+                    (onClick)="openRowMenu($event, rowMenu, subject)"
+                  />
+                }
+              </div>
+            </td>
+          </tr>
+        </ng-template>
+
+        <ng-template #emptymessage>
+          <tr class="table-empty-row">
+            <td colspan="7" class="table-empty-cell">
+              <div class="table-empty-state">
+                <span class="table-empty-icon" aria-hidden="true">
+                  <i class="pi pi-book"></i>
+                </span>
+                <p class="table-empty-title">
+                  {{
+                    subjects().length
+                      ? 'Ninguna materia coincide con la búsqueda'
+                      : 'No hay materias registradas'
+                  }}
+                </p>
+                <p class="table-empty-description">
+                  {{
+                    subjects().length
+                      ? 'Probá ajustando o limpiando los filtros seleccionados para ver otros resultados.'
+                      : 'Podés registrar una primera materia desde el botón "Nueva materia".'
+                  }}
+                </p>
+              </div>
+            </td>
+          </tr>
+        </ng-template>
+      </p-table>
+    } @else {
+      <div class="subjects-mobile-view">
+        @if (paginatedSubjects().length > 0) {
+          <div class="subjects-card-list" role="list" aria-label="Listado de materias">
+            @for (subject of paginatedSubjects(); track subject.id) {
+              <article class="subject-mobile-card" role="listitem">
+                <header class="subject-card-header">
+                  <h2 class="subject-card-title">{{ subject.name }}</h2>
+                  <p-tag
+                    icon="pi pi-circle-fill"
+                    [value]="statusLabel(subject)"
+                    [severity]="statusSeverity(subject)"
+                    [rounded]="true"
+                  />
+                </header>
+
+                <dl class="subject-card-details">
+                  <div class="subject-card-field subject-card-field-full">
+                    <dt>
+                      <i class="pi pi-sitemap" aria-hidden="true"></i>
+                      Plan de estudio
+                    </dt>
+                    <dd>{{ subject.studyPlan.name }}</dd>
+                  </div>
+
+                  <div class="subject-card-field">
+                    <dt>
+                      <i class="pi pi-calendar" aria-hidden="true"></i>
+                      Año de cursado
+                    </dt>
+                    <dd>{{ subject.year }}° Año</dd>
+                  </div>
+
+                  <div class="subject-card-field">
+                    <dt>
+                      <i class="pi pi-book" aria-hidden="true"></i>
+                      Régimen
+                    </dt>
+                    <dd>{{ subject.regime.name }}</dd>
+                  </div>
+
+                  <div class="subject-card-field subject-card-field-full">
+                    <dt>
+                      <i class="pi pi-clock" aria-hidden="true"></i>
+                      Horas semanales
+                    </dt>
+                    <dd>
+                      {{ subject.weeklyHours }} {{ subject.weeklyHours === 1 ? 'hora' : 'horas' }}
+                    </dd>
+                  </div>
+                </dl>
+
+                <footer class="subject-card-actions">
+                  <p-button
+                    label="Ver detalle"
+                    icon="pi pi-eye"
+                    size="small"
+                    [outlined]="true"
+                    [ariaLabel]="'Ver detalle de ' + subject.name"
+                    (onClick)="goToDetail(subject)"
+                  />
+                  @if (canUpdate()) {
+                    <p-button
+                      label="Editar"
+                      icon="pi pi-pencil"
+                      severity="secondary"
+                      size="small"
+                      [outlined]="true"
+                      [ariaLabel]="'Editar ' + subject.name"
+                      (onClick)="goToEdit(subject)"
+                    />
+                  }
+                  @if (canChangeStatus()) {
+                    <p-button
+                      [label]="isActive(subject) ? 'Desactivar' : 'Activar'"
+                      [icon]="isActive(subject) ? 'pi pi-ban' : 'pi pi-check-circle'"
+                      [severity]="isActive(subject) ? 'danger' : 'success'"
+                      size="small"
+                      [outlined]="true"
+                      [ariaLabel]="(isActive(subject) ? 'Desactivar ' : 'Activar ') + subject.name"
+                      (onClick)="confirmStatusChange(subject)"
+                    />
+                  }
+                </footer>
+              </article>
+            }
+          </div>
+        } @else {
+          <div class="subjects-mobile-empty">
+            <div class="table-empty-state">
+              <span class="table-empty-icon" aria-hidden="true">
+                <i class="pi pi-book"></i>
+              </span>
+              <p class="table-empty-title">
+                {{
+                  subjects().length
+                    ? 'Ninguna materia coincide con la búsqueda'
+                    : 'No hay materias registradas'
+                }}
+              </p>
+              <p class="table-empty-description">
+                {{
+                  subjects().length
+                    ? 'Probá ajustando o limpiando los filtros seleccionados para ver otros resultados.'
+                    : 'Podés registrar una primera materia desde el botón "Nueva materia".'
+                }}
+              </p>
             </div>
-          </td>
-        </tr>
-      </ng-template>
+          </div>
+        }
 
-      <ng-template #emptymessage>
-        <tr>
-          <td colspan="7">
-            {{
-              subjects().length
-                ? 'Ninguna materia coincide con la búsqueda.'
-                : 'No hay materias registradas.'
-            }}
-          </td>
-        </tr>
-      </ng-template>
-    </p-table>
+        <p-paginator
+          class="subjects-mobile-paginator"
+          [first]="first()"
+          [rows]="rows()"
+          [totalRecords]="filteredSubjects().length"
+          [rowsPerPageOptions]="rowsPerPageOptions"
+          [pageLinkSize]="3"
+          [showCurrentPageReport]="true"
+          currentPageReportTemplate="Mostrando {first} a {last} de {totalRecords} materias"
+          appendTo="body"
+          (onPageChange)="onPageChange($event)"
+        />
+      </div>
+    }
   </p-card>
 
   <p-menu #rowMenu [model]="rowMenuItems()" [popup]="true" appendTo="body" />
