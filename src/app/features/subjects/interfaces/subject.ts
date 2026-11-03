@@ -7,6 +7,12 @@ export const SUBJECT_STATUS = {
 
 export type SubjectStatus = (typeof SUBJECT_STATUS)[keyof typeof SUBJECT_STATUS];
 
+export interface StudyPlanDegree {
+  id?: number;
+  name?: string;
+  durationYears?: number | null;
+}
+
 export interface StudyPlan {
   id: number;
   name: string;
@@ -14,6 +20,9 @@ export interface StudyPlan {
   startDate: string;
   endDate: string | null;
   status: string;
+  durationYears?: number | null;
+  degree?: StudyPlanDegree | null;
+  career?: StudyPlanDegree | null;
 }
 
 export interface Regime {
@@ -28,7 +37,7 @@ export interface Subject {
   weeklyHours: number;
   allowsMultipleTeachers: boolean;
   maxTeachers: number | null;
-  status: string;
+  status: SubjectStatus;
   studyPlan: StudyPlan;
   regime: Regime;
 }
@@ -43,6 +52,8 @@ export interface CreateSubjectRequest {
   maxTeachers: number | null;
 }
 
-export type UpdateSubjectRequest = Partial<CreateSubjectRequest> & {
-  status?: SubjectStatus;
-};
+export type UpdateSubjectRequest = Partial<CreateSubjectRequest>;
+
+export interface UpdateSubjectStatusRequest {
+  status: SubjectStatus;
+}
