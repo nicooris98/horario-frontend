@@ -1,4 +1,4 @@
-import { Component, OnInit, inject } from '@angular/core';
+import { Component, OnInit, inject, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { TableModule } from 'primeng/table';
 import { ButtonModule } from 'primeng/button';
@@ -13,6 +13,9 @@ import { ConfirmationService, MessageService } from 'primeng/api';
 import { FormsModule } from '@angular/forms';
 import { TeachersService } from '../../services/teachers.service';
 import { SelectOption, Teacher } from '../../../../core/models/module2.models';
+
+
+
 import {
   isNonEmpty,
   isPositiveInt,
@@ -45,6 +48,7 @@ export class TeachersPage implements OnInit {
   private teachersService = inject(TeachersService);
   private confirmationService = inject(ConfirmationService);
   private messageService = inject(MessageService);
+  private cdr = inject(ChangeDetectorRef);
 
   teachers: Teacher[] = [];
   loading = false;
@@ -55,7 +59,7 @@ export class TeachersPage implements OnInit {
 
   filterDni = '';
   filterLastName = '';
-  private filterTimeout: ReturnType<typeof setTimeout> | null = null;
+ 
 
   submitted = false;
   errors: Record<string, string> = {};
@@ -83,36 +87,34 @@ export class TeachersPage implements OnInit {
     };
   }
 
-  load() {
-    this.loading = true;
-    this.teachersService.findAll(this.filterDni || undefined, this.filterLastName || undefined).subscribe({
+load() {
+  this.loading = true;
+
+  this.teachersService
+    .findAll(this.filterDni || undefined, this.filterLastName || undefined)
+    .subscribe({
       next: (data) => {
-        this.teachers = data;
-        this.loading = false;
+        console.log('DOCENTES', data);
+
+        setTimeout(() => {
+          this.teachers = [...data];
+          this.loading = false;
+
+          this.cdr.detectChanges();
+        }, 0);
       },
+
       error: (err) => {
-        // El backend responde 404 cuando el filtro no encuentra docentes.
         if ((err as { status?: number })?.status === 404) {
           this.teachers = [];
           this.loading = false;
-          if (this.filterDni.trim() || this.filterLastName.trim()) {
-            this.messageService.add({
-              severity: 'info',
-              summary: 'Sin resultados',
-              detail: 'Probá con acentos (ej. Gómez) o revisá el filtro.',
-            });
-          }
           return;
         }
-        this.messageService.add({
-          severity: 'error',
-          summary: 'Error',
-          detail: 'No se pudieron cargar los docentes',
-        });
+
         this.loading = false;
       },
     });
-  }
+}
 
   openNew() {
     this.teacher = this.emptyTeacher();
@@ -286,14 +288,14 @@ export class TeachersPage implements OnInit {
     return !!this.filterDni.trim() || !!this.filterLastName.trim();
   }
 
-  onFilterChange(): void {
-    if (this.filterTimeout) {
-      clearTimeout(this.filterTimeout);
-    }
-    this.filterTimeout = setTimeout(() => {
-      this.load();
-    }, 300);
-  }
+
+
+
+
+
+
+
+
 
   trackByTeacher(_index: number, teacher: Teacher): number {
     return teacher.id;

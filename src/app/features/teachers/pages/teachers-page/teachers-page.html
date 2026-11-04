@@ -8,7 +8,7 @@
         pInputText
         type="text"
         [(ngModel)]="filterDni"
-        (ngModelChange)="onFilterChange()"
+       
         (keyup.enter)="load()"
         placeholder="Filtrar por DNI"
       />
@@ -16,7 +16,7 @@
         pInputText
         type="text"
         [(ngModel)]="filterLastName"
-        (ngModelChange)="onFilterChange()"
+        
         (keyup.enter)="load()"
         placeholder="Filtrar por apellido"
       />
@@ -29,8 +29,9 @@
   </ng-template>
 </p-toolbar>
 
-<p-table [value]="teachers" [loading]="loading" [paginator]="true" [rows]="10" [rowsPerPageOptions]="[10, 20, 50]" [rowTrackBy]="trackByTeacher">
-  <ng-template #header>
+
+<p-table [value]="teachers" [loading]="loading" [paginator]="true" [rows]="15" [rowsPerPageOptions]="[15, 30, 50]" >
+  <ng-template pTemplate="header">
     <tr>
       <th>DNI</th>
       <th>Apellido</th>
@@ -43,7 +44,7 @@
       <th>Acciones</th>
     </tr>
   </ng-template>
-  <ng-template #body let-t>
+  <ng-template pTemplate="body" let-t>
     <tr>
       <td>{{ t.dni }}</td>
       <td>{{ t.lastName }}</td>
@@ -97,7 +98,7 @@
       </td>
     </tr>
   </ng-template>
-  <ng-template #emptymessage>
+  <ng-template pTemplate="emptymessage">
     <tr>
       <td colspan="9">
         {{ hasActiveFilters() ? 'Sin resultados para los filtros aplicados' : 'Sin docentes cargados' }}
