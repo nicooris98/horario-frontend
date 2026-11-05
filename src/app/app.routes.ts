@@ -83,10 +83,10 @@ export const routes: Routes = [
             (m) => m.UserManagement,
           ),
       },
-      // Materias: el backend todavía no define permisos "subjects.*",
-      // así que alcanza con estar logueado (authGuard del layout).
       {
         path: 'administracion/materias',
+        canActivate: [permissionGuard],
+        data: { permission: 'subjects.read' },
         loadComponent: () =>
           import('./features/subjects/pages/subject-management/subject-management').then(
             (m) => m.SubjectManagement,
@@ -94,6 +94,8 @@ export const routes: Routes = [
       },
       {
         path: 'administracion/materias/nueva',
+        canActivate: [permissionGuard],
+        data: { permission: 'subjects.create' },
         loadComponent: () =>
           import('./features/subjects/pages/subject-form/subject-form').then(
             (m) => m.SubjectFormPage,
@@ -101,6 +103,8 @@ export const routes: Routes = [
       },
       {
         path: 'administracion/materias/:id',
+        canActivate: [permissionGuard],
+        data: { permission: 'subjects.read' },
         loadComponent: () =>
           import('./features/subjects/pages/subject-detail/subject-detail').then(
             (m) => m.SubjectDetail,
@@ -108,19 +112,53 @@ export const routes: Routes = [
       },
       {
         path: 'administracion/materias/:id/editar',
+        canActivate: [permissionGuard],
+        data: { permission: 'subjects.update' },
         loadComponent: () =>
           import('./features/subjects/pages/subject-form/subject-form').then(
             (m) => m.SubjectFormPage,
           ),
       },
       {
-        path: 'docentes',
-        loadChildren: () => import('./features/teachers/teachers.routes').then((m) => m.teachersRoutes),
+
+        path: 'administracion/carreras',
+        canActivate: [permissionGuard],
+        data: { permission: 'degrees.read' },
+        loadChildren: () =>
+          import('./features/degrees/routes/degree.routes').then((m) => m.degreeRoutes),
+
       },
       {
         path: '',
         pathMatch: 'full',
         redirectTo: 'dashboard',
+      },
+            {
+        path: 'academico/planes-estudio/nuevo',
+        canActivate: [permissionGuard],
+        data: { permission: 'study-plans.create' },
+        loadComponent: () =>
+          import('./features/study-plans/pages/create-study-plan/create-study-plan').then(
+            (m) => m.CreateStudyPlan,
+          ),
+      },
+      {
+        path: 'academico/planes-estudio/:id/editar',
+        canActivate: [permissionGuard],
+        data: { permission: 'study-plans.update' },
+        loadComponent: () =>
+          import('./features/study-plans/pages/edit-study-plan/edit-study-plan').then(
+            (m) => m.EditStudyPlan,
+          ),
+      },
+      {
+        path: 'academico/planes-estudio',
+        canActivate: [permissionGuard],
+        data: { permission: 'study-plans.read' },
+        loadComponent: () =>
+          import('./features/study-plans/pages/study-plan-management/study-plan-management').then(
+            (m) => m.StudyPlanManagement,
+          ),
       },
     ],
   },

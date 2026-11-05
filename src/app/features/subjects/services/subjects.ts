@@ -5,7 +5,9 @@ import {
   Regime,
   StudyPlan,
   Subject,
+  SubjectStatus,
   UpdateSubjectRequest,
+  UpdateSubjectStatusRequest,
 } from '../interfaces/subject';
 
 @Injectable({ providedIn: 'root' })
@@ -26,6 +28,11 @@ export class Subjects {
 
   update(id: number, data: UpdateSubjectRequest) {
     return this.api.patch<Subject>(`subjects/${id}`, data);
+  }
+
+  updateStatus(id: number, status: SubjectStatus) {
+    const body: UpdateSubjectStatusRequest = { status };
+    return this.api.patch<Subject>(`subjects/${id}/status`, body);
   }
 
   // Catálogos que usa el formulario y los filtros.

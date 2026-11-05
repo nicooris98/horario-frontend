@@ -31,22 +31,40 @@ input:focus-visible,
   outline-offset: 2px;
 }
 
-/* Encabezado de las p+�ginas de gesti+�n (t+�tulo, subt+�tulo y acci+�n principal).
-   Es el mismo patr+�n que repiten las vistas de usuarios. */
+
+/* Encabezado de las p+�ginas de gesti+�n (t+�tulo, subt+�tulo y acci+�n principal).
+   Es el mismo patr+�n que repiten las vistas de usuarios. */
+
+/* Páginas de listado con tarjeta y tabla que ocupan el alto disponible */
+.table-page {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 auto;
+  min-height: 0;
+}
+
+/* Encabezado de las páginas de gestión (título, subtítulo y acción principal).
+   Es el mismo patrón que repiten las vistas de usuarios. */
+
 .page-header {
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
   gap: 1rem;
   flex-wrap: wrap;
-  margin-bottom: 1.5rem;
+  margin-bottom: 1.25rem;
 }
 
 .page-heading {
-  display: flex;
-  align-items: flex-start;
-  gap: 1rem;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: center;
+  column-gap: 0.75rem;
   min-width: 0;
+}
+
+.page-heading > .page-subtitle {
+  grid-column: 2;
 }
 
 .page-title {
@@ -66,7 +84,7 @@ input:focus-visible,
 
 .page-breadcrumb {
   display: block;
-  margin-bottom: 1rem;
+  margin-bottom: 0.75rem;
   font-size: 0.8125rem;
 }
 
@@ -98,6 +116,140 @@ input:focus-visible,
   font-size: 0.8125rem;
 }
 
+/* Tarjeta y tabla con distribución vertical Flexbox:
+   Nota: PrimeNG 21 inyecta <style data-primeng-style-id="card|datatable|paginator">
+   al final del <head> en tiempo de ejecución con .p-card { display: block; } y
+   .p-datatable { display: block; } (especificidad 0,1,0). Usamos selectores
+   compuestos (especificidad >= 0,2,0) para garantizar que la cadena Flexbox
+   se mantenga activa sin usar !important. */
+p-card.p-card.p-component:has(.p-datatable),
+p-card.p-card.p-component:has(.p-datatable) > .p-card-body,
+p-card.p-card.p-component:has(.p-datatable) > .p-card-body > .p-card-content,
+p-table.p-datatable.p-component {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 auto;
+  min-height: 0;
+}
+
+p-table.p-datatable.p-component > .p-datatable-table-container {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 0%;
+  min-height: 0;
+  overflow: auto;
+}
+
+.p-datatable-thead {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+}
+
+.p-datatable-table:has(.table-empty-row) {
+  flex: 1 1 auto;
+  height: 100%;
+}
+
+.p-datatable-thead > tr > th,
+.p-datatable-tbody > tr > td {
+  vertical-align: middle;
+}
+
+.p-datatable-thead > tr > th.table-col-center,
+.p-datatable-tbody > tr > td.table-col-center {
+  text-align: center;
+}
+
+/* Paginación al pie de la tarjeta: centrada horizontalmente, en una única fila y
+   respetando exactamente el padding inferior del .p-card-body. */
+p-table.p-datatable.p-component > p-paginator.p-paginator.p-component {
+  display: flex;
+  flex: 0 0 auto;
+  flex-wrap: nowrap;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  margin-top: auto;
+  padding: 0.75rem 0 0;
+  border-top: 1px solid var(--p-datatable-header-cell-border-color, var(--p-surface-200));
+  border-radius: 0;
+}
+
+p-table.p-datatable.p-component > p-paginator.p-paginator.p-component .p-paginator-current {
+  white-space: nowrap;
+}
+
+p-table.p-datatable.p-component > p-paginator.p-paginator.p-component .p-paginator-pages {
+  display: inline-flex;
+  flex-wrap: nowrap;
+  align-items: center;
+}
+
+p-table.p-datatable.p-component > p-paginator.p-paginator.p-component .p-paginator-rpp-dropdown {
+  flex: 0 0 auto;
+  width: auto;
+}
+
+.p-datatable-tbody > tr.table-empty-row,
+.p-datatable-tbody > tr.table-empty-row:hover {
+  background: transparent;
+}
+
+.p-datatable-tbody > tr.table-empty-row > td.table-empty-cell {
+  height: 100%;
+  padding: 2rem 1.5rem;
+  border-bottom: 0;
+  text-align: center;
+  vertical-align: middle;
+}
+
+.table-empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.375rem;
+  max-width: 24rem;
+  margin-inline: auto;
+  text-align: center;
+}
+
+.table-empty-icon {
+  display: inline-grid;
+  place-items: center;
+  width: 2.75rem;
+  height: 2.75rem;
+  margin-bottom: 0.25rem;
+  border-radius: 50%;
+  background: var(--p-surface-100);
+  color: var(--p-text-muted-color);
+}
+
+.table-empty-icon i {
+  font-size: 1.25rem;
+}
+
+.table-empty-title {
+  margin: 0;
+  color: var(--p-text-color);
+  font-size: 0.9375rem;
+  font-weight: 600;
+  line-height: 1.4;
+}
+
+.table-empty-description {
+  margin: 0;
+  color: var(--p-text-muted-color);
+  font-size: 0.875rem;
+  line-height: 1.5;
+}
+
+/* Achica el punto del tag de estado para que se lea como indicador. */
+.p-tag-icon {
+  font-size: 0.5rem;
+}
+
 input:-webkit-autofill,
 input:-webkit-autofill:hover,
 input:-webkit-autofill:focus,
@@ -114,7 +266,8 @@ input:-webkit-autofill:active {
   background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.35), transparent) !important;
 }
 
-/* Utilidades m�nimas (no hay Tailwind en el proyecto). */
+
+/* Utilidades m�nimas (no hay Tailwind en el proyecto). */
 .flex {
   display: flex;
 }
