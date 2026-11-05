@@ -1,0 +1,183 @@
+<section aria-labelledby="subject-form-title">
+  <p-breadcrumb
+    class="page-breadcrumb"
+    [home]="breadcrumbHome"
+    [model]="breadcrumbItems()"
+    [dt]="breadcrumbTheme"
+  />
+
+  <header class="page-header">
+    <div class="page-heading">
+      <p-button
+        icon="pi pi-arrow-left"
+        severity="secondary"
+        [outlined]="true"
+        [ariaLabel]="isEdit() ? 'Volver al detalle' : 'Volver al listado'"
+        (onClick)="cancel()"
+      />
+      <div>
+        <h1 id="subject-form-title" class="page-title">
+          {{ isEdit() ? 'Editar materia' : 'Nueva materia' }}
+        </h1>
+        <p class="page-subtitle">
+          {{
+            isEdit()
+              ? 'Modificá los datos de la materia.'
+              : 'Completá los datos para crear una nueva materia.'
+          }}
+        </p>
+      </div>
+    </div>
+  </header>
+
+  <form [formGroup]="form" (ngSubmit)="save()" novalidate>
+    <p-card>
+      <h2 class="form-section-title">
+        <i class="pi pi-file" aria-hidden="true"></i>
+        Datos de la materia
+      </h2>
+
+      <div class="form-grid">
+        <div class="form-field form-grid-full">
+          <label for="name">Nombre de la materia <span class="required">*</span></label>
+          <input
+            id="name"
+            type="text"
+            pInputText
+            formControlName="name"
+            placeholder="Ingresá el nombre de la materia..."
+            maxlength="255"
+          />
+          @if (form.controls.name.touched && form.controls.name.invalid) {
+            <small class="form-field-error" role="alert">
+              {{
+                form.controls.name.hasError('required')
+                  ? 'El nombre es obligatorio.'
+                  : 'El nombre no puede superar los 255 caracteres.'
+              }}
+            </small>
+          }
+        </div>
+
+        <div class="form-field">
+          <label for="studyPlanId">Plan de estudio <span class="required">*</span></label>
+          <p-select
+            inputId="studyPlanId"
+            formControlName="studyPlanId"
+            [options]="studyPlanOptions()"
+            optionLabel="name"
+            optionValue="id"
+            placeholder="Seleccioná un plan de estudio"
+            [filter]="studyPlanOptions().length > 8"
+            filterBy="name"
+            appendTo="body"
+          />
+          @if (form.controls.studyPlanId.touched && form.controls.studyPlanId.invalid) {
+            <small class="form-field-error" role="alert">Seleccioná un plan de estudio.</small>
+          }
+        </div>
+
+        <div class="form-field">
+          <label for="year">Año de cursado <span class="required">*</span></label>
+          <p-select
+            inputId="year"
+            formControlName="year"
+            [options]="yearOptions()"
+            optionLabel="label"
+            optionValue="value"
+            placeholder="Seleccioná el año"
+            appendTo="body"
+          />
+          @if (form.controls.year.touched && form.controls.year.invalid) {
+            <small class="form-field-error" role="alert">Seleccioná el año de cursado.</small>
+          }
+        </div>
+
+        <div class="form-field">
+          <label for="regimeId">Régimen <span class="required">*</span></label>
+          <p-select
+            inputId="regimeId"
+            formControlName="regimeId"
+            [options]="regimes()"
+            optionLabel="name"
+            optionValue="id"
+            placeholder="Seleccioná un régimen"
+            appendTo="body"
+          />
+          @if (form.controls.regimeId.touched && form.controls.regimeId.invalid) {
+            <small class="form-field-error" role="alert">Seleccioná un régimen.</small>
+          }
+        </div>
+
+        <div class="form-field">
+          <label for="weeklyHours">Horas semanales <span class="required">*</span></label>
+          <p-inputnumber
+            inputId="weeklyHours"
+            formControlName="weeklyHours"
+            [showButtons]="true"
+            [min]="1"
+            [useGrouping]="false"
+            placeholder="Ingresá la cantidad de horas"
+          />
+          @if (form.controls.weeklyHours.touched && form.controls.weeklyHours.invalid) {
+            <small class="form-field-error" role="alert">
+              {{
+                form.controls.weeklyHours.hasError('required')
+                  ? 'Las horas semanales son obligatorias.'
+                  : 'Ingresá al menos 1 hora semanal.'
+              }}
+            </small>
+          }
+        </div>
+
+        <div class="form-switch form-grid-full">
+          <p-toggleswitch
+            inputId="allowsMultipleTeachers"
+            formControlName="allowsMultipleTeachers"
+          />
+          <label for="allowsMultipleTeachers">Permite múltiples docentes</label>
+        </div>
+
+        <div class="form-field">
+          <label for="maxTeachers">Máximo de docentes</label>
+          <p-inputnumber
+            inputId="maxTeachers"
+            formControlName="maxTeachers"
+            [showButtons]="true"
+            [min]="2"
+            [useGrouping]="false"
+            placeholder="Ingresá el máximo de docentes"
+          />
+          @if (form.controls.maxTeachers.touched && form.controls.maxTeachers.invalid) {
+            <small class="form-field-error" role="alert">
+              Si la materia admite varios docentes, el máximo debe ser 2 o más.
+            </small>
+          } @else {
+            <small class="form-field-hint">
+              {{
+                form.controls.allowsMultipleTeachers.value
+                  ? 'Dejá vacío si no hay límite.'
+                  : 'Activá "Permite múltiples docentes" para cargar un máximo.'
+              }}
+            </small>
+          }
+        </div>
+      </div>
+
+      @if (errorMessage()) {
+        <p-message class="form-error" severity="error" role="alert">
+          {{ errorMessage() }}
+        </p-message>
+      }
+
+      <div class="form-actions">
+        <p-button label="Cancelar" severity="secondary" [outlined]="true" (onClick)="cancel()" />
+        <p-button
+          type="submit"
+          [label]="isEdit() ? 'Guardar cambios' : 'Guardar materia'"
+          [disabled]="saving()"
+        />
+      </div>
+    </p-card>
+  </form>
+</section>

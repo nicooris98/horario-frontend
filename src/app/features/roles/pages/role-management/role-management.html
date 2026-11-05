@@ -1,0 +1,89 @@
+<section class="role-management-page" aria-labelledby="role-management-title">
+  <p-breadcrumb [model]="breadcrumbItems" [home]="breadcrumbHome" styleClass="page-breadcrumb" />
+
+  <header class="role-management-header">
+    <div>
+      <h1 id="role-management-title" class="role-management-title">Gestión de roles</h1>
+      <p class="role-management-subtitle">
+        Roles del sistema y los permisos de cada uno.
+      </p>
+    </div>
+  </header>
+
+  @if (errorMessage()) {
+    <p-message class="role-management-error" severity="error" role="alert">
+      {{ errorMessage() }}
+    </p-message>
+  }
+
+  <p-card>
+    <p-table [value]="roles()" [loading]="loading()" [showLoader]="false" [paginator]="true" [rows]="10" responsiveLayout="scroll">
+      <ng-template #header>
+        <tr>
+          <th>Rol</th>
+          <th>Descripción</th>
+          <th>Estado</th>
+          <th>Permisos</th>
+        </tr>
+      </ng-template>
+
+      <ng-template #body let-role>
+        <tr>
+          <td>{{ role.name }}</td>
+          <td>{{ role.description || '—' }}</td>
+          <td>
+            <p-tag
+              [value]="role.isActive ? 'Activo' : 'Inactivo'"
+              [severity]="role.isActive ? 'success' : 'warn'"
+            />
+          </td>
+          <td class="permissions-cell">
+            <p-autocomplete
+              [ngModel]="permissionsLabel(role)"
+              [suggestions]="[]"
+              [typeahead]="false"
+              [readonly]="true"
+              (completeMethod)="noopComplete()"
+              (onDropdownClick)="togglePermissionsPanel(role)"
+              [dropdown]="true"
+              dropdownMode="blank"
+              [fluid]="true"
+              inputId="role-permissions-{{ role.id }}"
+              ariaLabel="Ver permisos del rol"
+              styleClass="permissions-autocomplete"
+            >
+              <ng-template #loader></ng-template>
+            </p-autocomplete>
+            @if (expandedRoleId() === role.id) {
+              <div class="permissions-panel" role="region" [attr.aria-label]="'Permisos de ' + role.name">
+                @if (permissionNames(role).length) {
+                  @for (name of permissionNames(role); track name) {
+                    <span class="permissions-item">{{ name }}</span>
+                  }
+                } @else {
+                  <span class="permissions-empty">Sin permisos asignados.</span>
+                }
+              </div>
+            }
+          </td>
+        </tr>
+      </ng-template>
+
+      <ng-template #emptymessage>
+        <tr>
+          <td colspan="4">No hay roles registrados.</td>
+        </tr>
+      </ng-template>
+      <ng-template #loadingbody>
+        @for (_ of [1, 2, 3, 4, 5]; track $index) {
+          <tr>
+            <td><p-skeleton width="6rem" /></td>
+            <td><p-skeleton width="12rem" /></td>
+            <td><p-skeleton width="5rem" /></td>
+            <td><p-skeleton width="12rem" height="2.5rem" /></td>
+          </tr>
+        }
+      </ng-template>
+    </p-table>
+  </p-card>
+</section>

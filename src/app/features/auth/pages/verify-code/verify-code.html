@@ -1,0 +1,102 @@
+<main class="login-layout">
+  <section class="login-brand" aria-labelledby="brand-title">
+    <div class="brand-lockup">
+      <i class="brand-mark pi pi-graduation-cap" aria-hidden="true"></i>
+      <div class="brand-copy">
+        <h1 id="brand-title">SAHD</h1>
+        <p class="brand-institution">Sistema de Administración de Horarios Docentes</p>
+      </div>
+    </div>
+
+    <div class="brand-message">
+      <p>
+        Organiza, gestiona y optimiza los horarios docentes de forma simple y eficiente.
+      </p>
+    </div>
+
+    <ul class="brand-features" aria-label="Funciones del sistema">
+      <li>
+        <span class="feature-icon"><i class="pi pi-calendar" aria-hidden="true"></i></span>
+        <span>
+          <strong>Gestión académica</strong>
+          <small>Asignaturas, horarios y aulas.</small>
+        </span>
+      </li>
+      <li>
+        <span class="feature-icon"><i class="pi pi-users" aria-hidden="true"></i></span>
+        <span>
+          <strong>Administración</strong>
+          <small>Usuarios, roles y permisos.</small>
+        </span>
+      </li>
+      <li>
+        <span class="feature-icon"><i class="pi pi-chart-bar" aria-hidden="true"></i></span>
+        <span>
+          <strong>Reportes</strong>
+          <small>Información clara para la toma de decisiones.</small>
+        </span>
+      </li>
+    </ul>
+  </section>
+
+  <section class="login-form-container" aria-label="Verificación de código">
+    @if (userEmail()) {
+      <form [formGroup]="verifyCodeForm" (ngSubmit)="verifyCode()" aria-labelledby="verify-code-title">
+        <p-card class="login-card">
+          <header class="login-card-heading">
+            <h2 id="verify-code-title">Ingresa tu código de seguridad</h2>
+            <p>Hemos enviado un código a {{ userEmail() }}</p>
+          </header>
+
+          <div class="field">
+            <label id="code-label">Código de seguridad</label>
+            <p-inputOtp formControlName="code" [length]="6" [integerOnly]="true" />
+
+            @if (verifyCodeForm.controls.code.touched && verifyCodeForm.controls.code.invalid) {
+              <small id="code-error" class="field-error" role="alert">
+                Ingresá el código de 6 dígitos.
+              </small>
+            }
+          </div>
+
+          @if (errorMessage()) {
+            <p-message class="login-error" severity="error" role="alert">
+              {{ errorMessage() }}
+            </p-message>
+          }
+
+          <p-button
+            type="submit"
+            label="Confirmar"
+            icon="pi pi-check"
+            [fluid]="true"
+            [loading]="loading()"
+            [disabled]="loading() || verifyCodeForm.invalid"
+          />
+
+          <p-button
+            type="button"
+            severity="secondary"
+            variant="text"
+            [fluid]="true"
+            [label]="resendLabel()"
+            [loading]="resending()"
+            [disabled]="countdown() > 0 || resending()"
+            (onClick)="resendCode()"
+          />
+
+          <p-button
+            type="button"
+            label="Volver."
+            icon="pi pi-arrow-left"
+            severity="secondary"
+            variant="text"
+            [fluid]="true"
+            [disabled]="loading() || resending()"
+            (onClick)="backToLogin()"
+          />
+        </p-card>
+      </form>
+    }
+  </section>
+</main>

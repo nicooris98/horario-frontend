@@ -1,0 +1,31 @@
+.activation-note {
+  margin: 0 0 1.25rem;
+  color: var(--p-text-muted-color);
+  font-size: 0.975rem;
+  line-height: 1.5;
+}
+
+:host ::ng-deep .activation-message.p-message {
+  display: flex;
+  width: 100%;
+  margin: 0 0 1.25rem;
+  align-items: flex-start;
+}
+
+.activation-message-title,
+.activation-message-text {
+  display: block;
+}
+
+.activation-message-title {
+  font-size: 1rem;
+  font-weight: 600;
+  line-height: 1.35;
+}
+
+.activation-message-text {
+  margin-top: 0.35rem;
+  font-size: 0.9375rem;
+  line-height: 1.45;
+  opacity: 0.92;
+}

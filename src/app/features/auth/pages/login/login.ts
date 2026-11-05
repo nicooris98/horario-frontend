@@ -1,7 +1,6 @@
 import { Component, inject, OnInit, signal } from '@angular/core';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { InputTextModule } from 'primeng/inputtext';
-import { PasswordModule } from 'primeng/password';
 import { ButtonModule } from 'primeng/button';
 import { LoginForm } from '../../interfaces/login-form.interface';
 import { CardModule } from 'primeng/card';
@@ -16,7 +15,6 @@ import { InputIconModule } from 'primeng/inputicon';
   selector: 'app-login',
   imports: [
     InputTextModule,
-    PasswordModule,
     ButtonModule,
     ReactiveFormsModule,
     CardModule,
@@ -43,17 +41,9 @@ export class Login implements OnInit {
         nonNullable: true,
         validators: [Validators.required, Validators.email],
       }),
-      password: this.formBuilder.control('', {
-        nonNullable: true,
-        validators: [Validators.required],
-      }),
     });
 
     this.loginForm.controls.email.valueChanges.subscribe(() => {
-      this.errorMessage.set('');
-    });
-
-    this.loginForm.controls.password.valueChanges.subscribe(() => {
       this.errorMessage.set('');
     });
   }
@@ -64,16 +54,21 @@ export class Login implements OnInit {
       return;
     }
 
-    const requestData = this.loginForm.getRawValue();
+    const { email } = this.loginForm.getRawValue();
 
     this.loading.set(true);
     this.errorMessage.set('');
 
-    this.auth.login(requestData).subscribe({
-      next: () => {
+    this.auth.login(email).subscribe({
+      next: (response) => {
+        if (response.verificationRequired) {
+          void this.router.navigate(['/verify-code'], { state: { email } });
+          return;
+        }
+
         this.auth.getMe().subscribe({
           next: () => {
-            this.router.navigate(['/dashboard']);
+            void this.router.navigate(['/dashboard']);
           },
           error: () => {
             this.loading.set(false);
@@ -81,17 +76,12 @@ export class Login implements OnInit {
           },
         });
       },
-
       error: (error: HttpErrorResponse) => {
         this.loading.set(false);
-
-        if (error.status === 401) {
-          this.errorMessage.set(
-            error.error?.message ?? 'Correo electrónico o contraseña incorrectos.',
-          );
-        } else {
-          this.errorMessage.set('Ocurrió un error al iniciar sesión.');
-        }
+        const message = error.error?.message;
+        this.errorMessage.set(
+          typeof message === 'string' ? message : 'No se pudo iniciar sesión.',
+        );
       },
     });
   }

@@ -1,0 +1,64 @@
+:host {
+  display: block;
+  width: 100%;
+  min-width: 0;
+}
+
+.form-section-title {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin: 0 0 1.25rem;
+  font-size: 1.125rem;
+  font-weight: 600;
+}
+
+.form-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1.25rem 1.5rem;
+}
+
+.form-grid-full {
+  grid-column: 1 / -1;
+}
+
+.form-grid input[pInputText],
+.form-grid p-select,
+.form-grid p-inputnumber {
+  width: 100%;
+}
+
+:host ::ng-deep .form-grid .p-inputnumber-input {
+  width: 100%;
+}
+
+.form-switch {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+}
+
+.form-error {
+  display: block;
+  margin-top: 1.25rem;
+}
+
+.form-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.75rem;
+  margin-top: 1.5rem;
+}
+
+@media (max-width: 767px) {
+  .form-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .form-actions {
+    flex-direction: column-reverse;
+  }
+}

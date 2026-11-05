@@ -16,7 +16,8 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
   const auth = inject(Auth);
   const router = inject(Router);
   const endpoint = req.url.split('?')[0];
-  const isAuthRequest = endpoint.endsWith('/auth/login') || endpoint.endsWith('/auth/me');
+  const isAuthRequest =
+    endpoint.endsWith('/auth/login') || endpoint.endsWith('/auth/me');
 
   return next(
     req.clone({

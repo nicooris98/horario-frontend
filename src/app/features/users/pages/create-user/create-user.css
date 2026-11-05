@@ -1,0 +1,84 @@
+﻿app-create-user {
+  display: block;
+  width: 100%;
+  min-width: 0;
+}
+
+app-create-user .create-user-page {
+  max-width: 40rem;
+}
+
+app-create-user .create-user-header {
+  margin-bottom: 1.5rem;
+}
+
+app-create-user .create-user-title {
+  margin: 0;
+  color: var(--p-text-color);
+  font-size: clamp(1.5rem, 2.5vw, 2rem);
+  font-weight: 600;
+  line-height: 1.25;
+}
+
+app-create-user .create-user-subtitle {
+  margin: 0.35rem 0 0;
+  color: var(--p-text-muted-color);
+  font-size: 0.9375rem;
+  line-height: 1.5;
+}
+
+app-create-user .field {
+  display: grid;
+  gap: 0.55rem;
+  margin-bottom: 1.25rem;
+}
+
+app-create-user .field label {
+  color: var(--p-text-color);
+  font-size: 0.875rem;
+  font-weight: 500;
+}
+
+app-create-user .field input[pInputText] {
+  width: 100%;
+}
+
+app-create-user .field-error {
+  color: var(--p-red-700);
+  font-size: 0.8125rem;
+  line-height: 1.4;
+}
+
+app-create-user .form-message {
+  display: block;
+  margin-bottom: 1rem;
+}
+
+app-create-user .actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.75rem;
+}
+
+app-create-user .field :is(p-select, .p-select),
+.app-create-user .create-user-role-select {
+  width: 100%;
+}
+
+.create-user-role-select.p-select .p-select-label {
+  color: var(--p-text-color);
+  font-size: 0.9375rem;
+  font-weight: 600;
+}
+
+.create-user-role-panel.p-select-overlay .p-select-option,
+.create-user-role-panel .p-select-option-label {
+  color: var(--p-primary-color) !important;
+  font-size: 0.975rem;
+  font-weight: 600;
+}
+
+.create-user-role-panel.p-select-overlay .p-select-option:not(.p-disabled):hover,
+.create-user-role-panel.p-select-overlay .p-select-option.p-select-option-selected {
+  color: var(--p-primary-contrast-color, #fff) !important;
+}

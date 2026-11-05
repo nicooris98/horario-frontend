@@ -126,7 +126,8 @@ export class Sidebar {
     const currentPath = this.currentUrl.split(/[?#]/, 1)[0];
     const targetPath = this.router.serializeUrl(this.router.createUrlTree([routerLink]));
 
-    return currentPath === targetPath;
+    // También queda marcado en las subpáginas (detalle, nueva, editar).
+    return currentPath === targetPath || currentPath.startsWith(`${targetPath}/`);
   }
 
   confirmarCerrarSesion(): void {

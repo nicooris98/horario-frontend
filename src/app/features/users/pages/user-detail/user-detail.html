@@ -1,0 +1,120 @@
+<section class="user-detail-page" aria-labelledby="user-detail-title">
+  <p-breadcrumb [model]="breadcrumbItems" [home]="breadcrumbHome" styleClass="page-breadcrumb" />
+
+  <header class="user-detail-header">
+    <div>
+      <h1 id="user-detail-title" class="user-detail-title">Detalle de usuario</h1>
+      <p class="user-detail-subtitle">Información de la cuenta y acciones disponibles.</p>
+    </div>
+    <p-button label="Volver" icon="pi pi-arrow-left" severity="secondary" [outlined]="true" (onClick)="goBack()" />
+  </header>
+
+  @if (errorMessage()) {
+    <p-message class="user-detail-error" severity="error" role="alert">
+      {{ errorMessage() }}
+    </p-message>
+  }
+
+  @if (loading()) {
+    <p-card>
+      <div class="user-detail-hero">
+        <p-skeleton shape="circle" size="4rem" />
+        <div class="user-detail-hero-text">
+          <p-skeleton width="12rem" height="1.25rem" styleClass="mb-2" />
+          <p-skeleton width="16rem" height="0.9rem" />
+        </div>
+      </div>
+      <div class="user-detail-columns">
+        <div class="user-detail-grid user-detail-grid--stack">
+          @for (_ of [1, 2, 3]; track $index) {
+            <div class="user-detail-field">
+              <p-skeleton width="5rem" height="0.75rem" styleClass="mb-2" />
+              <p-skeleton width="10rem" height="1rem" />
+            </div>
+          }
+        </div>
+        <div class="user-detail-grid user-detail-grid--stack">
+          @for (_ of [1, 2, 3]; track $index) {
+            <div class="user-detail-field">
+              <p-skeleton width="5rem" height="0.75rem" styleClass="mb-2" />
+              <p-skeleton width="10rem" height="1rem" />
+            </div>
+          }
+        </div>
+      </div>
+    </p-card>
+  } @else if (user(); as current) {
+    <p-card>
+      <div class="user-detail-hero">
+        <p-avatar [label]="getInitials(current)" shape="circle" size="xlarge" />
+        <div class="user-detail-hero-text">
+          <div class="user-detail-hero-title">
+            <h2 class="user-detail-name">{{ current.firstName }} {{ current.lastName }}</h2>
+            <p-tag [value]="statusLabel(current)" [severity]="statusSeverity(current)" />
+          </div>
+          <p class="user-detail-email">{{ current.email }}</p>
+        </div>
+      </div>
+
+      <div class="user-detail-columns">
+        <section class="user-detail-column" aria-labelledby="user-personal-title">
+          <h3 id="user-personal-title" class="user-detail-section-title">Información personal</h3>
+          <div class="user-detail-grid user-detail-grid--stack">
+            <div class="user-detail-field">
+              <span class="user-detail-label">Nombre</span>
+              <span class="user-detail-value">{{ current.firstName }}</span>
+            </div>
+            <div class="user-detail-field">
+              <span class="user-detail-label">Apellido</span>
+              <span class="user-detail-value">{{ current.lastName }}</span>
+            </div>
+            <div class="user-detail-field">
+              <span class="user-detail-label">Correo electrónico</span>
+              <span class="user-detail-value user-detail-value--email">{{ current.email }}</span>
+            </div>
+          </div>
+        </section>
+
+        <section class="user-detail-column" aria-labelledby="user-account-title">
+          <h3 id="user-account-title" class="user-detail-section-title">Cuenta y acceso</h3>
+          <div class="user-detail-grid user-detail-grid--stack">
+            <div class="user-detail-field">
+              <span class="user-detail-label">Estado</span>
+              <p-tag [value]="statusLabel(current)" [severity]="statusSeverity(current)" />
+            </div>
+            <div class="user-detail-field">
+              <span class="user-detail-label">Fecha de creación</span>
+              <span class="user-detail-value">{{ formatDate(current.createdAt) }}</span>
+            </div>
+            <div class="user-detail-field">
+              <span class="user-detail-label">Última actualización</span>
+              <span class="user-detail-value">{{ formatDate(current.updatedAt) }}</span>
+            </div>
+          </div>
+
+          <h3 class="user-detail-section-title user-detail-section-title--spaced">Roles asignados</h3>
+          @if (current.roles?.length) {
+            <div class="user-detail-tags">
+              @for (role of current.roles; track role.id) {
+                <p-tag [value]="role.name" [severity]="role.isActive ? 'info' : 'secondary'" />
+              }
+            </div>
+          } @else {
+            <span class="user-detail-value">Sin rol asignado</span>
+          }
+        </section>
+      </div>
+
+      <div class="user-detail-actions">
+        <p-button
+          [label]="current.isDisabled ? 'Habilitar cuenta' : 'Desactivar cuenta'"
+          [icon]="current.isDisabled ? 'pi pi-check' : 'pi pi-ban'"
+          [severity]="current.isDisabled ? 'success' : 'danger'"
+          [outlined]="true"
+          [loading]="toggling()"
+          (onClick)="toggleDisabled()"
+        />
+      </div>
+    </p-card>
+  }
+</section>

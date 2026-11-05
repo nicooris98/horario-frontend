@@ -8,6 +8,10 @@
   max-width: 64rem;
 }
 
+:host ::ng-deep .page-breadcrumb {
+  margin-bottom: 1rem;
+}
+
 .dashboard-title {
   margin: 0;
   color: var(--p-text-color);
