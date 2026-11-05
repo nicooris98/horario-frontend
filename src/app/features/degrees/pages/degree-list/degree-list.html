@@ -90,10 +90,10 @@
               (onClick)="goToEdit(degree.id)"
             />
             <p-button
-              icon="pi pi-ban"
-              severity="danger"
+              [icon]="degree.status === 'ACTIVO' ? 'pi pi-ban' : 'pi pi-check'"
+              [severity]="degree.status === 'ACTIVO' ? 'danger' : 'success'"
               [outlined]="true"
-              [ariaLabel]="'Inactivar ' + degree.name"
+              [ariaLabel]="(degree.status === 'ACTIVO' ? 'Desactivar ' : 'Activar ') + degree.name"
               (onClick)="openDeleteDialog(degree)"
             />
           </td>
@@ -139,13 +139,13 @@
   [visible]="pendingDelete() !== null"
   [modal]="true"
   [closable]="true"
-  header="Inactivar carrera"
+  [header]="pendingDelete()?.status === 'ACTIVO' ? 'Desactivar carrera' : 'Activar carrera'"
   (onHide)="cancelDelete()"
 >
   <div class="dialog-content">
     <p>
-      ¿Deseás inactivar la carrera <strong>{{ pendingDelete()?.name }}</strong>? Esta acción dejará la
-      carrera fuera de los selectores activos.
+      &iquest;Quer&eacute;s {{ pendingDelete()?.status === 'ACTIVO' ? 'desactivar' : 'activar' }} la carrera
+      <strong>{{ pendingDelete()?.name }}</strong>?
     </p>
   </div>
 

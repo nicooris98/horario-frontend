@@ -62,40 +62,6 @@
             <small class="form-field-error" role="alert">Ya existe una carrera con este nombre.</small>
           }
         </div>
-
-        <div class="form-field">
-          <label for="degree-duration">Duración en años <span class="required">*</span></label>
-          <p-inputnumber
-            inputId="degree-duration"
-            formControlName="durationYears"
-            mode="decimal"
-            [min]="0.5"
-            [minFractionDigits]="1"
-            [maxFractionDigits]="2"
-            [useGrouping]="false"
-            [fluid]="true"
-          />
-          @if (form.controls.durationYears.touched && form.controls.durationYears.hasError('required')) {
-            <small class="form-field-error" role="alert">La duración es obligatoria.</small>
-          }
-          @if (form.controls.durationYears.touched && form.controls.durationYears.hasError('min')) {
-            <small class="form-field-error" role="alert">La duración mínima es de 0.5 años.</small>
-          }
-        </div>
-
-        <div class="form-field">
-          <label for="degree-status">Estado <span class="required">*</span></label>
-          <p-select
-            inputId="degree-status"
-            formControlName="status"
-            [options]="statusOptions"
-            optionLabel="label"
-            optionValue="value"
-            placeholder="Seleccioná un estado"
-            [fluid]="true"
-            appendTo="body"
-          />
-        </div>
       </div>
 
       @if (error()) {

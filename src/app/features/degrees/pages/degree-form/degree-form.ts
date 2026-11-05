@@ -6,11 +6,9 @@ import { BreadcrumbModule } from 'primeng/breadcrumb';
 import { ButtonModule } from 'primeng/button';
 import { CardModule } from 'primeng/card';
 import { ConfirmDialogModule } from 'primeng/confirmdialog';
-import { InputNumberModule } from 'primeng/inputnumber';
 import { InputTextModule } from 'primeng/inputtext';
 import { Message } from 'primeng/message';
-import { SelectModule } from 'primeng/select';
-import { Degree, DegreeRequest, DegreeStatus } from '../../models/degree.model';
+import { Degree, DegreeRequest } from '../../models/degree.model';
 import { DegreeService } from '../../services/degree.service';
 import { uniqueDegreeNameValidator } from '../../validators/degree.validators';
 
@@ -25,10 +23,8 @@ const DEGREES_ROUTE = '/administracion/carreras';
     ButtonModule,
     CardModule,
     ConfirmDialogModule,
-    InputNumberModule,
     InputTextModule,
     Message,
-    SelectModule,
   ],
   providers: [ConfirmationService],
   templateUrl: './degree-form.html',
@@ -56,11 +52,6 @@ export class DegreeFormComponent implements OnInit {
     { label: this.isEditMode() ? 'Editar carrera' : 'Nueva carrera' },
   ]);
 
-  readonly statusOptions: Array<{ label: string; value: DegreeStatus }> = [
-    { label: 'Activo', value: 'ACTIVE' },
-    { label: 'Inactivo', value: 'INACTIVE' },
-  ];
-
   private originalDegree: Degree | null = null;
 
   readonly form = this.fb.nonNullable.group({
@@ -71,8 +62,6 @@ export class DegreeFormComponent implements OnInit {
         asyncValidators: [uniqueDegreeNameValidator(() => this.degreeService.degrees(), () => this.degreeId())],
       },
     ],
-    durationYears: [1, [Validators.required, Validators.min(0.5)]],
-    status: ['ACTIVE' as DegreeStatus, Validators.required],
   });
 
   ngOnInit(): void {
@@ -128,8 +117,6 @@ export class DegreeFormComponent implements OnInit {
         this.hasRelatedPlans.set((degree.studyPlans ?? []).length > 0);
         this.form.patchValue({
           name: degree.name,
-          durationYears: degree.durationYears,
-          status: degree.status,
         });
       },
     });
@@ -153,30 +140,7 @@ export class DegreeFormComponent implements OnInit {
 
     return {
       name: values.name.trim(),
-      durationYears: Number(values.durationYears),
-      status: values.status,
-      updatedBy: 'administrativo',
-      updatedAt: new Date().toISOString(),
-      changedFields: this.originalDegree ? this.collectChangedFields(values) : ['name', 'durationYears', 'status'],
     };
-  }
-
-  private collectChangedFields(values: { name: string; durationYears: number; status: DegreeStatus }): string[] {
-    const changes: string[] = [];
-
-    if (this.originalDegree?.name !== values.name.trim()) {
-      changes.push('name');
-    }
-
-    if (this.originalDegree?.durationYears !== Number(values.durationYears)) {
-      changes.push('durationYears');
-    }
-
-    if (this.originalDegree?.status !== values.status) {
-      changes.push('status');
-    }
-
-    return changes;
   }
 
   private hasChanges(request: DegreeRequest): boolean {
@@ -184,10 +148,6 @@ export class DegreeFormComponent implements OnInit {
       return false;
     }
 
-    return (
-      this.originalDegree.name !== request.name ||
-      this.originalDegree.durationYears !== request.durationYears ||
-      this.originalDegree.status !== request.status
-    );
+    return this.originalDegree.name !== request.name;
   }
 }

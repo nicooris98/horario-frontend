@@ -54,8 +54,8 @@ export class DegreeListComponent implements OnInit {
 
   readonly statusOptions = [
     { label: 'Todos', value: 'ALL' },
-    { label: 'Activo', value: 'ACTIVE' },
-    { label: 'Inactivo', value: 'INACTIVE' },
+    { label: 'Activo', value: 'ACTIVO' },
+    { label: 'Inactivo', value: 'INACTIVO' },
   ];
 
   readonly filteredDegrees = computed(() => {
@@ -101,7 +101,9 @@ export class DegreeListComponent implements OnInit {
       return;
     }
 
-    this.degreeService.inactivateDegree(degree.id).subscribe(() => {
+    const nextStatus: DegreeStatus = degree.status === 'ACTIVO' ? 'INACTIVO' : 'ACTIVO';
+
+    this.degreeService.updateStatus(degree.id, nextStatus).subscribe(() => {
       this.pendingDelete.set(null);
       this.loadDegrees();
     });
@@ -116,11 +118,11 @@ export class DegreeListComponent implements OnInit {
 
   
   statusLabel(value: DegreeStatus): string {
-    return value === 'ACTIVE' ? 'Activo' : 'Inactivo';
+    return value === 'ACTIVO' ? 'Activo' : 'Inactivo';
   }
 
   statusSeverity(value: DegreeStatus): 'success' | 'danger' {
-    return value === 'ACTIVE' ? 'success' : 'danger';
+    return value === 'ACTIVO' ? 'success' : 'danger';
   }
 
   cancelDelete(): void {

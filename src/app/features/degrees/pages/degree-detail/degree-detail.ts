@@ -63,10 +63,10 @@ export class DegreeDetailComponent implements OnInit {
   }
 
   statusLabel(value: DegreeStatus): string {
-    return value === 'ACTIVE' ? 'Activo' : 'Inactivo';
+    return value === 'ACTIVO' ? 'Activo' : 'Inactivo';
   }
 
   statusSeverity(value: DegreeStatus): 'success' | 'danger' {
-    return value === 'ACTIVE' ? 'success' : 'danger';
+    return value === 'ACTIVO' ? 'success' : 'danger';
   }
 }
