@@ -129,6 +129,12 @@ export const routes: Routes = [
 
       },
       {
+        path: 'docentes',
+        loadChildren: () =>
+          import('./features/teachers/teachers.routes')
+          .then((m) => m.teachersRoutes),
+      },
+      {
         path: '',
         pathMatch: 'full',
         redirectTo: 'dashboard',
