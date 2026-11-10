@@ -1,4 +1,4 @@
-export type DegreeStatus = 'ACTIVE' | 'INACTIVE';
+export type DegreeStatus = 'ACTIVO' | 'INACTIVO';
 
 export interface StudyPlan {
   id: number;
@@ -18,9 +18,4 @@ export interface Degree {
 
 export interface DegreeRequest {
   name: string;
-  durationYears: number;
-  status?: DegreeStatus;
-  updatedBy?: string;
-  updatedAt?: string;
-  changedFields?: string[];
 }
