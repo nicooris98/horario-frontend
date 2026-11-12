@@ -1,18 +1,18 @@
-<section class="degree-page" aria-labelledby="degree-list-title">
-  <header class="degree-page-header">
+<section class="table-page" aria-labelledby="degree-list-title">
+  <p-breadcrumb
+    class="page-breadcrumb"
+    [home]="breadcrumbHome"
+    [model]="breadcrumbItems"
+    [dt]="breadcrumbTheme"
+  />
+
+  <header class="page-header">
     <div>
-      <p class="eyebrow">Gestión académica</p>
-      <h1 id="degree-list-title">Carreras</h1>
+      <h1 id="degree-list-title" class="page-title">Gestión de carreras</h1>
+      <p class="page-subtitle">Administrá las carreras y sus datos académicos.</p>
     </div>
 
-    <button
-      pButton
-      type="button"
-      label="Nueva carrera"
-      icon="pi pi-plus"
-      severity="primary"
-      (click)="goToCreate()"
-    ></button>
+    <p-button label="Nueva carrera" icon="pi pi-plus" (onClick)="goToCreate()" />
   </header>
 
   <div class="degree-toolbar">
@@ -45,79 +45,107 @@
     </div>
   }
 
-  <div class="degree-table-card">
-    <p-table [value]="filteredDegrees()" [loading]="loading()" [showCurrentPageReport]="true" styleClass="degree-table">
-      <ng-template pTemplate="header">
+  <p-card>
+    <p-table
+      [value]="filteredDegrees()"
+      [loading]="loading()"
+      [paginator]="true"
+      [rows]="10"
+      [rowsPerPageOptions]="[5, 10, 20]"
+      [showCurrentPageReport]="true"
+      currentPageReportTemplate="Mostrando {first} a {last} de {totalRecords} carreras"
+      [tableStyle]="{ 'min-width': '40rem' }"
+    >
+      <ng-template #header>
         <tr>
-          <th>Nombre de carrera</th>
-          <th>Duración (años)</th>
+          <th>Carrera</th>
           <th>Estado</th>
-          <th>Acciones</th>
+          <th class="table-col-center">Acciones</th>
         </tr>
       </ng-template>
 
-      <ng-template pTemplate="body" let-degree>
+      <ng-template #body let-degree>
         <tr>
           <td>{{ degree.name }}</td>
-          <td>{{ degree.durationYears }}</td>
           <td>
-            <p-tag [severity]="statusSeverity(degree.status)" [value]="statusLabel(degree.status)"></p-tag>
+            <p-tag
+              icon="pi pi-circle-fill"
+              [value]="statusLabel(degree.status)"
+              [severity]="statusSeverity(degree.status)"
+              [rounded]="true"
+            />
           </td>
-          <td class="degree-actions">
-            <button
-              pButton
-              type="button"
+          <td class="table-col-center">
+            <p-button
               icon="pi pi-eye"
-              severity="secondary"
-              rounded
-              text
-              aria-label="Ver detalle de la carrera"
-              (click)="goToDetail(degree.id)"
-            ></button>
-            <button
-              pButton
-              type="button"
+              [outlined]="true"
+              [ariaLabel]="'Ver ' + degree.name"
+              (onClick)="goToDetail(degree.id)"
+            />
+            <p-button
               icon="pi pi-pencil"
               severity="secondary"
-              rounded
-              text
-              aria-label="Editar carrera"
-              (click)="goToEdit(degree.id)"
-            ></button>
-            <button
-              pButton
-              type="button"
-              icon="pi pi-trash"
-              severity="danger"
-              rounded
-              text
-              aria-label="Inactivar carrera"
-              (click)="openDeleteDialog(degree)"
-            ></button>
+              [outlined]="true"
+              [ariaLabel]="'Editar ' + degree.name"
+              (onClick)="goToEdit(degree.id)"
+            />
+            <p-button
+              [icon]="degree.status === 'ACTIVO' ? 'pi pi-ban' : 'pi pi-check'"
+              [severity]="degree.status === 'ACTIVO' ? 'danger' : 'success'"
+              [outlined]="true"
+              [ariaLabel]="(degree.status === 'ACTIVO' ? 'Desactivar ' : 'Activar ') + degree.name"
+              (onClick)="openDeleteDialog(degree)"
+            />
           </td>
         </tr>
       </ng-template>
 
-      <ng-template pTemplate="emptymessage">
-        <tr>
-          <td colspan="4" class="empty-state">No se encontraron carreras con los filtros aplicados.</td>
+      <ng-template #loadingbody>
+        @for (_ of [1, 2, 3, 4, 5]; track $index) {
+          <tr>
+            <td><p-skeleton width="12rem" /></td>
+            <td><p-skeleton width="5rem" /></td>
+            <td><p-skeleton width="8rem" /></td>
+          </tr>
+        }
+      </ng-template>
+
+      <ng-template #emptymessage>
+        <tr class="table-empty-row">
+          <td colspan="3" class="table-empty-cell">
+            <div class="table-empty-state">
+              <span class="table-empty-icon" aria-hidden="true">
+                <i class="pi pi-book"></i>
+              </span>
+              <p class="table-empty-title">
+                {{ degrees().length ? 'Ninguna carrera coincide con la búsqueda' : 'No hay carreras registradas' }}
+              </p>
+              <p class="table-empty-description">
+                {{
+                  degrees().length
+                    ? 'Probá ajustando o limpiando los filtros para ver otros resultados.'
+                    : 'Podés registrar la primera carrera desde el botón "Nueva carrera".'
+                }}
+              </p>
+            </div>
+          </td>
         </tr>
       </ng-template>
     </p-table>
-  </div>
+  </p-card>
 </section>
 
 <p-dialog
   [visible]="pendingDelete() !== null"
   [modal]="true"
   [closable]="true"
-  header="Inactivar carrera"
+  [header]="pendingDelete()?.status === 'ACTIVO' ? 'Desactivar carrera' : 'Activar carrera'"
   (onHide)="cancelDelete()"
 >
   <div class="dialog-content">
     <p>
-      ¿Deseás inactivar la carrera <strong>{{ pendingDelete()?.name }}</strong>? Esta acción dejará la
-      carrera fuera de los selectores activos.
+      &iquest;Quer&eacute;s {{ pendingDelete()?.status === 'ACTIVO' ? 'desactivar' : 'activar' }} la carrera
+      <strong>{{ pendingDelete()?.name }}</strong>?
     </p>
   </div>
 

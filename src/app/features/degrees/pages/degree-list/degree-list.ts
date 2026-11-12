@@ -12,16 +12,23 @@ import { TableModule } from 'primeng/table';
 import { TagModule } from 'primeng/tag';
 import { Degree, DegreeStatus } from '../../models/degree.model';
 import { DegreeService } from '../../services/degree.service';
+import { MenuItem } from 'primeng/api';
+import { BreadcrumbModule } from 'primeng/breadcrumb';
+import { CardModule } from 'primeng/card';
+import { SkeletonModule } from 'primeng/skeleton';
 
 @Component({
   selector: 'app-degree-list',
   standalone: true,
-  imports: [
+    imports: [
     CommonModule,
     FormsModule,
     TableModule,
     InputTextModule,
     ButtonModule,
+    BreadcrumbModule,
+    CardModule,
+    SkeletonModule,
     SelectModule,
     TagModule,
     DialogModule,
@@ -47,8 +54,8 @@ export class DegreeListComponent implements OnInit {
 
   readonly statusOptions = [
     { label: 'Todos', value: 'ALL' },
-    { label: 'Activo', value: 'ACTIVE' },
-    { label: 'Inactivo', value: 'INACTIVE' },
+    { label: 'Activo', value: 'ACTIVO' },
+    { label: 'Inactivo', value: 'INACTIVO' },
   ];
 
   readonly filteredDegrees = computed(() => {
@@ -94,18 +101,28 @@ export class DegreeListComponent implements OnInit {
       return;
     }
 
-    this.degreeService.inactivateDegree(degree.id).subscribe(() => {
+    const nextStatus: DegreeStatus = degree.status === 'ACTIVO' ? 'INACTIVO' : 'ACTIVO';
+
+    this.degreeService.updateStatus(degree.id, nextStatus).subscribe(() => {
       this.pendingDelete.set(null);
       this.loadDegrees();
     });
   }
 
+  protected readonly breadcrumbHome: MenuItem = { icon: 'pi pi-home', routerLink: '/dashboard' };
+  protected readonly breadcrumbTheme = { root: { background: 'transparent', padding: '0' } };
+  protected readonly breadcrumbItems: MenuItem[] = [
+    { label: 'Administración' },
+    { label: 'Carreras' },
+  ];
+
+  
   statusLabel(value: DegreeStatus): string {
-    return value === 'ACTIVE' ? 'Activo' : 'Inactivo';
+    return value === 'ACTIVO' ? 'Activo' : 'Inactivo';
   }
 
   statusSeverity(value: DegreeStatus): 'success' | 'danger' {
-    return value === 'ACTIVE' ? 'success' : 'danger';
+    return value === 'ACTIVO' ? 'success' : 'danger';
   }
 
   cancelDelete(): void {

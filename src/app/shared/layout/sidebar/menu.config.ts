@@ -13,6 +13,12 @@ export const MENU_ITEMS: MenuEntry[] = [
     routerLink: '/dashboard',
   },
   {
+    label: 'Carrera',
+    icon: 'pi pi-folder',
+    routerLink: '/administracion/carreras',
+    permission: 'degrees.read',
+  },
+  {
     label: 'Materias',
     icon: 'pi pi-book',
     routerLink: '/administracion/materias',

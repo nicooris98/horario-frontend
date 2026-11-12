@@ -29,24 +29,7 @@ export class Sidebar {
 
   navigationItems: MenuItem[] = [];
   administrationItems: MenuItem[] = [];
-  degreeMenuItems: MenuItem[] = [
-    {
-      label: 'Carrera',
-      icon: 'pi pi-book',
-      items: [
-        {
-          label: 'Listado',
-          icon: 'pi pi-list',
-          command: () => void this.router.navigate(['/administracion/carreras']),
-        },
-        {
-          label: 'Agregar carrera',
-          icon: 'pi pi-plus',
-          command: () => void this.router.navigate(['/administracion/carreras/nuevo']),
-        },
-      ],
-    },
-  ];
+
 
   readonly panelMenuTheme = {
     root: { gap: '0.375rem' },

@@ -52,7 +52,7 @@ export class DegreeService {
     this.loading.set(true);
     this.error.set(null);
 
-    return this.http.post<unknown>(this.apiUrl, request).pipe(
+    return this.http.post<unknown>(this.apiUrl, { name: request.name.trim() }).pipe(
       map((response) => this.normalizeDegree(response)),
       tap((degree) => {
         this.degrees.update((items) => [degree, ...items]);
@@ -70,7 +70,7 @@ export class DegreeService {
     this.loading.set(true);
     this.error.set(null);
 
-    return this.http.patch<unknown>(`${this.apiUrl}/${id}`, request).pipe(
+    return this.http.patch<unknown>(`${this.apiUrl}/${id}`, { name: request.name.trim() }).pipe(
       map((response) => this.normalizeDegree(response)),
       tap((degree) => {
         this.degrees.update((items) => items.map((item) => (item.id === id ? degree : item)));
@@ -84,14 +84,22 @@ export class DegreeService {
     );
   }
 
-  inactivateDegree(id: number): Observable<Degree> {
-    return this.updateDegree(id, {
-      name: '',
-      durationYears: 0,
-      status: 'INACTIVE',
-      updatedAt: new Date().toISOString(),
-      updatedBy: 'administrativo',
-    });
+  updateStatus(id: number, status: DegreeStatus): Observable<Degree> {
+    this.loading.set(true);
+    this.error.set(null);
+
+    return this.http.patch<unknown>(`${this.apiUrl}/${id}/status`, { status }).pipe(
+      map((response) => this.normalizeDegree(response)),
+      tap((degree) => {
+        this.degrees.update((items) => items.map((item) => (item.id === id ? degree : item)));
+        this.selectedDegree.set(degree);
+      }),
+      finalize(() => this.loading.set(false)),
+      catchError(() => {
+        this.error.set('No se pudo cambiar el estado de la carrera.');
+        return of(this.emptyDegree());
+      }),
+    );
   }
 
   private normalizeList(response: unknown[]): Degree[] {
@@ -110,7 +118,7 @@ export class DegreeService {
       id: Number(degree.id ?? 0),
       name: String(degree.name ?? '').trim(),
       durationYears: Number.isFinite(durationYears) ? durationYears : 0,
-      status: degree.status === 'INACTIVE' ? 'INACTIVE' : 'ACTIVE',
+      status: degree.status === 'INACTIVO' ? 'INACTIVO' : 'ACTIVO',
       studyPlans: Array.isArray(degree.studyPlans) ? degree.studyPlans : [],
       updatedBy: degree.updatedBy ?? 'administrativo',
       updatedAt: degree.updatedAt ?? new Date().toISOString(),
@@ -122,7 +130,7 @@ export class DegreeService {
       id: 0,
       name: '',
       durationYears: 0,
-      status: 'ACTIVE',
+      status: 'ACTIVO',
       studyPlans: [],
       updatedBy: 'administrativo',
       updatedAt: new Date().toISOString(),
