@@ -16,6 +16,9 @@ import { MenuItem } from 'primeng/api';
 import { BreadcrumbModule } from 'primeng/breadcrumb';
 import { CardModule } from 'primeng/card';
 import { SkeletonModule } from 'primeng/skeleton';
+import { IconFieldModule } from 'primeng/iconfield';
+import { InputIconModule } from 'primeng/inputicon';
+
 
 @Component({
   selector: 'app-degree-list',
@@ -33,6 +36,8 @@ import { SkeletonModule } from 'primeng/skeleton';
     TagModule,
     DialogModule,
     ConfirmDialogModule,
+    IconFieldModule,
+    InputIconModule,
   ],
   providers: [ConfirmationService],
   templateUrl: './degree-list.html',

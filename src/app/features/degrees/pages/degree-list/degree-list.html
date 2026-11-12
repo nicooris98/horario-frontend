@@ -15,17 +15,18 @@
     <p-button label="Nueva carrera" icon="pi pi-plus" (onClick)="goToCreate()" />
   </header>
 
-  <div class="degree-toolbar">
-    <span class="p-input-icon-left degree-search">
-      <i class="pi pi-search"></i>
+  <div class="degree-toolbar filters-row">
+    <p-iconfield class="degree-search">
+      <p-inputicon class="pi pi-search" />
       <input
-        pInputText
-        type="search"
-        [(ngModel)]="searchText"
-        placeholder="Buscar carrera"
-        aria-label="Buscar carrera"
+      type="search"
+      pInputText
+      [fluid]="true"
+      [(ngModel)]="searchText"
+      placeholder="Buscar carrera"
+      aria-label="Buscar carrera"
       />
-    </span>
+    </p-iconfield>
 
     <p-select
       [options]="statusOptions"
@@ -34,6 +35,7 @@
       [(ngModel)]="statusFilter"
       placeholder="Filtrar por estado"
       aria-label="Filtrar por estado"
+      [fluid]="true"
       styleClass="degree-filter"
     ></p-select>
   </div>

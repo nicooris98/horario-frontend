@@ -39,7 +39,8 @@
 }
 
 .degree-toolbar p-select {
-  flex: 1 1 10rem;
+  flex: 0 1 12rem;
+  max-width: 14rem;
   min-width: 0;
 }
 
