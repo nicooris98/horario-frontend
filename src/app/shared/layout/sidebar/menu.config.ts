@@ -50,6 +50,11 @@ export const MENU_ITEMS: MenuEntry[] = [
         icon: 'pi pi-clock',
         routerLink: '/configuracion/estructura-horaria',
       },
+      {
+        label: 'Regímenes',
+        icon: 'pi pi-list',
+        routerLink: '/configuracion/regimenes',
+      },
     ],
   },
   {

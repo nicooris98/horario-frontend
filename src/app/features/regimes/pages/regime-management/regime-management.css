@@ -1,0 +1,48 @@
+:host {
+  display: block;
+  width: 100%;
+  min-width: 0;
+}
+
+.regimes-error {
+  display: block;
+  margin-bottom: 1rem;
+}
+
+.regimes-filters {
+  margin-bottom: 1.25rem;
+}
+
+.regimes-search input {
+  width: 100%;
+}
+
+.regimes-name {
+  font-weight: 600;
+}
+
+.regimes-center {
+  text-align: center;
+}
+
+.regimes-actions {
+  display: inline-flex;
+  gap: 0.5rem;
+}
+
+.regimes-form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.regimes-form-error {
+  color: var(--p-red-500);
+}
+
+.regimes-form-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.5rem;
+  margin-top: 1rem;
+}

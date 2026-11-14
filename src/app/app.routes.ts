@@ -98,6 +98,13 @@ export const routes: Routes = [
           ),
       },
       {
+        path: 'configuracion/regimenes',
+        loadComponent: () =>
+          import('./features/regimes/pages/regime-management/regime-management').then(
+            (m) => m.RegimeManagement,
+          ),
+      },
+      {
         path: 'administracion/materias',
         canActivate: [permissionGuard],
         data: { permission: 'subjects.read' },
