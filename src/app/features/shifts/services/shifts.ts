@@ -17,4 +17,8 @@ export class Shifts {
   update(id: number, data: ShiftRequest) {
     return this.api.patch<Shift>(`shifts/${id}`, data);
   }
+
+  changeStatus(id: number, status: string) {
+    return this.api.patch<Shift>(`shifts/${id}/status`, { status });
+  }
 }

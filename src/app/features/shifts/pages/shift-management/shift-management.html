@@ -40,6 +40,7 @@
       <ng-template #header>
         <tr>
           <th>Turno</th>
+          <th class="shifts-center">Horario</th>
           <th class="shifts-center">Estado</th>
           <th class="shifts-center">Acciones</th>
         </tr>
@@ -48,6 +49,9 @@
       <ng-template #body let-shift>
         <tr>
           <td class="shifts-name">{{ shift.name }}</td>
+          <td class="shifts-center">
+            {{ shortTime(shift.startTime) }} a {{ shortTime(shift.endTime) }}
+          </td>
           <td class="shifts-center">
             <p-tag
               [value]="isActive(shift) ? 'Activo' : 'Inactivo'"
@@ -76,7 +80,7 @@
 
       <ng-template #emptymessage>
         <tr>
-          <td colspan="3">
+          <td colspan="4">
             {{
               shifts().length
                 ? 'Ningún turno coincide con la búsqueda.'
@@ -105,6 +109,26 @@
         placeholder="Vespertino"
         [ngModel]="nameInput()"
         (ngModelChange)="nameInput.set($event); formError.set('')"
+      />
+
+      <label for="shift-start">Hora de inicio</label>
+      <input
+        id="shift-start"
+        name="startTime"
+        type="time"
+        pInputText
+        [ngModel]="startInput()"
+        (ngModelChange)="startInput.set($event); formError.set('')"
+      />
+
+      <label for="shift-end">Hora de fin</label>
+      <input
+        id="shift-end"
+        name="endTime"
+        type="time"
+        pInputText
+        [ngModel]="endInput()"
+        (ngModelChange)="endInput.set($event); formError.set('')"
       />
 
       @if (formError()) {

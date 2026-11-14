@@ -61,6 +61,8 @@ export class ShiftManagement implements OnInit {
   readonly dialogVisible = signal(false);
   readonly editingShift = signal<Shift | null>(null);
   readonly nameInput = signal('');
+  readonly startInput = signal('');
+  readonly endInput = signal('');
   readonly formError = signal('');
   readonly saving = signal(false);
 
@@ -80,9 +82,15 @@ export class ShiftManagement implements OnInit {
     return shift.status === SHIFT_ACTIVE;
   }
 
+  shortTime(time: string): string {
+    return time.slice(0, 5);
+  }
+
   openCreate(): void {
     this.editingShift.set(null);
     this.nameInput.set('');
+    this.startInput.set('');
+    this.endInput.set('');
     this.formError.set('');
     this.dialogVisible.set(true);
   }
@@ -90,14 +98,29 @@ export class ShiftManagement implements OnInit {
   openEdit(shift: Shift): void {
     this.editingShift.set(shift);
     this.nameInput.set(shift.name);
+    this.startInput.set(this.shortTime(shift.startTime));
+    this.endInput.set(this.shortTime(shift.endTime));
     this.formError.set('');
     this.dialogVisible.set(true);
   }
 
   save(): void {
     const name = this.nameInput().trim();
+    const startTime = this.startInput();
+    const endTime = this.endInput();
+
     if (!name) {
       this.formError.set('El nombre es obligatorio.');
+      return;
+    }
+
+    if (!startTime || !endTime) {
+      this.formError.set('Ingresá la hora de inicio y de fin.');
+      return;
+    }
+
+    if (endTime <= startTime) {
+      this.formError.set('La hora de fin debe ser posterior a la de inicio.');
       return;
     }
 
@@ -110,10 +133,11 @@ export class ShiftManagement implements OnInit {
       return;
     }
 
+    const data = { name, startTime, endTime };
     const editing = this.editingShift();
     const request = editing
-      ? this.shiftsService.update(editing.id, { name })
-      : this.shiftsService.create({ name });
+      ? this.shiftsService.update(editing.id, data)
+      : this.shiftsService.create(data);
 
     this.saving.set(true);
     request.subscribe({
@@ -151,7 +175,7 @@ export class ShiftManagement implements OnInit {
 
   private changeStatus(shift: Shift, status: string): void {
     this.errorMessage.set('');
-    this.shiftsService.update(shift.id, { status }).subscribe({
+    this.shiftsService.changeStatus(shift.id, status).subscribe({
       next: () => this.loadShifts(),
       error: () => this.errorMessage.set(`No se pudo cambiar el estado del turno "${shift.name}".`),
     });
