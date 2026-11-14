@@ -1,0 +1,62 @@
+:host {
+  display: block;
+  width: 100%;
+  min-width: 0;
+}
+
+.calendar-error {
+  display: block;
+  margin-bottom: 1rem;
+}
+
+.calendar-card {
+  display: block;
+  margin-bottom: 1.5rem;
+}
+
+.calendar-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.calendar-card-title {
+  margin: 0;
+  font-size: 1.15rem;
+}
+
+.calendar-filters {
+  margin-bottom: 1rem;
+}
+
+.calendar-name {
+  font-weight: 600;
+}
+
+.calendar-center {
+  text-align: center;
+}
+
+.calendar-actions {
+  display: inline-flex;
+  gap: 0.5rem;
+}
+
+.calendar-form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.calendar-form-error {
+  color: var(--p-red-500);
+}
+
+.calendar-form-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.5rem;
+  margin-top: 1rem;
+}

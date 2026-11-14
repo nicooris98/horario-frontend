@@ -13,16 +13,59 @@ export const MENU_ITEMS: MenuEntry[] = [
     routerLink: '/dashboard',
   },
   {
-    label: 'Carrera',
-    icon: 'pi pi-folder',
-    routerLink: '/administracion/carreras',
-    permission: 'degrees.read',
+    label: 'Gestión académica',
+    icon: 'pi pi-building-columns',
+    items: [
+      {
+        label: 'Carreras',
+        icon: 'pi pi-building',
+        routerLink: '/administracion/carreras',
+        permission: 'degrees.read',
+      },
+      {
+        label: 'Planes de estudio',
+        icon: 'pi pi-book',
+        routerLink: '/academico/planes-estudio',
+        permission: 'study-plans.read',
+      },
+      {
+        label: 'Materias',
+        icon: 'pi pi-book',
+        routerLink: '/administracion/materias',
+        permission: 'subjects.read',
+      },
+      {
+        label: 'Oferta académica',
+        icon: 'pi pi-sitemap',
+        routerLink: '/academico/oferta-academica',
+      },
+    ],
   },
   {
-    label: 'Materias',
-    icon: 'pi pi-book',
-    routerLink: '/administracion/materias',
-    permission: 'subjects.read',
+    label: 'Configuración institucional',
+    icon: 'pi pi-sliders-h',
+    items: [
+      {
+        label: 'Calendario académico',
+        icon: 'pi pi-calendar',
+        routerLink: '/configuracion/calendario-academico',
+      },
+      {
+        label: 'Turnos',
+        icon: 'pi pi-sun',
+        routerLink: '/configuracion/turnos',
+      },
+      {
+        label: 'Estructura horaria',
+        icon: 'pi pi-clock',
+        routerLink: '/configuracion/estructura-horaria',
+      },
+      {
+        label: 'Regímenes',
+        icon: 'pi pi-list',
+        routerLink: '/configuracion/regimenes',
+      },
+    ],
   },
   {
     label: 'Administración',
@@ -42,9 +85,4 @@ export const MENU_ITEMS: MenuEntry[] = [
       },
     ],
   },
-  {
-  label: 'Planes de estudio',
-  icon: 'pi pi-book',
-  routerLink: '/academico/planes-estudio',
-}
 ];

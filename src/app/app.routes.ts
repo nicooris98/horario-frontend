@@ -41,7 +41,7 @@ export const routes: Routes = [
           import('./features/users/pages/create-user/create-user').then(
             (m) => m.CreateUser,
           ),
-        
+
       },
       {
         path: 'administracion/roles',
@@ -81,6 +81,41 @@ export const routes: Routes = [
         loadComponent: () =>
           import('./features/users/pages/user-management/user-management').then(
             (m) => m.UserManagement,
+          ),
+      },
+      {
+        path: 'configuracion/turnos',
+        loadComponent: () =>
+          import('./features/shifts/pages/shift-management/shift-management').then(
+            (m) => m.ShiftManagement,
+          ),
+      },
+      {
+        path: 'configuracion/estructura-horaria',
+        loadComponent: () =>
+          import('./features/class-hours/pages/class-hour-management/class-hour-management').then(
+            (m) => m.ClassHourManagement,
+          ),
+      },
+      {
+        path: 'configuracion/regimenes',
+        loadComponent: () =>
+          import('./features/regimes/pages/regime-management/regime-management').then(
+            (m) => m.RegimeManagement,
+          ),
+      },
+      {
+        path: 'configuracion/calendario-academico',
+        loadComponent: () =>
+          import('./features/academic-calendar/pages/academic-calendar/academic-calendar').then(
+            (m) => m.AcademicCalendar,
+          ),
+      },
+      {
+        path: 'academico/oferta-academica',
+        loadComponent: () =>
+          import('./features/academic-offer/pages/academic-offer/academic-offer').then(
+            (m) => m.AcademicOffer,
           ),
       },
       {

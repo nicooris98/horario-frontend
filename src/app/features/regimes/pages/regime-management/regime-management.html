@@ -1,0 +1,120 @@
+<section aria-labelledby="regime-management-title">
+  <p-breadcrumb
+    class="page-breadcrumb"
+    [home]="breadcrumbHome"
+    [model]="breadcrumbItems"
+    [dt]="breadcrumbTheme"
+  />
+
+  <header class="page-header">
+    <div>
+      <h1 id="regime-management-title" class="page-title">Regímenes</h1>
+      <p class="page-subtitle">Regímenes de cursado de las materias (anual, cuatrimestral...).</p>
+    </div>
+
+    <p-button label="Nuevo régimen" icon="pi pi-plus" (onClick)="openCreate()" />
+  </header>
+
+  @if (errorMessage()) {
+    <p-message class="regimes-error" severity="error" role="alert">
+      {{ errorMessage() }}
+    </p-message>
+  }
+
+  <p-card>
+    <div class="regimes-filters" role="search">
+      <p-iconfield class="regimes-search">
+        <p-inputicon class="pi pi-search" />
+        <input
+          type="text"
+          pInputText
+          placeholder="Buscar por nombre de régimen..."
+          aria-label="Buscar por nombre de régimen"
+          [ngModel]="search()"
+          (ngModelChange)="search.set($event)"
+        />
+      </p-iconfield>
+    </div>
+
+    <p-table [value]="filteredRegimes()" [paginator]="true" [rows]="10">
+      <ng-template #header>
+        <tr>
+          <th>Régimen</th>
+          <th class="regimes-center">Acciones</th>
+        </tr>
+      </ng-template>
+
+      <ng-template #body let-regime>
+        <tr>
+          <td class="regimes-name">{{ regime.name }}</td>
+          <td class="regimes-center">
+            <div class="regimes-actions">
+              <p-button
+                icon="pi pi-pencil"
+                [outlined]="true"
+                [ariaLabel]="'Editar ' + regime.name"
+                (onClick)="openEdit(regime)"
+              />
+              <p-button
+                icon="pi pi-trash"
+                severity="danger"
+                [outlined]="true"
+                [ariaLabel]="'Eliminar ' + regime.name"
+                (onClick)="confirmDelete(regime)"
+              />
+            </div>
+          </td>
+        </tr>
+      </ng-template>
+
+      <ng-template #emptymessage>
+        <tr>
+          <td colspan="2">
+            {{
+              regimes().length
+                ? 'Ningún régimen coincide con la búsqueda.'
+                : 'No hay regímenes registrados.'
+            }}
+          </td>
+        </tr>
+      </ng-template>
+    </p-table>
+  </p-card>
+
+  <p-dialog
+    [header]="editingRegime() ? 'Editar régimen' : 'Nuevo régimen'"
+    [visible]="dialogVisible()"
+    (visibleChange)="dialogVisible.set($event)"
+    [modal]="true"
+    [style]="{ width: '28rem' }"
+  >
+    <form class="regimes-form" (ngSubmit)="save()">
+      <label for="regime-name">Nombre</label>
+      <input
+        id="regime-name"
+        name="name"
+        type="text"
+        pInputText
+        placeholder="Cuatrimestral"
+        [ngModel]="nameInput()"
+        (ngModelChange)="nameInput.set($event); formError.set('')"
+      />
+
+      @if (formError()) {
+        <small class="regimes-form-error" role="alert">{{ formError() }}</small>
+      }
+
+      <div class="regimes-form-actions">
+        <p-button
+          label="Cancelar"
+          severity="secondary"
+          [outlined]="true"
+          (onClick)="dialogVisible.set(false)"
+        />
+        <p-button type="submit" label="Guardar" [loading]="saving()" />
+      </div>
+    </form>
+  </p-dialog>
+
+  <p-confirmdialog />
+</section>
