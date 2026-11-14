@@ -112,6 +112,13 @@ export const routes: Routes = [
           ),
       },
       {
+        path: 'academico/oferta-academica',
+        loadComponent: () =>
+          import('./features/academic-offer/pages/academic-offer/academic-offer').then(
+            (m) => m.AcademicOffer,
+          ),
+      },
+      {
         path: 'administracion/materias',
         canActivate: [permissionGuard],
         data: { permission: 'subjects.read' },

@@ -34,6 +34,11 @@ export const MENU_ITEMS: MenuEntry[] = [
         routerLink: '/administracion/materias',
         permission: 'subjects.read',
       },
+      {
+        label: 'Oferta académica',
+        icon: 'pi pi-sitemap',
+        routerLink: '/academico/oferta-academica',
+      },
     ],
   },
   {
