@@ -2,6 +2,8 @@ import { Component, inject, OnInit, signal } from '@angular/core';
 import { FormBuilder, FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { HttpErrorResponse } from '@angular/common/http';
 import { Router } from '@angular/router';
+import { ConfirmationService } from 'primeng/api';
+import { ConfirmDialogModule } from 'primeng/confirmdialog';
 import { InputTextModule } from 'primeng/inputtext';
 import { ButtonModule } from 'primeng/button';
 import { CardModule } from 'primeng/card';
@@ -23,7 +25,16 @@ interface CreateStudyPlanForm {
 @Component({
   selector: 'app-create-study-plan',
   standalone: true,
-  imports: [ReactiveFormsModule, InputTextModule, ButtonModule, CardModule, Message, Select],
+  imports: [
+    ReactiveFormsModule,
+    InputTextModule,
+    ButtonModule,
+    CardModule,
+    ConfirmDialogModule,
+    Message,
+    Select,
+  ],
+  providers: [ConfirmationService],
   templateUrl: './create-study-plan.html',
   styleUrl: './create-study-plan.css',
 })
@@ -32,6 +43,7 @@ export class CreateStudyPlan implements OnInit {
   private readonly studyPlansService = inject(StudyPlans);
   private readonly degreesService = inject(Degrees);
   private readonly router = inject(Router);
+  private readonly confirmationService = inject(ConfirmationService);
 
   degrees = signal<Degree[]>([]);
   loading = signal(false);
@@ -115,13 +127,14 @@ export class CreateStudyPlan implements OnInit {
 
           if (error.status === 409 && error.error?.code === 'VIGENTE_EXISTENTE') {
             const currentName = error.error?.currentPlan?.name;
-            const accepted = confirm(
-              `La carrera ya tiene un plan vigente: ${currentName}.\n\n` +
-                `¿Querés que este plan pase a ser el vigente? "${currentName}" quedará como no vigente.`,
-            );
-            if (accepted) {
-              this.submit(true);
-            }
+            this.confirmationService.confirm({
+              header: 'La carrera ya tiene un plan vigente',
+              message: `¿Querés que este plan pase a ser el vigente? "${currentName}" quedará como no vigente.`,
+              icon: 'pi pi-exclamation-triangle',
+              acceptButtonProps: { label: 'Sí, reemplazar' },
+              rejectButtonProps: { label: 'Cancelar', severity: 'secondary', outlined: true },
+              accept: () => this.submit(true),
+            });
             return;
           }
 
