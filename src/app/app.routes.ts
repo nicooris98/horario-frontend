@@ -105,6 +105,13 @@ export const routes: Routes = [
           ),
       },
       {
+        path: 'configuracion/calendario-academico',
+        loadComponent: () =>
+          import('./features/academic-calendar/pages/academic-calendar/academic-calendar').then(
+            (m) => m.AcademicCalendar,
+          ),
+      },
+      {
         path: 'administracion/materias',
         canActivate: [permissionGuard],
         data: { permission: 'subjects.read' },

@@ -41,6 +41,11 @@ export const MENU_ITEMS: MenuEntry[] = [
     icon: 'pi pi-sliders-h',
     items: [
       {
+        label: 'Calendario académico',
+        icon: 'pi pi-calendar',
+        routerLink: '/configuracion/calendario-academico',
+      },
+      {
         label: 'Turnos',
         icon: 'pi pi-sun',
         routerLink: '/configuracion/turnos',
