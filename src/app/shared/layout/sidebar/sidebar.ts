@@ -30,6 +30,7 @@ export class Sidebar {
   navigationItems: MenuItem[] = [];
   administrationItems: MenuItem[] = [];
 
+
   readonly panelMenuTheme = {
     root: { gap: '0.375rem' },
     panel: {

@@ -1,0 +1,86 @@
+<section aria-labelledby="degree-form-title">
+  <p-breadcrumb
+    class="page-breadcrumb"
+    [home]="breadcrumbHome"
+    [model]="breadcrumbItems()"
+    [dt]="breadcrumbTheme"
+  />
+
+  <header class="page-header">
+    <div class="page-heading">
+      <p-button
+        icon="pi pi-arrow-left"
+        severity="secondary"
+        [outlined]="true"
+        ariaLabel="Volver al listado"
+        (onClick)="cancel()"
+      />
+      <h1 id="degree-form-title" class="page-title">
+        {{ isEditMode() ? 'Editar carrera' : 'Nueva carrera' }}
+      </h1>
+      <p class="page-subtitle">
+        {{
+          isEditMode()
+            ? 'Modificá los datos de la carrera.'
+            : 'Completá los datos para crear una nueva carrera.'
+        }}
+      </p>
+    </div>
+  </header>
+
+  <form [formGroup]="form" (ngSubmit)="save()" novalidate>
+    <p-card>
+      <h2 class="form-section-title">
+        <i class="pi pi-file" aria-hidden="true"></i>
+        Datos de la carrera
+      </h2>
+
+      <div class="form-grid">
+        <div class="form-field form-grid-full">
+          <label for="degree-name">Nombre de la carrera <span class="required">*</span></label>
+          <input
+            id="degree-name"
+            type="text"
+            pInputText
+            [fluid]="true"
+            formControlName="name"
+            placeholder="Ingresá el nombre de la carrera..."
+            autocomplete="off"
+            maxlength="100"
+            [attr.aria-invalid]="form.controls.name.touched && form.controls.name.invalid"
+          />
+          @if (form.controls.name.touched && form.controls.name.hasError('required')) {
+            <small class="form-field-error" role="alert">El nombre es obligatorio.</small>
+          }
+          @if (form.controls.name.touched && form.controls.name.hasError('minlength')) {
+            <small class="form-field-error" role="alert">El nombre debe tener al menos 2 caracteres.</small>
+          }
+          @if (form.controls.name.touched && form.controls.name.hasError('maxlength')) {
+            <small class="form-field-error" role="alert">El nombre no puede superar los 100 caracteres.</small>
+          }
+          @if (form.controls.name.touched && form.controls.name.hasError('uniqueName')) {
+            <small class="form-field-error" role="alert">Ya existe una carrera con este nombre.</small>
+          }
+        </div>
+      </div>
+
+      @if (error()) {
+        <p-message class="form-error" severity="error" role="alert">
+          {{ error() }}
+        </p-message>
+      }
+
+      <div class="form-actions">
+        <p-button label="Cancelar" severity="secondary" [outlined]="true" (onClick)="cancel()" />
+        <p-button
+          type="submit"
+          [label]="isEditMode() ? 'Guardar cambios' : 'Guardar carrera'"
+          [loading]="isSubmitting()"
+          [disabled]="isSubmitting()"
+        />
+      </div>
+    </p-card>
+  </form>
+</section>
+
+<p-confirmdialog />

@@ -1,0 +1,121 @@
+:host {
+  display: block;
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
+}
+
+section,
+form,
+form > p-card {
+  display: block;
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
+}
+
+:host ::ng-deep .p-card,
+:host ::ng-deep .p-card-body,
+:host ::ng-deep .p-card-content {
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
+}
+
+.form-section-title {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin: 0 0 1.25rem;
+  font-size: 1.125rem;
+  font-weight: 600;
+}
+
+.form-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  align-items: start;
+  gap: 1.25rem 1.5rem;
+  width: 100%;
+  min-width: 0;
+}
+
+.form-grid > .form-field {
+  grid-template-columns: minmax(0, 1fr);
+  align-content: start;
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+}
+
+.form-grid-full {
+  grid-column: 1 / -1;
+}
+
+.form-grid input[pInputText],
+.form-grid p-select,
+.form-grid p-inputnumber {
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
+}
+
+:host ::ng-deep .form-grid .p-select,
+:host ::ng-deep .form-grid .p-inputnumber {
+  display: flex;
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+}
+
+:host ::ng-deep .form-grid .p-select-label {
+  flex: 1 1 0%;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+:host ::ng-deep .form-grid .p-inputnumber-input {
+  flex: 1 1 0%;
+  width: 100%;
+  min-width: 0;
+}
+
+.form-error {
+  display: block;
+  margin-top: 1.25rem;
+}
+
+.form-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.75rem;
+  margin-top: 1.5rem;
+}
+
+@media (max-width: 767px) {
+  .form-grid {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 1rem;
+  }
+
+  .form-actions {
+    flex-direction: column-reverse;
+    align-items: stretch;
+  }
+
+  .form-actions > p-button {
+    display: block;
+    width: 100%;
+  }
+
+  :host ::ng-deep .form-actions .p-button {
+    width: 100%;
+    justify-content: center;
+  }
+}

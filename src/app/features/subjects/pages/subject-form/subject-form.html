@@ -15,18 +15,16 @@
         [ariaLabel]="isEdit() ? 'Volver al detalle' : 'Volver al listado'"
         (onClick)="cancel()"
       />
-      <div>
-        <h1 id="subject-form-title" class="page-title">
-          {{ isEdit() ? 'Editar materia' : 'Nueva materia' }}
-        </h1>
-        <p class="page-subtitle">
-          {{
-            isEdit()
-              ? 'Modificá los datos de la materia.'
-              : 'Completá los datos para crear una nueva materia.'
-          }}
-        </p>
-      </div>
+      <h1 id="subject-form-title" class="page-title">
+        {{ isEdit() ? 'Editar materia' : 'Nueva materia' }}
+      </h1>
+      <p class="page-subtitle">
+        {{
+          isEdit()
+            ? 'Modificá los datos de la materia.'
+            : 'Completá los datos para crear una nueva materia.'
+        }}
+      </p>
     </div>
   </header>
 
@@ -44,6 +42,7 @@
             id="name"
             type="text"
             pInputText
+            [fluid]="true"
             formControlName="name"
             placeholder="Ingresá el nombre de la materia..."
             maxlength="255"
@@ -65,11 +64,12 @@
             inputId="studyPlanId"
             formControlName="studyPlanId"
             [options]="studyPlanOptions()"
-            optionLabel="name"
+            optionLabel="label"
             optionValue="id"
             placeholder="Seleccioná un plan de estudio"
             [filter]="studyPlanOptions().length > 8"
-            filterBy="name"
+            filterBy="label"
+            [fluid]="true"
             appendTo="body"
           />
           @if (form.controls.studyPlanId.touched && form.controls.studyPlanId.invalid) {
@@ -85,11 +85,19 @@
             [options]="yearOptions()"
             optionLabel="label"
             optionValue="value"
-            placeholder="Seleccioná el año"
+            [placeholder]="yearPlaceholder()"
+            emptyMessage="El plan seleccionado no tiene una duración válida"
+            [fluid]="true"
             appendTo="body"
           />
           @if (form.controls.year.touched && form.controls.year.invalid) {
-            <small class="form-field-error" role="alert">Seleccioná el año de cursado.</small>
+            <small class="form-field-error" role="alert">
+              {{
+                form.controls.year.hasError('max')
+                  ? 'El año de cursado supera la duración del plan seleccionado.'
+                  : 'Seleccioná el año de cursado.'
+              }}
+            </small>
           }
         </div>
 
@@ -102,6 +110,7 @@
             optionLabel="name"
             optionValue="id"
             placeholder="Seleccioná un régimen"
+            [fluid]="true"
             appendTo="body"
           />
           @if (form.controls.regimeId.touched && form.controls.regimeId.invalid) {
@@ -117,6 +126,7 @@
             [showButtons]="true"
             [min]="1"
             [useGrouping]="false"
+            [fluid]="true"
             placeholder="Ingresá la cantidad de horas"
           />
           @if (form.controls.weeklyHours.touched && form.controls.weeklyHours.invalid) {
@@ -146,6 +156,7 @@
             [showButtons]="true"
             [min]="2"
             [useGrouping]="false"
+            [fluid]="true"
             placeholder="Ingresá el máximo de docentes"
           />
           @if (form.controls.maxTeachers.touched && form.controls.maxTeachers.invalid) {
