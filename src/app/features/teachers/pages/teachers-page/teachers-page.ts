@@ -1,324 +1,235 @@
-import { Component, OnInit, inject, ChangeDetectorRef } from '@angular/core';
-import { CommonModule } from '@angular/common';
-import { TableModule } from 'primeng/table';
-import { ButtonModule } from 'primeng/button';
-import { ToolbarModule } from 'primeng/toolbar';
-import { InputTextModule } from 'primeng/inputtext';
-import { InputNumberModule } from 'primeng/inputnumber';
-import { SelectModule } from 'primeng/select';
-import { DialogModule } from 'primeng/dialog';
-import { ConfirmDialogModule } from 'primeng/confirmdialog';
-import { ToastModule } from 'primeng/toast';
-import { ConfirmationService, MessageService } from 'primeng/api';
+﻿import { Component, DestroyRef, OnInit, computed, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
+import { HttpErrorResponse } from '@angular/common/http';
+import { Router } from '@angular/router';
+import { ConfirmationService, MenuItem } from 'primeng/api';
+import { BreadcrumbModule } from 'primeng/breadcrumb';
+import { ButtonModule } from 'primeng/button';
+import { CardModule } from 'primeng/card';
+import { ConfirmDialogModule } from 'primeng/confirmdialog';
+import { IconFieldModule } from 'primeng/iconfield';
+import { InputIconModule } from 'primeng/inputicon';
+import { InputTextModule } from 'primeng/inputtext';
+import { Message } from 'primeng/message';
+import { PaginatorModule, PaginatorState } from 'primeng/paginator';
+import { SelectModule } from 'primeng/select';
+import { TableModule, TablePageEvent } from 'primeng/table';
+import { TagModule } from 'primeng/tag';
+import { Teacher } from '../../../../core/models/module2.models';
+import { NotificationService } from '../../../../core/services/notification.service';
+import { createIsMobileSignal } from '../../../../shared/utils/viewport';
+import { RowActionsComponent } from '../../../../shared/components/row-actions/row-actions';
+import { BREADCRUMB_HOME, BREADCRUMB_THEME } from '../../../subjects/subject-display';
 import { TeachersService } from '../../services/teachers.service';
-import { SelectOption, Teacher } from '../../../../core/models/module2.models';
 
-
-
-import {
-  isNonEmpty,
-  isPositiveInt,
-  isValidDni,
-  isValidEmail,
-  normalizeDni,
-} from '../../../../core/utils/validators';
+const TEACHERS_ROUTE = '/docentes';
+const DEFAULT_PAGE_SIZE = 10;
 
 @Component({
   selector: 'app-teachers-page',
   standalone: true,
   imports: [
-    CommonModule,
-    TableModule,
-    ButtonModule,
-    ToolbarModule,
-    InputTextModule,
-    InputNumberModule,
-    SelectModule,
-    DialogModule,
-    ConfirmDialogModule,
-    ToastModule,
     FormsModule,
+    BreadcrumbModule,
+    ButtonModule,
+    CardModule,
+    ConfirmDialogModule,
+    IconFieldModule,
+    InputIconModule,
+    InputTextModule,
+    Message,
+    SelectModule,
+    PaginatorModule,
+    TableModule,
+    TagModule,
+    RowActionsComponent,
   ],
-  providers: [ConfirmationService, MessageService],
+  providers: [ConfirmationService],
   templateUrl: './teachers-page.html',
   styleUrl: './teachers-page.css',
 })
 export class TeachersPage implements OnInit {
-  private teachersService = inject(TeachersService);
-  private confirmationService = inject(ConfirmationService);
-  private messageService = inject(MessageService);
-  private cdr = inject(ChangeDetectorRef);
+  private readonly teachersService = inject(TeachersService);
+  private readonly router = inject(Router);
+  private readonly confirmationService = inject(ConfirmationService);
+  private readonly notification = inject(NotificationService);
+  private readonly destroyRef = inject(DestroyRef);
 
-  teachers: Teacher[] = [];
-  loading = false;
+  protected readonly breadcrumbHome = BREADCRUMB_HOME;
+  protected readonly breadcrumbTheme = BREADCRUMB_THEME;
+  protected readonly breadcrumbItems: MenuItem[] = [{ label: 'Docentes' }];
+  protected readonly rowsPerPageOptions = [5, 10, 20];
 
-  displayDialog = false;
-  isEdit = false;
-  teacher: Teacher = this.emptyTeacher();
+  readonly teachers = signal<Teacher[]>([]);
+  readonly loading = signal(false);
+  readonly errorMessage = signal('');
 
-  filterDni = '';
-  filterLastName = '';
- 
+  readonly searchName = signal('');
+  readonly searchDni = signal('');
+  readonly statusFilter = signal<string | null>(null);
+  readonly first = signal(0);
+  readonly rows = signal(DEFAULT_PAGE_SIZE);
+  readonly isMobile = createIsMobileSignal(this.destroyRef);
 
-  submitted = false;
-  errors: Record<string, string> = {};
-
-  readonly statusOptions: SelectOption[] = [
-    { id: 0, label: 'ACTIVO' },
-    { id: 1, label: 'INACTIVO' },
+  readonly statusOptions = [
+    { label: 'Todos los estados', value: null },
+    { label: 'Activo', value: 'ACTIVO' },
+    { label: 'Inactivo', value: 'INACTIVO' },
   ];
-  status: 'ACTIVO' | 'INACTIVO' = 'ACTIVO';
 
-  ngOnInit() {
-    this.load();
+  readonly filtersDisabled = computed(
+    () => !this.loading() && !this.errorMessage() && this.teachers().length === 0,
+  );
+
+  readonly filteredTeachers = computed(() => {
+    const nameTerm = this.searchName().trim().toLocaleLowerCase('es');
+    const dniTerm = this.searchDni().trim();
+    const status = this.statusFilter();
+
+    return this.teachers().filter((teacher) => {
+      const fullName = `${teacher.lastName} ${teacher.firstName}`.toLocaleLowerCase('es');
+      const matchesName = !nameTerm || fullName.includes(nameTerm);
+      const matchesDni = !dniTerm || teacher.dni.includes(dniTerm);
+      const teacherStatus = teacher.status || 'ACTIVO';
+      const matchesStatus = status === null || teacherStatus === status;
+      return matchesName && matchesDni && matchesStatus;
+    });
+  });
+
+  readonly paginatedTeachers = computed(() => {
+    const start = this.first();
+    return this.filteredTeachers().slice(start, start + this.rows());
+  });
+
+  readonly rowActionsMap = computed(() => {
+    const map = new Map<number, MenuItem[]>();
+    for (const t of this.filteredTeachers()) {
+      const isInactive = t.status === 'INACTIVO';
+      map.set(t.id, [
+        {
+          label: 'Editar',
+          icon: 'pi pi-pencil',
+          command: () => this.goToEdit(t.id),
+        },
+        {
+          label: isInactive ? 'Reactivar' : 'Desactivar',
+          icon: isInactive ? 'pi pi-check-circle' : 'pi pi-ban',
+          command: () => this.confirmStatusChange(t),
+        },
+      ]);
+    }
+    return map;
+  });
+
+  ngOnInit(): void {
+    this.loadTeachers();
   }
 
-  emptyTeacher(): Teacher {
-    return {
-      id: 0,
-      dni: '',
-      firstName: '',
-      lastName: '',
-      phone: '',
-      email: '',
-      fileNumber: null,
-      status: 'ACTIVO',
-    };
-  }
+  loadTeachers(): void {
+    this.loading.set(true);
+    this.errorMessage.set('');
 
-load() {
-  this.loading = true;
-
-  this.teachersService
-    .findAll(this.filterDni || undefined, this.filterLastName || undefined)
-    .subscribe({
+    this.teachersService.findAll().subscribe({
       next: (data) => {
-        console.log('DOCENTES', data);
-
-        setTimeout(() => {
-          this.teachers = [...data];
-          this.loading = false;
-
-          this.cdr.detectChanges();
-        }, 0);
+        this.teachers.set([...data]);
+        this.loading.set(false);
       },
-
-      error: (err) => {
-        if ((err as { status?: number })?.status === 404) {
-          this.teachers = [];
-          this.loading = false;
+      error: (err: HttpErrorResponse) => {
+        this.loading.set(false);
+        if (err.status === 404) {
+          this.teachers.set([]);
           return;
         }
-
-        this.loading = false;
-      },
-    });
-}
-
-  openNew() {
-    this.teacher = this.emptyTeacher();
-    this.status = 'ACTIVO';
-    this.isEdit = false;
-    this.errors = {};
-    this.submitted = false;
-    this.displayDialog = true;
-  }
-
-  edit(teacher: Teacher) {
-    this.teacher = { ...teacher };
-    this.status = (teacher.status as 'ACTIVO' | 'INACTIVO') ?? 'ACTIVO';
-    this.isEdit = true;
-    this.errors = {};
-    this.submitted = false;
-    this.displayDialog = true;
-  }
-
-  hasError(field: string): boolean {
-    return this.submitted && !!this.errors[field];
-  }
-
-  private validate(): Record<string, string> {
-    const errors: Record<string, string> = {};
-    if (!isValidDni(this.teacher.dni)) {
-      errors['dni'] = 'El DNI debe tener 7 u 8 dígitos.';
-    }
-    if (!isNonEmpty(this.teacher.firstName)) {
-      errors['firstName'] = 'El nombre es obligatorio.';
-    }
-    if (!isNonEmpty(this.teacher.lastName)) {
-      errors['lastName'] = 'El apellido es obligatorio.';
-    }
-    const phone = (this.teacher.phone ?? '').trim();
-    const email = (this.teacher.email ?? '').trim();
-    if (!phone && !email) {
-      errors['contact'] = 'Ingresá al menos un teléfono o un email.';
-    }
-    if (email && !isValidEmail(email)) {
-      errors['email'] = 'El email no tiene un formato válido.';
-    }
-    const fileNumber =
-      typeof this.teacher.fileNumber === 'string'
-        ? Number(this.teacher.fileNumber)
-        : this.teacher.fileNumber;
-    if (fileNumber != null && !isPositiveInt(fileNumber)) {
-      errors['fileNumber'] = 'El legajo debe ser un entero positivo.';
-    }
-    return errors;
-  }
-
-  save() {
-    this.submitted = true;
-    this.errors = this.validate();
-    if (Object.keys(this.errors).length > 0) {
-      this.messageService.add({
-        severity: 'warn',
-        summary: 'Revisá el formulario',
-        detail: 'Hay campos inválidos o incompletos.',
-      });
-      return;
-    }
-
-    const dto = {
-      dni: normalizeDni(this.teacher.dni),
-      firstName: this.teacher.firstName.trim(),
-      lastName: this.teacher.lastName.trim(),
-      phone: this.teacher.phone ?? null,
-      email: this.teacher.email ?? null,
-      fileNumber:
-        this.teacher.fileNumber == null
-          ? null
-          : Number(this.teacher.fileNumber),
-      status: this.status,
-    };
-
-    if (this.isEdit && this.teacher.id) {
-      this.teachersService.update(this.teacher.id, dto).subscribe({
-        next: () => {
-          this.messageService.add({ severity: 'success', summary: 'OK', detail: 'Docente actualizado' });
-          this.displayDialog = false;
-          this.load();
-        },
-        error: (err) =>
-          this.messageService.add({
-            severity: 'error',
-            summary: 'Error',
-            detail: this.errorMessage(err, 'No se pudo actualizar'),
-          }),
-      });
-    } else {
-      this.teachersService.create(dto).subscribe({
-        next: () => {
-          this.messageService.add({ severity: 'success', summary: 'OK', detail: 'Docente creado' });
-          this.displayDialog = false;
-          this.load();
-        },
-        error: (err) =>
-          this.messageService.add({
-            severity: 'error',
-            summary: 'Error',
-            detail: this.errorMessage(err, 'No se pudo crear'),
-          }),
-      });
-    }
-  }
-
-  deactivate(teacher: Teacher) {
-    this.confirmationService.confirm({
-      message: `¿Desactivar a ${teacher.firstName} ${teacher.lastName}?`,
-      header: 'Confirmar',
-      icon: 'pi pi-exclamation-triangle',
-      accept: () => {
-        this.teachersService.deactivate(teacher.id).subscribe({
-          next: () => {
-            this.messageService.add({ severity: 'success', summary: 'OK', detail: 'Docente desactivado' });
-            this.load();
-          },
-          error: (err) =>
-            this.messageService.add({
-              severity: 'error',
-              summary: 'Error',
-              detail: this.errorMessage(err, 'No se pudo desactivar'),
-            }),
-        });
+        this.errorMessage.set('Ocurrió un error al cargar los docentes.');
       },
     });
   }
 
-  reactivate(teacher: Teacher) {
+  onSearchNameChange(value: string): void {
+    this.searchName.set(value ?? '');
+    this.first.set(0);
+  }
+
+  onSearchDniChange(value: string): void {
+    this.searchDni.set(value ?? '');
+    this.first.set(0);
+  }
+
+  onStatusFilterChange(value: string | null): void {
+    this.statusFilter.set(value ?? null);
+    this.first.set(0);
+  }
+
+  onPageChange(event: TablePageEvent | PaginatorState): void {
+    this.first.set(event.first ?? 0);
+    this.rows.set(event.rows ?? DEFAULT_PAGE_SIZE);
+  }
+
+  goToCreate(): void {
+    void this.router.navigate([TEACHERS_ROUTE, 'nuevo']);
+  }
+
+  goToDetail(id: number): void {
+    void this.router.navigate([TEACHERS_ROUTE, id]);
+  }
+
+  goToEdit(id: number): void {
+    void this.router.navigate([TEACHERS_ROUTE, id, 'editar']);
+  }
+
+  confirmStatusChange(teacher: Teacher): void {
+    const deactivating = teacher.status !== 'INACTIVO';
+
     this.confirmationService.confirm({
-      message: `¿Reactivar a ${teacher.firstName} ${teacher.lastName}?`,
-      header: 'Confirmar',
-      icon: 'pi pi-check-circle',
-      accept: () => {
-        this.teachersService.update(teacher.id, {
+      header: deactivating ? 'Desactivar docente' : 'Reactivar docente',
+      message: deactivating
+        ? `¿Desactivar a ${teacher.firstName} ${teacher.lastName}?`
+        : `¿Reactivar a ${teacher.firstName} ${teacher.lastName}?`,
+      icon: deactivating ? 'pi pi-exclamation-triangle' : 'pi pi-check-circle',
+      acceptButtonProps: {
+        label: deactivating ? 'Desactivar' : 'Reactivar',
+        severity: deactivating ? 'danger' : 'success',
+      },
+      rejectButtonProps: { label: 'Cancelar', severity: 'secondary', outlined: true },
+      accept: () => this.executeStatusChange(teacher, deactivating),
+    });
+  }
+
+  private executeStatusChange(teacher: Teacher, deactivating: boolean): void {
+    const req = deactivating
+      ? this.teachersService.deactivate(teacher.id)
+      : this.teachersService.update(teacher.id, {
           dni: teacher.dni,
           firstName: teacher.firstName,
           lastName: teacher.lastName,
           phone: teacher.phone ?? null,
           email: teacher.email ?? null,
-          fileNumber:
-            teacher.fileNumber == null
-              ? null
-              : Number(teacher.fileNumber),
+          fileNumber: teacher.fileNumber == null ? null : Number(teacher.fileNumber),
           status: 'ACTIVO',
-        }).subscribe({
-          next: () => {
-            this.messageService.add({ severity: 'success', summary: 'OK', detail: 'Docente reactivado' });
-            this.load();
-          },
-          error: (err) =>
-            this.messageService.add({
-              severity: 'error',
-              summary: 'Error',
-              detail: this.errorMessage(err, 'No se pudo reactivar'),
-            }),
         });
+
+    req.subscribe({
+      next: (updated) => {
+        this.teachers.update((list) =>
+          list.map((item) => (item.id === updated.id ? { ...item, ...updated } : item)),
+        );
+        this.notification.success(
+          deactivating ? 'Docente desactivado correctamente' : 'Docente reactivado correctamente',
+          `${updated.lastName}, ${updated.firstName} ahora está ${deactivating ? 'inactivo' : 'activo'}.`,
+        );
+      },
+      error: (err: HttpErrorResponse) => {
+        const msg = err.error?.message;
+        const text = Array.isArray(msg) ? msg.join('; ') : msg;
+        this.notification.error(
+          deactivating ? 'Error al desactivar docente' : 'Error al reactivar docente',
+          typeof text === 'string' && text.trim()
+            ? text
+            : deactivating
+              ? 'No se pudo desactivar el docente.'
+              : 'No se pudo reactivar el docente.',
+        );
       },
     });
-  }
-
-  clearFilters() {
-    this.filterDni = '';
-    this.filterLastName = '';
-    this.load();
-  }
-
-  hasActiveFilters(): boolean {
-    return !!this.filterDni.trim() || !!this.filterLastName.trim();
-  }
-
-
-
-
-
-
-
-
-
-
-  trackByTeacher(_index: number, teacher: Teacher): number {
-    return teacher.id;
-  }
-
-  getAssignmentsTooltip(teacher: Teacher): string {
-    const assignments = teacher.currentAssignments || [];
-    if (assignments.length === 0) return 'Sin asignaciones';
-    return assignments
-      .map((a) => {
-        const section = a.courseSectionSubject?.courseSection;
-        const subject = a.courseSectionSubject?.subject?.name || '-';
-        const division = section ? `${section.courseYear}° ${section.section}` : '-';
-        const cargo = a.positionType?.name || '-';
-        const hasta = a.endDate || 'sin fin';
-        return `- ${cargo}: ${subject} (${division}) | ${a.startDate} a ${hasta}`;
-      })
-      .join('\n');
-  }
-
-  private errorMessage(err: unknown, fallback: string): string {
-    const message = (err as { error?: { message?: string | string[] } })?.error?.message;
-    if (Array.isArray(message)) return message.join('; ');
-    return message ?? fallback;
   }
 }

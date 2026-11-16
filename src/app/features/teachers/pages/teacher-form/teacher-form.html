@@ -1,0 +1,195 @@
+﻿<section aria-labelledby="teacher-form-title">
+  <p-breadcrumb
+    class="page-breadcrumb"
+    [home]="breadcrumbHome"
+    [model]="breadcrumbItems()"
+    [dt]="breadcrumbTheme"
+  />
+
+  <header class="page-header">
+    <div class="page-heading">
+      <p-button
+        icon="pi pi-arrow-left"
+        severity="secondary"
+        [outlined]="true"
+        [ariaLabel]="isEdit() ? 'Volver al detalle' : 'Volver al listado'"
+        (onClick)="cancel()"
+      />
+      <div class="form-title-row">
+        <h1 id="teacher-form-title" class="page-title">
+          {{ isEdit() ? 'Editar docente' : 'Nuevo docente' }}
+        </h1>
+        @if (isEdit() && teacher(); as current) {
+          <p-tag
+            icon="pi pi-circle-fill"
+            [value]="statusLabel(current.status)"
+            [severity]="statusSeverity(current.status)"
+            [rounded]="true"
+          />
+        }
+      </div>
+      <p class="page-subtitle">
+        {{
+          isEdit()
+            ? (teacher() ? teacher()!.lastName + ', ' + teacher()!.firstName : 'Modificá los datos del docente.')
+            : 'Completá los datos para registrar un nuevo docente.'
+        }}
+      </p>
+    </div>
+  </header>
+
+  <form [formGroup]="form" (ngSubmit)="save()" novalidate>
+    <p-card>
+      <h2 class="form-section-title">
+        <i class="pi pi-user" aria-hidden="true"></i>
+        Datos del docente
+      </h2>
+
+      <div class="form-grid">
+        <div class="form-field">
+          <label for="teacher-dni">DNI <span class="required">*</span></label>
+          <input
+            id="teacher-dni"
+            type="text"
+            pInputText
+            [fluid]="true"
+            formControlName="dni"
+            placeholder="7 u 8 dígitos"
+            maxlength="12"
+          />
+        </div>
+
+        <div class="form-field">
+          <label for="teacher-file">Legajo</label>
+          <p-inputnumber
+            inputId="teacher-file"
+            formControlName="fileNumber"
+            [min]="1"
+            [useGrouping]="false"
+            [fluid]="true"
+            placeholder="Número de legajo"
+          />
+        </div>
+
+        <div class="form-field">
+          <label for="teacher-lastName">Apellido <span class="required">*</span></label>
+          <input
+            id="teacher-lastName"
+            type="text"
+            pInputText
+            [fluid]="true"
+            formControlName="lastName"
+            placeholder="Ingresá el apellido..."
+          />
+        </div>
+
+        <div class="form-field">
+          <label for="teacher-firstName">Nombre <span class="required">*</span></label>
+          <input
+            id="teacher-firstName"
+            type="text"
+            pInputText
+            [fluid]="true"
+            formControlName="firstName"
+            placeholder="Ingresá el nombre..."
+          />
+        </div>
+
+        <div class="form-field">
+          <label for="teacher-phone">Teléfono</label>
+          <input
+            id="teacher-phone"
+            type="text"
+            pInputText
+            [fluid]="true"
+            formControlName="phone"
+            placeholder="Ej: 351 1234567"
+          />
+        </div>
+
+        <div class="form-field">
+          <label for="teacher-email">Email</label>
+          <input
+            id="teacher-email"
+            type="email"
+            pInputText
+            [fluid]="true"
+            formControlName="email"
+            placeholder="docente@institucion.edu"
+          />
+        </div>
+
+        <div class="form-field form-grid-full">
+          <small class="form-field-hint">El teléfono o el email son obligatorios.</small>
+        </div>
+      </div>
+
+      @if (errorMessage()) {
+        <p-message class="form-error" severity="error" role="alert">
+          {{ errorMessage() }}
+        </p-message>
+      }
+
+      <div class="form-actions">
+        <p-button label="Cancelar" severity="secondary" [outlined]="true" (onClick)="cancel()" />
+        <p-button
+          type="submit"
+          [label]="isEdit() ? 'Guardar cambios' : 'Guardar docente'"
+          [loading]="saving()"
+          [disabled]="saving() || changingStatus()"
+        />
+      </div>
+    </p-card>
+  </form>
+
+  @if (isEdit() && teacher(); as current) {
+    <p-card styleClass="status-card">
+      <div class="status-header">
+        <h2 class="form-section-title">
+          <i class="pi pi-sliders-h" aria-hidden="true"></i>
+          Acciones de estado
+        </h2>
+        <p-tag
+          icon="pi pi-circle-fill"
+          [value]="statusLabel(current.status)"
+          [severity]="statusSeverity(current.status)"
+          [rounded]="true"
+        />
+      </div>
+
+      <p class="status-description">
+        {{
+          isTeacherActive()
+            ? 'Desactivar docente: esta acción cambiará el estado del registro a inactivo.'
+            : 'Este docente se encuentra inactivo. Podés volver a reactivarlo cuando lo necesites.'
+        }}
+      </p>
+
+      @if (isTeacherActive()) {
+        <p-button
+          type="button"
+          label="Desactivar"
+          icon="pi pi-ban"
+          severity="danger"
+          [outlined]="true"
+          [loading]="changingStatus()"
+          [disabled]="saving() || changingStatus()"
+          (onClick)="confirmStatusChange()"
+        />
+      } @else {
+        <p-button
+          type="button"
+          label="Reactivar"
+          icon="pi pi-check-circle"
+          severity="success"
+          [outlined]="true"
+          [loading]="changingStatus()"
+          [disabled]="saving() || changingStatus()"
+          (onClick)="confirmStatusChange()"
+        />
+      }
+    </p-card>
+  }
+</section>
+
+<p-confirmdialog appendTo="body" />

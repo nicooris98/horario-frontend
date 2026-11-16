@@ -1,0 +1,118 @@
+﻿<section aria-labelledby="teacher-detail-title">
+  <p-breadcrumb
+    class="page-breadcrumb"
+    [home]="breadcrumbHome"
+    [model]="breadcrumbItems()"
+    [dt]="breadcrumbTheme"
+  />
+
+  <app-detail-header
+    headingId="teacher-detail-title"
+    title="Detalle del docente"
+    [recordName]="fullName()"
+    [statusLabel]="teacher() ? statusLabel(teacher()!.status) : null"
+    [statusSeverity]="teacher() ? statusSeverity(teacher()!.status) : 'secondary'"
+    editLabel="Editar docente"
+    [showEdit]="!!teacher()"
+    (back)="goBack()"
+    (edit)="goToEdit()"
+  />
+
+  @if (errorMessage()) {
+    <p-message class="detail-error" severity="error" role="alert">
+      {{ errorMessage() }}
+    </p-message>
+  }
+
+  @if (loading()) {
+    <p-card>
+      <dl class="detail-list">
+        @for (_ of [1, 2, 3, 4]; track $index) {
+          <div class="detail-row">
+            <dt><p-skeleton width="8rem" /></dt>
+            <dd><p-skeleton width="14rem" /></dd>
+          </div>
+        }
+      </dl>
+    </p-card>
+  } @else if (teacher(); as current) {
+    <p-card styleClass="detail-highlights">
+      <ul class="highlights">
+        @for (item of highlights(); track item.label) {
+          <li class="highlight">
+            <span class="highlight-icon" aria-hidden="true"><i [class]="item.icon"></i></span>
+            <span>
+              <strong class="highlight-value">{{ item.value }}</strong>
+              <span class="highlight-label">{{ item.label }}</span>
+            </span>
+          </li>
+        }
+      </ul>
+    </p-card>
+
+    <p-card styleClass="detail-card">
+      <h2 class="detail-section-title">
+        <i class="pi pi-user" aria-hidden="true"></i>
+        Información del docente
+      </h2>
+
+      <dl class="detail-list">
+        <div class="detail-row">
+          <dt>Apellido y nombre</dt>
+          <dd>{{ current.lastName }}, {{ current.firstName }}</dd>
+        </div>
+        <div class="detail-row">
+          <dt>DNI</dt>
+          <dd>{{ current.dni }}</dd>
+        </div>
+        <div class="detail-row">
+          <dt>Legajo</dt>
+          <dd>{{ current.fileNumber ?? '—' }}</dd>
+        </div>
+        <div class="detail-row">
+          <dt>Teléfono</dt>
+          <dd>{{ current.phone || '—' }}</dd>
+        </div>
+        <div class="detail-row">
+          <dt>Email</dt>
+          <dd>{{ current.email || '—' }}</dd>
+        </div>
+        <div class="detail-row">
+          <dt>Estado</dt>
+          <dd>
+            <p-tag
+              icon="pi pi-circle-fill"
+              [value]="statusLabel(current.status)"
+              [severity]="statusSeverity(current.status)"
+              [rounded]="true"
+            />
+          </dd>
+        </div>
+      </dl>
+    </p-card>
+
+    @if ((current.currentAssignments ?? []).length > 0) {
+      <p-card>
+        <h2 class="detail-section-title">
+          <i class="pi pi-briefcase" aria-hidden="true"></i>
+          Asignaciones actuales ({{ current.currentAssignments!.length }})
+        </h2>
+
+        <dl class="detail-list">
+          @for (a of current.currentAssignments!; track $index) {
+            <div class="detail-row">
+              <dt>{{ a.positionType.name || 'Cargo' }}</dt>
+              <dd>
+                {{ a.courseSectionSubject.subject?.name || '-' }}
+                @if (a.courseSectionSubject.courseSection; as sec) {
+                  ({{ sec.courseYear }}° {{ sec.section }})
+                }
+                — {{ a.startDate }} a {{ a.endDate || 'sin fin' }}
+              </dd>
+            </div>
+          }
+        </dl>
+      </p-card>
+    }
+  }
+</section>

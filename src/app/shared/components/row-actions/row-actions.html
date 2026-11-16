@@ -1,0 +1,21 @@
+﻿<div class="row-actions">
+  @if (showView()) {
+    <p-button
+      icon="pi pi-eye"
+      [outlined]="true"
+      [ariaLabel]="viewAriaLabel()"
+      (onClick)="view.emit()"
+    />
+  }
+
+  @if (actions().length > 0) {
+    <p-button
+      icon="pi pi-ellipsis-v"
+      severity="secondary"
+      [outlined]="true"
+      [ariaLabel]="menuAriaLabel()"
+      (onClick)="openMenu($event, rowMenu)"
+    />
+    <p-menu #rowMenu [model]="actions()" [popup]="true" appendTo="body" />
+  }
+</div>

@@ -1,6 +1,4 @@
-﻿<p-toast />
-
-<section class="table-page" aria-labelledby="study-plan-title">
+﻿<section class="table-page" aria-labelledby="study-plan-title">
   <p-breadcrumb
     class="page-breadcrumb"
     [home]="breadcrumbHome"
@@ -31,77 +29,182 @@
   }
 
   <p-card>
-    <p-table
-      [value]="studyPlans()"
-      [loading]="loading()"
-      [paginator]="true"
-      [first]="first()"
-      [rows]="rows()"
-      [rowsPerPageOptions]="rowsPerPageOptions"
-      [showCurrentPageReport]="true"
-      currentPageReportTemplate="Mostrando {first} a {last} de {totalRecords} planes de estudio"
-      [tableStyle]="{ 'min-width': '52rem' }"
-      (onPage)="onPageChange($event)"
-    >
-      <ng-template #header>
-        <tr>
-          <th>Nombre</th>
-          <th>Carrera</th>
-          <th>Vigencia</th>
-          <th>Duración (años)</th>
-          <th>Desde</th>
-          <th>Hasta</th>
-          <th>Estado</th>
-          <th class="table-col-center">Acciones</th>
-        </tr>
-      </ng-template>
+    @if (!isMobile()) {
+      <p-table
+        [value]="studyPlans()"
+        [loading]="loading()"
+        [paginator]="true"
+        [first]="first()"
+        [rows]="rows()"
+        [rowsPerPageOptions]="rowsPerPageOptions"
+        [showCurrentPageReport]="true"
+        currentPageReportTemplate="Mostrando {first} a {last} de {totalRecords} planes de estudio"
+        [tableStyle]="{ 'min-width': '52rem' }"
+        (onPage)="onPageChange($event)"
+      >
+        <ng-template #header>
+          <tr>
+            <th>Plan de estudio</th>
+            <th>Carrera</th>
+            <th>Vigencia</th>
+            <th>Duración (años)</th>
+            <th>Estado</th>
+            <th class="table-col-center">Acciones</th>
+          </tr>
+        </ng-template>
 
-      <ng-template #body let-plan>
-        <tr>
-          <td class="study-plans-name">{{ plan.name }}</td>
-          <td class="study-plans-degree">{{ plan.degree.name }}</td>
-          <td>{{ plan.validityYear }}</td>
-          <td>{{ plan.durationYears }}</td>
-          <td>{{ plan.startDate }}</td>
-          <td>{{ plan.endDate ?? '—' }}</td>
-          <td>
-            <p-tag
-              icon="pi pi-circle-fill"
-              [value]="plan.status === 'VIGENTE' ? 'Vigente' : plan.status === 'NO_VIGENTE' ? 'No vigente' : 'Archivado'"
-              [severity]="plan.status === 'VIGENTE' ? 'success' : plan.status === 'NO_VIGENTE' ? 'warn' : 'secondary'"
-              [rounded]="true"
-            />
-          </td>
-          <td class="table-col-center">
-            <div class="study-plans-actions">
-              <p-button
-                icon="pi pi-pencil"
-                [outlined]="true"
-                ariaLabel="Editar plan"
-                (onClick)="editPlan(plan.id)"
+        <ng-template #body let-plan>
+          <tr>
+            <td class="study-plans-name">{{ plan.name }}</td>
+            <td class="study-plans-degree">{{ plan.degree.name }}</td>
+            <td>{{ plan.validityYear }}</td>
+            <td>{{ plan.durationYears }}</td>
+            <td>
+              <p-tag
+                icon="pi pi-circle-fill"
+                [value]="plan.status === 'VIGENTE' ? 'Vigente' : plan.status === 'NO_VIGENTE' ? 'No vigente' : 'Archivado'"
+                [severity]="plan.status === 'VIGENTE' ? 'success' : plan.status === 'NO_VIGENTE' ? 'warn' : 'secondary'"
+                [rounded]="true"
               />
-            </div>
-          </td>
-        </tr>
-      </ng-template>
+            </td>
+            <td class="table-col-center">
+              <app-row-actions
+                [viewAriaLabel]="'Ver ' + plan.name"
+                [menuAriaLabel]="'Más acciones para ' + plan.name"
+                [actions]="rowActionsMap().get(plan.id) ?? []"
+                (view)="goToDetail(plan.id)"
+              />
+            </td>
+          </tr>
+        </ng-template>
 
-      <ng-template #emptymessage>
-        <tr class="table-empty-row">
-          <td colspan="8" class="table-empty-cell">
+        <ng-template #emptymessage>
+          <tr class="table-empty-row">
+            <td colspan="6" class="table-empty-cell">
+              <div class="table-empty-state">
+                <span class="table-empty-icon" aria-hidden="true">
+                  <i class="pi pi-book"></i>
+                </span>
+                <p class="table-empty-title">No hay planes de estudio registrados</p>
+                <p class="table-empty-description">
+                  Podés registrar un primer plan de estudio desde el botón "Agregar plan".
+                </p>
+              </div>
+            </td>
+          </tr>
+        </ng-template>
+      </p-table>
+    } @else {
+      <div class="mobile-view">
+        @if (studyPlans().length) {
+          <div class="mobile-card-list" role="list">
+            @for (plan of paginatedStudyPlans(); track plan.id) {
+              <article class="mobile-card" role="listitem">
+                <header class="mobile-card-header">
+                  <h2 class="mobile-card-title">{{ plan.name }}</h2>
+                  <p-tag
+                    icon="pi pi-circle-fill"
+                    [value]="plan.status === 'VIGENTE' ? 'Vigente' : plan.status === 'NO_VIGENTE' ? 'No vigente' : 'Archivado'"
+                    [severity]="plan.status === 'VIGENTE' ? 'success' : plan.status === 'NO_VIGENTE' ? 'warn' : 'secondary'"
+                    [rounded]="true"
+                  />
+                </header>
+
+                <dl class="mobile-card-details">
+                  <div class="mobile-card-field mobile-card-field-full">
+                    <dt><i class="pi pi-building" aria-hidden="true"></i> Carrera</dt>
+                    <dd>{{ plan.degree.name }}</dd>
+                  </div>
+                  <div class="mobile-card-field">
+                    <dt><i class="pi pi-calendar" aria-hidden="true"></i> Vigencia</dt>
+                    <dd>{{ plan.validityYear }}</dd>
+                  </div>
+                  <div class="mobile-card-field">
+                    <dt><i class="pi pi-clock" aria-hidden="true"></i> Duración</dt>
+                    <dd>{{ plan.durationYears }} {{ plan.durationYears === 1 ? 'año' : 'años' }}</dd>
+                  </div>
+                </dl>
+
+                <footer class="mobile-card-actions">
+                  <p-button
+                    label="Ver detalle"
+                    icon="pi pi-eye"
+                    size="small"
+                    [outlined]="true"
+                    [ariaLabel]="'Ver detalle de ' + plan.name"
+                    (onClick)="goToDetail(plan.id)"
+                  />
+                  <p-button
+                    label="Editar"
+                    icon="pi pi-pencil"
+                    severity="secondary"
+                    size="small"
+                    [outlined]="true"
+                    [ariaLabel]="'Editar ' + plan.name"
+                    (onClick)="editPlan(plan.id)"
+                  />
+                  @if (plan.status === 'VIGENTE') {
+                    <p-button
+                      label="No vigente"
+                      icon="pi pi-arrow-down"
+                      severity="secondary"
+                      size="small"
+                      [outlined]="true"
+                      (onClick)="confirmStatusChange(plan, 'NO_VIGENTE')"
+                    />
+                  } @else if (plan.status === 'NO_VIGENTE') {
+                    <p-button
+                      label="Hacer vigente"
+                      icon="pi pi-check-circle"
+                      severity="success"
+                      size="small"
+                      [outlined]="true"
+                      (onClick)="confirmStatusChange(plan, 'VIGENTE')"
+                    />
+                  }
+                  @if (plan.status !== 'ARCHIVADO') {
+                    <p-button
+                      label="Archivar"
+                      icon="pi pi-inbox"
+                      severity="danger"
+                      size="small"
+                      [outlined]="true"
+                      (onClick)="confirmArchive(plan)"
+                    />
+                  }
+                </footer>
+              </article>
+            }
+          </div>
+        } @else {
+          <div class="mobile-empty">
             <div class="table-empty-state">
               <span class="table-empty-icon" aria-hidden="true">
                 <i class="pi pi-book"></i>
               </span>
-              <p class="table-empty-title">
-                No hay planes de estudio registrados
-              </p>
+              <p class="table-empty-title">No hay planes de estudio registrados</p>
               <p class="table-empty-description">
                 Podés registrar un primer plan de estudio desde el botón "Agregar plan".
               </p>
             </div>
-          </td>
-        </tr>
-      </ng-template>
-    </p-table>
+          </div>
+        }
+
+        <p-paginator
+          class="mobile-paginator"
+          [first]="first()"
+          [rows]="rows()"
+          [totalRecords]="studyPlans().length"
+          [rowsPerPageOptions]="rowsPerPageOptions"
+          [pageLinkSize]="3"
+          [showCurrentPageReport]="true"
+          currentPageReportTemplate="Mostrando {first} a {last} de {totalRecords} planes de estudio"
+          appendTo="body"
+          (onPageChange)="onPageChange($event)"
+        />
+      </div>
+    }
   </p-card>
 </section>
+
+<p-confirmdialog appendTo="body" />

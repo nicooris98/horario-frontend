@@ -1,0 +1,37 @@
+﻿<header class="detail-header">
+  <div class="detail-header-main">
+    <p-button
+      icon="pi pi-arrow-left"
+      severity="secondary"
+      [outlined]="true"
+      [ariaLabel]="backAriaLabel()"
+      (onClick)="back.emit()"
+    />
+
+    <div class="detail-header-copy">
+      <p class="detail-header-eyebrow">{{ title() }}</p>
+      <div class="detail-header-title-row">
+        <h1 [id]="headingId()" class="detail-header-name">
+          {{ recordName() }}
+        </h1>
+        @if (statusLabel(); as status) {
+          <p-tag
+            icon="pi pi-circle-fill"
+            [value]="status"
+            [severity]="statusSeverity()"
+            [rounded]="true"
+          />
+        }
+      </div>
+    </div>
+  </div>
+
+  @if (showEdit() && editLabel()) {
+    <p-button
+      [label]="editLabel()!"
+      icon="pi pi-pencil"
+      [outlined]="true"
+      (onClick)="edit.emit()"
+    />
+  }
+</header>

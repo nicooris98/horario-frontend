@@ -8,7 +8,9 @@ import { CardModule } from 'primeng/card';
 import { ConfirmDialogModule } from 'primeng/confirmdialog';
 import { InputTextModule } from 'primeng/inputtext';
 import { Message } from 'primeng/message';
-import { Degree, DegreeRequest } from '../../models/degree.model';
+import { TagModule } from 'primeng/tag';
+import { NotificationService } from '../../../../core/services/notification.service';
+import { Degree, DegreeRequest, DegreeStatus } from '../../models/degree.model';
 import { DegreeService } from '../../services/degree.service';
 import { uniqueDegreeNameValidator } from '../../validators/degree.validators';
 
@@ -25,6 +27,7 @@ const DEGREES_ROUTE = '/administracion/carreras';
     ConfirmDialogModule,
     InputTextModule,
     Message,
+    TagModule,
   ],
   providers: [ConfirmationService],
   templateUrl: './degree-form.html',
@@ -37,9 +40,12 @@ export class DegreeFormComponent implements OnInit {
   private readonly router = inject(Router);
   private readonly degreeService = inject(DegreeService);
   private readonly confirmationService = inject(ConfirmationService);
+  private readonly notification = inject(NotificationService);
 
   readonly isEditMode = signal(false);
   readonly degreeId = signal<number | null>(null);
+  readonly degreeName = signal<string>('');
+  readonly currentStatus = signal<DegreeStatus>('ACTIVO');
   readonly hasRelatedPlans = signal(false);
   readonly isSubmitting = this.degreeService.loading;
   readonly error = this.degreeService.error;
@@ -92,8 +98,8 @@ export class DegreeFormComponent implements OnInit {
         message:
           'Esta carrera ya tiene planes de estudio vinculados. Guardar cambios puede afectar la estructura académica asociada.',
         icon: 'pi pi-exclamation-triangle',
-        acceptLabel: 'Guardar cambios',
-        rejectLabel: 'Cancelar',
+        acceptButtonProps: { label: 'Guardar cambios', severity: 'primary' },
+        rejectButtonProps: { label: 'Cancelar', severity: 'secondary', outlined: true },
         accept: () => this.submit(request),
       });
       return;
@@ -102,8 +108,46 @@ export class DegreeFormComponent implements OnInit {
     this.submit(request);
   }
 
+  confirmStatusChange(): void {
+    const id = this.degreeId();
+    if (!id) return;
+
+    const isCurrentlyActive = this.currentStatus() === 'ACTIVO';
+    const nextStatus: DegreeStatus = isCurrentlyActive ? 'INACTIVO' : 'ACTIVO';
+    const actionLabel = isCurrentlyActive ? 'desactivar' : 'activar';
+    const degreeName = this.originalDegree?.name ?? this.form.controls.name.value;
+    const pendingWarning = this.form.dirty
+      ? ' Tenés cambios pendientes en el formulario que no serán guardados.'
+      : '';
+
+    this.confirmationService.confirm({
+      header: isCurrentlyActive ? 'Desactivar carrera' : 'Activar carrera',
+      message: `¿Querés ${actionLabel} la carrera "${degreeName}"?${pendingWarning}`,
+      icon: 'pi pi-exclamation-triangle',
+      acceptButtonProps: {
+        label: isCurrentlyActive ? 'Desactivar' : 'Activar',
+        severity: isCurrentlyActive ? 'danger' : 'success',
+      },
+      rejectButtonProps: { label: 'Cancelar', severity: 'secondary', outlined: true },
+      accept: () => this.updateStatus(id, nextStatus),
+    });
+  }
+
   cancel(): void {
-    void this.router.navigate([DEGREES_ROUTE]);
+    const id = this.degreeId();
+    if (this.isEditMode() && id) {
+      void this.router.navigate([DEGREES_ROUTE, id]);
+    } else {
+      void this.router.navigate([DEGREES_ROUTE]);
+    }
+  }
+
+  statusLabel(value: DegreeStatus): string {
+    return value === 'ACTIVO' ? 'Activo' : 'Inactivo';
+  }
+
+  statusSeverity(value: DegreeStatus): 'success' | 'danger' {
+    return value === 'ACTIVO' ? 'success' : 'danger';
   }
 
   private loadDegree(id: number): void {
@@ -114,10 +158,37 @@ export class DegreeFormComponent implements OnInit {
         }
 
         this.originalDegree = degree;
+        this.degreeName.set(degree.name);
+        this.currentStatus.set(degree.status);
         this.hasRelatedPlans.set((degree.studyPlans ?? []).length > 0);
         this.form.patchValue({
           name: degree.name,
         });
+      },
+    });
+  }
+
+  private updateStatus(id: number, nextStatus: DegreeStatus): void {
+    const isActivating = nextStatus === 'ACTIVO';
+    this.degreeService.updateStatus(id, nextStatus).subscribe({
+      next: (degree) => {
+        if (!degree || degree.id === 0) {
+          this.notification.error(
+            isActivating ? 'Error al activar la carrera' : 'Error al desactivar la carrera',
+            this.error() ?? 'No se pudo cambiar el estado de la carrera.',
+          );
+          return;
+        }
+
+        this.currentStatus.set(degree.status);
+        if (this.originalDegree) {
+          this.originalDegree = { ...this.originalDegree, status: degree.status };
+        }
+
+        this.notification.success(
+          isActivating ? 'Carrera activada correctamente' : 'Carrera desactivada correctamente',
+          `La carrera "${degree.name}" ahora está ${isActivating ? 'activa' : 'inactiva'}.`,
+        );
       },
     });
   }
@@ -131,31 +202,19 @@ export class DegreeFormComponent implements OnInit {
     operation.subscribe({
       next: (degree) => {
         if (!degree || degree.id === 0) {
+          this.notification.error(
+            isEdit ? 'Error al actualizar la carrera' : 'Error al registrar la carrera',
+            this.error() ?? 'No se pudo guardar la carrera.',
+          );
           return;
         }
 
-        const toastPayload = {
-          severity: 'success' as const,
-          summary: isEdit ? 'Carrera actualizada' : 'Carrera registrada correctamente',
-          detail: isEdit
-            ? `La carrera "${degree.name}" fue modificada con éxito.`
-            : 'La carrera se agregó correctamente al sistema',
-        };
+        this.notification.success(
+          isEdit ? 'Carrera actualizada correctamente' : 'Carrera registrada correctamente',
+          `La carrera "${degree.name}" se guardó correctamente.`,
+        );
 
-        // 1. Guardar en el servicio reactivo
-        this.degreeService.setPendingToast(toastPayload);
-
-        // 2. Guardar en sessionStorage como respaldo
-        try {
-          sessionStorage.setItem('degrees_pending_toast', JSON.stringify(toastPayload));
-        } catch {
-          // Ignorar si el almacenamiento está restringido
-        }
-
-        // 3. Navegar a la lista de carreras
-        void this.router.navigate([DEGREES_ROUTE], {
-          state: { toast: toastPayload },
-        });
+        void this.router.navigate([DEGREES_ROUTE]);
       },
     });
   }

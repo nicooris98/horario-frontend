@@ -1,4 +1,4 @@
-import { DatePipe } from '@angular/common';
+﻿import { DatePipe } from '@angular/common';
 import { ChangeDetectionStrategy, Component, OnInit, inject, signal } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { MenuItem } from 'primeng/api';
@@ -8,6 +8,7 @@ import { CardModule } from 'primeng/card';
 import { Message } from 'primeng/message';
 import { SkeletonModule } from 'primeng/skeleton';
 import { TagModule } from 'primeng/tag';
+import { DetailHeaderComponent } from '../../../../shared/components/detail-header/detail-header';
 import { Degree, DegreeStatus } from '../../models/degree.model';
 import { DegreeService } from '../../services/degree.service';
 
@@ -16,7 +17,7 @@ const DEGREES_ROUTE = '/administracion/carreras';
 @Component({
   selector: 'app-degree-detail',
   standalone: true,
-  imports: [DatePipe, BreadcrumbModule, ButtonModule, CardModule, Message, SkeletonModule, TagModule],
+  imports: [DatePipe, BreadcrumbModule, ButtonModule, CardModule, Message, SkeletonModule, TagModule, DetailHeaderComponent],
   templateUrl: './degree-detail.html',
   styleUrl: './degree-detail.css',
   changeDetection: ChangeDetectionStrategy.OnPush,

@@ -1,4 +1,4 @@
-import { Component, EventEmitter, Output, input, inject } from '@angular/core';
+﻿import { Component, EventEmitter, Output, input, inject } from '@angular/core';
 import { NavigationEnd, Router } from '@angular/router';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ConfirmationService, MenuItem } from 'primeng/api';
@@ -44,16 +44,16 @@ export class Sidebar {
       last: { borderWidth: '0', bottomBorderRadius: '0.625rem' },
     },
     item: {
-      focusBackground: 'var(--p-primary-color)',
+      focusBackground: 'rgba(255, 255, 255, 0.12)',
       color: 'rgba(255, 255, 255, 0.88)',
       focusColor: '#FFFFFF',
-      gap: '0.75rem',
-      padding: '0.75rem 0.875rem',
-      borderRadius: '0.625rem',
-      icon: { color: 'currentColor', focusColor: 'currentColor', size: '1rem' },
+      gap: '0.625rem',
+      padding: '0.5rem 0.75rem',
+      borderRadius: '0.5rem',
+      icon: { color: 'currentColor', focusColor: 'currentColor', size: '0.95rem' },
       label: { fontWeight: '500', fontSize: '0.875rem' },
     },
-    submenu: { indent: '0.75rem' },
+    submenu: { indent: '0.5rem' },
     submenuIcon: { color: 'rgba(255, 255, 255, 0.72)', focusColor: '#FFFFFF' },
   };
 
@@ -83,8 +83,8 @@ export class Sidebar {
 
   private updateMenuItems(): void {
     const items = this.filterMenuItems(MENU_ITEMS);
-    this.navigationItems = items.filter((item) => !!item.routerLink);
-    this.administrationItems = items.filter((item) => !item.routerLink);
+    this.navigationItems = items.filter((item) => item.label !== 'Administración');
+    this.administrationItems = items.filter((item) => item.label === 'Administración');
   }
 
   private filterMenuItems(items: typeof MENU_ITEMS): MenuItem[] {
@@ -111,7 +111,7 @@ export class Sidebar {
                       linkStyle: {
                         backgroundColor: 'var(--p-primary-color)',
                         color: 'var(--p-primary-contrast-color)',
-                        borderRadius: 'var(--p-content-border-radius)',
+                        borderRadius: '0.5rem',
                         fontWeight: '600',
                       },
                     }

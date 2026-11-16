@@ -1,0 +1,49 @@
+﻿<section aria-labelledby="regime-detail-title">
+  <p-breadcrumb
+    class="page-breadcrumb"
+    [home]="breadcrumbHome"
+    [model]="breadcrumbItems()"
+    [dt]="breadcrumbTheme"
+  />
+
+  <app-detail-header
+    headingId="regime-detail-title"
+    title="Detalle del régimen"
+    [recordName]="regime()?.name ?? (loading() ? 'Cargando...' : 'Régimen')"
+    editLabel="Editar régimen"
+    [showEdit]="!!regime()"
+    (back)="goBack()"
+    (edit)="goToEdit()"
+  />
+
+  @if (errorMessage()) {
+    <p-message class="detail-error" severity="error" role="alert">
+      {{ errorMessage() }}
+    </p-message>
+  }
+
+  @if (loading()) {
+    <p-card>
+      <dl class="detail-list">
+        <div class="detail-row">
+          <dt><p-skeleton width="8rem" /></dt>
+          <dd><p-skeleton width="12rem" /></dd>
+        </div>
+      </dl>
+    </p-card>
+  } @else if (regime(); as current) {
+    <p-card>
+      <h2 class="detail-section-title">
+        <i class="pi pi-file" aria-hidden="true"></i>
+        Información del régimen
+      </h2>
+
+      <dl class="detail-list">
+        <div class="detail-row">
+          <dt>Nombre</dt>
+          <dd>{{ current.name }}</dd>
+        </div>
+      </dl>
+    </p-card>
+  }
+</section>

@@ -1,4 +1,4 @@
-<section aria-labelledby="degree-detail-title">
+﻿<section aria-labelledby="degree-detail-title">
   <p-breadcrumb
     class="page-breadcrumb"
     [home]="breadcrumbHome"
@@ -6,40 +6,17 @@
     [dt]="breadcrumbTheme"
   />
 
-  <header class="page-header">
-    <div class="page-heading">
-      <p-button
-        icon="pi pi-arrow-left"
-        severity="secondary"
-        [outlined]="true"
-        ariaLabel="Volver al listado"
-        (onClick)="goBack()"
-      />
-      <div class="detail-title-row">
-        <h1 id="degree-detail-title" class="page-title">
-          Detalle de la carrera{{ degree() ? ': ' + degree()!.name : '' }}
-        </h1>
-        @if (degree(); as current) {
-          <p-tag
-            icon="pi pi-circle-fill"
-            [value]="statusLabel(current.status)"
-            [severity]="statusSeverity(current.status)"
-            [rounded]="true"
-          />
-        }
-      </div>
-      <p class="page-subtitle">Consultá la información completa de la carrera.</p>
-    </div>
-
-    @if (degree()) {
-      <p-button
-        label="Editar carrera"
-        icon="pi pi-pencil"
-        [outlined]="true"
-        (onClick)="goEdit()"
-      />
-    }
-  </header>
+  <app-detail-header
+    headingId="degree-detail-title"
+    title="Detalle de la carrera"
+    [recordName]="degree()?.name ?? (loading() ? 'Cargando...' : 'Carrera')"
+    [statusLabel]="degree() ? statusLabel(degree()!.status) : null"
+    [statusSeverity]="degree() ? statusSeverity(degree()!.status) : 'secondary'"
+    editLabel="Editar carrera"
+    [showEdit]="!!degree()"
+    (back)="goBack()"
+    (edit)="goEdit()"
+  />
 
   @if (error()) {
     <p-message class="detail-error" severity="error" role="alert">
@@ -50,7 +27,7 @@
   @if (loading()) {
     <p-card>
       <dl class="detail-list">
-        @for (_ of [1, 2, 3, 4]; track $index) {
+        @for (_ of [1, 2, 3]; track $index) {
           <div class="detail-row">
             <dt><p-skeleton width="8rem" /></dt>
             <dd><p-skeleton width="12rem" /></dd>
@@ -71,10 +48,6 @@
           <dd>{{ current.name }}</dd>
         </div>
         <div class="detail-row">
-          <dt>Planes de estudio</dt>
-          <dd>{{ current.studyPlans?.length ?? 0 }}</dd>
-        </div>
-        <div class="detail-row">
           <dt>Última actualización</dt>
           <dd>{{ current.updatedAt ? (current.updatedAt | date: 'dd/MM/yyyy') : '—' }}</dd>
         </div>
@@ -90,39 +63,6 @@
           </dd>
         </div>
       </dl>
-    </p-card>
-
-    <p-card>
-      <h2 class="detail-section-title">
-        <i class="pi pi-sitemap" aria-hidden="true"></i>
-        Planes de estudio asociados ({{ current.studyPlans?.length ?? 0 }})
-      </h2>
-
-      @if ((current.studyPlans ?? []).length > 0) {
-        <dl class="detail-list">
-          @for (plan of current.studyPlans; track plan.id) {
-            <div class="detail-row">
-              <dt>{{ plan.name }}</dt>
-              <dd>
-                <p-tag
-                  icon="pi pi-circle-fill"
-                  [value]="plan.active ? 'Activo' : 'Inactivo'"
-                  [severity]="plan.active ? 'success' : 'danger'"
-                  [rounded]="true"
-                />
-              </dd>
-            </div>
-          }
-        </dl>
-      } @else {
-        <div class="table-empty-state">
-          <span class="table-empty-icon" aria-hidden="true">
-            <i class="pi pi-sitemap"></i>
-          </span>
-          <p class="table-empty-title">Sin planes de estudio</p>
-          <p class="table-empty-description">No hay planes de estudio asociados para esta carrera.</p>
-        </div>
-      }
     </p-card>
   } @else if (!error()) {
     <p-card>

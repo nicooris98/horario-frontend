@@ -1,0 +1,80 @@
+﻿<section aria-labelledby="study-plan-detail-title">
+  <p-breadcrumb
+    class="page-breadcrumb"
+    [home]="breadcrumbHome"
+    [model]="breadcrumbItems()"
+    [dt]="breadcrumbTheme"
+  />
+
+  <app-detail-header
+    headingId="study-plan-detail-title"
+    title="Detalle Plan de Estudios"
+    [recordName]="studyPlan()?.name ?? (loading() ? 'Cargando...' : 'Plan de estudio')"
+    [statusLabel]="studyPlan() ? statusLabel(studyPlan()!.status) : null"
+    [statusSeverity]="studyPlan() ? statusSeverity(studyPlan()!.status) : 'secondary'"
+    editLabel="Editar plan"
+    [showEdit]="!!studyPlan()"
+    (back)="goBack()"
+    (edit)="goToEdit()"
+  />
+
+  @if (errorMessage()) {
+    <p-message class="detail-error" severity="error" role="alert">
+      {{ errorMessage() }}
+    </p-message>
+  }
+
+  @if (loading()) {
+    <p-card>
+      <dl class="detail-list">
+        @for (_ of [1, 2, 3, 4, 5]; track $index) {
+          <div class="detail-row">
+            <dt><p-skeleton width="10rem" /></dt>
+            <dd><p-skeleton width="14rem" /></dd>
+          </div>
+        }
+      </dl>
+    </p-card>
+  } @else if (studyPlan(); as current) {
+    <p-card styleClass="detail-highlights">
+      <ul class="highlights">
+        @for (item of highlights(); track item.label) {
+          <li class="highlight">
+            <span class="highlight-icon" aria-hidden="true"><i [class]="item.icon"></i></span>
+            <span>
+              <strong class="highlight-value">{{ item.value }}</strong>
+              <span class="highlight-label">{{ item.label }}</span>
+            </span>
+          </li>
+        }
+      </ul>
+    </p-card>
+
+    <p-card>
+      <h2 class="detail-section-title">
+        <i class="pi pi-file" aria-hidden="true"></i>
+        Información del plan de estudio
+      </h2>
+
+      <dl class="detail-list">
+        @for (row of rows(); track row.label) {
+          <div class="detail-row">
+            <dt>{{ row.label }}</dt>
+            <dd>{{ row.value }}</dd>
+          </div>
+        }
+        <div class="detail-row">
+          <dt>Estado</dt>
+          <dd>
+            <p-tag
+              icon="pi pi-circle-fill"
+              [value]="statusLabel(current.status)"
+              [severity]="statusSeverity(current.status)"
+              [rounded]="true"
+            />
+          </dd>
+        </div>
+      </dl>
+    </p-card>
+  }
+</section>

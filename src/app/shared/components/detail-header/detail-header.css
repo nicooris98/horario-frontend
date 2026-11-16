@@ -1,0 +1,66 @@
+﻿:host {
+  display: block;
+  width: 100%;
+  min-width: 0;
+}
+
+.detail-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+  padding-bottom: 1.25rem;
+  margin-bottom: 1.5rem;
+  border-bottom: 1px solid var(--p-surface-200);
+}
+
+.detail-header-main {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.875rem;
+  min-width: 0;
+  flex: 1 1 auto;
+}
+
+.detail-header-copy {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  min-width: 0;
+}
+
+.detail-header-eyebrow {
+  margin: 0;
+  color: var(--p-text-muted-color);
+  font-size: 0.875rem;
+  font-weight: 500;
+  line-height: 1.35;
+}
+
+.detail-header-title-row {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.detail-header-name {
+  margin: 0;
+  color: var(--p-text-color);
+  font-size: clamp(1.375rem, 2.4vw, 1.875rem);
+  font-weight: 600;
+  line-height: 1.25;
+  overflow-wrap: anywhere;
+}
+
+:host ::ng-deep .p-tag-icon {
+  font-size: 0.5rem;
+}
+
+@media (max-width: 575px) {
+  .detail-header {
+    padding-bottom: 1rem;
+    margin-bottom: 1.25rem;
+  }
+}
