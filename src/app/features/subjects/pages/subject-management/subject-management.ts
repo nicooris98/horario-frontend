@@ -1,4 +1,4 @@
-import {
+﻿import {
   Component,
   DestroyRef,
   OnInit,
@@ -106,6 +106,7 @@ export class SubjectManagement implements OnInit {
   protected readonly rowsPerPageOptions = [5, 10, 20];
 
   readonly subjects = signal<Subject[]>([]);
+  readonly loading = signal(false);
   readonly errorMessage = signal('');
   readonly rowMenuItems = signal<MenuItem[]>([]);
 
@@ -115,6 +116,10 @@ export class SubjectManagement implements OnInit {
     () => this.auth.hasPermission('subjects.update') || this.auth.hasPermission('subjects.delete'),
   );
   readonly hasRowMenuActions = computed(() => this.canUpdate() || this.canChangeStatus());
+
+  // Estado de los filtros: solo se deshabilitan si NO hay materias registradas en el sistema
+  // (sin confundir con estados de carga o errores de consulta)
+  readonly filtersDisabled = computed(() => !this.loading() && !this.errorMessage() && this.subjects().length === 0);
 
   readonly search = signal('');
   readonly studyPlanFilter = signal<number | null>(null);
@@ -138,12 +143,13 @@ export class SubjectManagement implements OnInit {
   readonly yearOptions = computed<Option<number>[]>(() =>
     [...new Set(this.subjects().map((subject) => subject.year))]
       .sort((a, b) => a - b)
-      .map((year) => ({ value: year, label: `${year}° año` })),
+      .map((year) => ({ label: `${year}° Año`, value: year })),
   );
 
-  readonly statusOptions: Option<string>[] = [
-    { value: SUBJECT_STATUS.ACTIVE, label: 'Activo' },
-    { value: SUBJECT_STATUS.INACTIVE, label: 'Inactivo' },
+  readonly statusOptions = [
+    { label: 'Todos los estados', value: null },
+    { label: 'Activo', value: SUBJECT_STATUS.ACTIVE },
+    { label: 'Inactivo', value: SUBJECT_STATUS.INACTIVE },
   ];
 
   readonly filteredSubjects = computed(() => {
@@ -189,11 +195,18 @@ export class SubjectManagement implements OnInit {
   }
 
   loadSubjects(): void {
+    this.loading.set(true);
     this.errorMessage.set('');
+
     this.subjectsService.getAll().subscribe({
-      next: (subjects) => this.subjects.set(subjects),
-      error: (error: HttpErrorResponse) =>
-        this.errorMessage.set(this.describeLoadError(error)),
+      next: (subjects) => {
+        this.subjects.set(subjects);
+        this.loading.set(false);
+      },
+      error: (error: HttpErrorResponse) => {
+        this.loading.set(false);
+        this.errorMessage.set(this.describeLoadError(error));
+      },
     });
   }
 

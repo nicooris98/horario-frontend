@@ -1,8 +1,14 @@
-import { HttpClient } from '@angular/common/http';
+﻿import { HttpClient } from '@angular/common/http';
 import { Injectable, inject, signal } from '@angular/core';
 import { Observable, catchError, finalize, map, of, tap } from 'rxjs';
 import { API_CONFIG } from '../../../core/config/api.config';
 import { Degree, DegreeRequest, DegreeStatus } from '../models/degree.model';
+
+export interface DegreeToastMessage {
+  severity: 'success' | 'info' | 'warn' | 'error';
+  summary: string;
+  detail: string;
+}
 
 @Injectable({
   providedIn: 'root',
@@ -15,6 +21,19 @@ export class DegreeService {
   readonly selectedDegree = signal<Degree | null>(null);
   readonly loading = signal(false);
   readonly error = signal<string | null>(null);
+  readonly pendingToast = signal<DegreeToastMessage | null>(null);
+
+  setPendingToast(toast: DegreeToastMessage | null): void {
+    this.pendingToast.set(toast);
+  }
+
+  consumePendingToast(): DegreeToastMessage | null {
+    const toast = this.pendingToast();
+    if (toast) {
+      this.pendingToast.set(null);
+    }
+    return toast;
+  }
 
   getDegrees(): Observable<Degree[]> {
     this.loading.set(true);

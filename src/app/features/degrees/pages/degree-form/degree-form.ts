@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, OnInit, computed, inject, signal } from '@angular/core';
+﻿import { ChangeDetectionStrategy, Component, OnInit, computed, inject, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { ConfirmationService, MenuItem } from 'primeng/api';
@@ -123,14 +123,39 @@ export class DegreeFormComponent implements OnInit {
   }
 
   private submit(request: DegreeRequest): void {
-    const operation =
-      this.isEditMode() && this.degreeId() !== null
-        ? this.degreeService.updateDegree(this.degreeId()!, request)
-        : this.degreeService.createDegree(request);
+    const isEdit = this.isEditMode() && this.degreeId() !== null;
+    const operation = isEdit
+      ? this.degreeService.updateDegree(this.degreeId()!, request)
+      : this.degreeService.createDegree(request);
 
     operation.subscribe({
-      next: () => {
-        void this.router.navigate([DEGREES_ROUTE]);
+      next: (degree) => {
+        if (!degree || degree.id === 0) {
+          return;
+        }
+
+        const toastPayload = {
+          severity: 'success' as const,
+          summary: isEdit ? 'Carrera actualizada' : 'Carrera registrada correctamente',
+          detail: isEdit
+            ? `La carrera "${degree.name}" fue modificada con éxito.`
+            : 'La carrera se agregó correctamente al sistema',
+        };
+
+        // 1. Guardar en el servicio reactivo
+        this.degreeService.setPendingToast(toastPayload);
+
+        // 2. Guardar en sessionStorage como respaldo
+        try {
+          sessionStorage.setItem('degrees_pending_toast', JSON.stringify(toastPayload));
+        } catch {
+          // Ignorar si el almacenamiento está restringido
+        }
+
+        // 3. Navegar a la lista de carreras
+        void this.router.navigate([DEGREES_ROUTE], {
+          state: { toast: toastPayload },
+        });
       },
     });
   }

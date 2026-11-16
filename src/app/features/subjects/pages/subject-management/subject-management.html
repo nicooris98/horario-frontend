@@ -1,4 +1,4 @@
-<section class="table-page" aria-labelledby="subject-management-title">
+﻿<section class="table-page" aria-labelledby="subject-management-title">
   <p-breadcrumb
     class="page-breadcrumb"
     [home]="breadcrumbHome"
@@ -33,6 +33,7 @@
           [fluid]="true"
           placeholder="Buscar por nombre de materia..."
           aria-label="Buscar por nombre de materia"
+          [disabled]="filtersDisabled()"
           [ngModel]="search()"
           (ngModelChange)="onSearchChange($event)"
         />
@@ -44,6 +45,7 @@
         (ngModelChange)="onStudyPlanFilterChange($event)"
         placeholder="Todos los planes"
         ariaLabel="Filtrar por plan de estudio"
+        [disabled]="filtersDisabled()"
         [showClear]="true"
         [fluid]="true"
         appendTo="body"
@@ -55,6 +57,7 @@
         (ngModelChange)="onYearFilterChange($event)"
         placeholder="Todos los años"
         ariaLabel="Filtrar por año de cursado"
+        [disabled]="filtersDisabled()"
         [showClear]="true"
         [fluid]="true"
         appendTo="body"
@@ -66,6 +69,7 @@
         (ngModelChange)="onStatusFilterChange($event)"
         placeholder="Todos los estados"
         ariaLabel="Filtrar por estado"
+        [disabled]="filtersDisabled()"
         [showClear]="true"
         [fluid]="true"
         appendTo="body"
@@ -75,6 +79,7 @@
     @if (!isMobile()) {
       <p-table
         [value]="filteredSubjects()"
+        [loading]="loading()"
         [paginator]="true"
         [first]="first()"
         [rows]="rows()"
@@ -143,7 +148,7 @@
                 <p class="table-empty-title">
                   {{
                     subjects().length
-                      ? 'Ninguna materia coincide con la búsqueda'
+                      ? 'No se encontraron materias'
                       : 'No hay materias registradas'
                   }}
                 </p>
@@ -161,8 +166,8 @@
       </p-table>
     } @else {
       <div class="subjects-mobile-view">
-        @if (paginatedSubjects().length > 0) {
-          <div class="subjects-card-list" role="list" aria-label="Listado de materias">
+        @if (filteredSubjects().length) {
+          <div class="subjects-card-list" role="list">
             @for (subject of paginatedSubjects(); track subject.id) {
               <article class="subject-mobile-card" role="listitem">
                 <header class="subject-card-header">
@@ -255,7 +260,7 @@
               <p class="table-empty-title">
                 {{
                   subjects().length
-                    ? 'Ninguna materia coincide con la búsqueda'
+                    ? 'No se encontraron materias'
                     : 'No hay materias registradas'
                 }}
               </p>
