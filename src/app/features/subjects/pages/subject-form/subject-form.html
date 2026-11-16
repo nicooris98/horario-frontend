@@ -1,10 +1,5 @@
 <section aria-labelledby="subject-form-title">
-  <p-breadcrumb
-    class="page-breadcrumb"
-    [home]="breadcrumbHome"
-    [model]="breadcrumbItems()"
-    [dt]="breadcrumbTheme"
-  />
+  <p-breadcrumb [model]="breadcrumbItems()" [home]="breadcrumbHome" styleClass="page-breadcrumb" />
 
   <header class="page-header">
     <div class="page-heading">
@@ -15,13 +10,23 @@
         [ariaLabel]="isEdit() ? 'Volver al detalle' : 'Volver al listado'"
         (onClick)="cancel()"
       />
-      <h1 id="subject-form-title" class="page-title">
-        {{ isEdit() ? 'Editar materia' : 'Nueva materia' }}
-      </h1>
+      <div class="form-title-row">
+        <h1 id="subject-form-title" class="page-title">
+          {{ isEdit() ? 'Editar materia' : 'Nueva materia' }}
+        </h1>
+        @if (isEdit() && subject(); as current) {
+          <p-tag
+            icon="pi pi-circle-fill"
+            [value]="statusLabel(current)"
+            [severity]="statusSeverity(current)"
+            [rounded]="true"
+          />
+        }
+      </div>
       <p class="page-subtitle">
         {{
           isEdit()
-            ? 'Modificá los datos de la materia.'
+            ? (subject()?.name || 'Modificá los datos de la materia.')
             : 'Completá los datos para crear una nueva materia.'
         }}
       </p>
@@ -186,9 +191,60 @@
         <p-button
           type="submit"
           [label]="isEdit() ? 'Guardar cambios' : 'Guardar materia'"
-          [disabled]="saving()"
+          [disabled]="saving() || deactivating()"
         />
       </div>
     </p-card>
   </form>
+
+  @if (isEdit() && subject(); as current) {
+    <p-card styleClass="status-card">
+      <div class="status-header">
+        <h2 class="form-section-title">
+          <i class="pi pi-sliders-h" aria-hidden="true"></i>
+          Acciones de estado
+        </h2>
+        <p-tag
+          icon="pi pi-circle-fill"
+          [value]="statusLabel(current)"
+          [severity]="statusSeverity(current)"
+          [rounded]="true"
+        />
+      </div>
+
+      <p class="status-description">
+        {{
+          isSubjectActive()
+            ? 'Desactivar materia: esta acción cambiará el estado del registro a inactivo.'
+            : 'Esta materia se encuentra inactiva. Podés volver a activarla cuando lo necesites.'
+        }}
+      </p>
+
+      @if (isSubjectActive()) {
+        <p-button
+          type="button"
+          label="Desactivar"
+          icon="pi pi-ban"
+          severity="danger"
+          [outlined]="true"
+          [loading]="deactivating()"
+          [disabled]="saving() || deactivating()"
+          (onClick)="confirmStatusChange()"
+        />
+      } @else {
+        <p-button
+          type="button"
+          label="Activar"
+          icon="pi pi-check-circle"
+          severity="success"
+          [outlined]="true"
+          [loading]="deactivating()"
+          [disabled]="saving() || deactivating()"
+          (onClick)="confirmStatusChange()"
+        />
+      }
+    </p-card>
+  }
 </section>
+
+<p-confirmdialog appendTo="body" />

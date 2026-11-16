@@ -1,0 +1,73 @@
+:host {
+  display: block;
+  width: 100%;
+  min-width: 0;
+}
+
+.class-hours-error {
+  display: block;
+  margin-bottom: 1rem;
+}
+
+.class-hours-card {
+  display: block;
+  margin-bottom: 1rem;
+}
+
+.class-hours-setting {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.class-hours-setting-label {
+  display: block;
+  color: var(--p-text-muted-color);
+  font-size: 0.875rem;
+}
+
+.class-hours-setting-value {
+  font-size: 1.25rem;
+}
+
+.class-hours-setting-help {
+  margin: 0.25rem 0 0;
+  color: var(--p-text-muted-color);
+  font-size: 0.875rem;
+}
+
+.class-hours-center {
+  text-align: center;
+}
+
+.class-hours-slot {
+  font-weight: 600;
+}
+
+.class-hours-wrong {
+  color: var(--p-red-500);
+  font-weight: 600;
+}
+
+.class-hours-form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.class-hours-preview {
+  margin: 0;
+  color: var(--p-text-muted-color);
+}
+
+.class-hours-form-error {
+  color: var(--p-red-500);
+}
+
+.class-hours-form-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.5rem;
+  margin-top: 1rem;
+}

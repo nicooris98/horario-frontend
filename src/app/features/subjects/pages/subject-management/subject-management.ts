@@ -9,6 +9,7 @@ import {
 import { FormsModule } from '@angular/forms';
 import { HttpErrorResponse } from '@angular/common/http';
 import { Router } from '@angular/router';
+import { forkJoin } from 'rxjs';
 import { ConfirmationService, MenuItem } from 'primeng/api';
 import { BreadcrumbModule } from 'primeng/breadcrumb';
 import { ButtonModule } from 'primeng/button';
@@ -23,6 +24,7 @@ import { PaginatorModule, PaginatorState } from 'primeng/paginator';
 import { SelectModule } from 'primeng/select';
 import { TableModule, TablePageEvent } from 'primeng/table';
 import { TagModule } from 'primeng/tag';
+import { NotificationService } from '../../../../core/services/notification.service';
 import { Auth } from '../../../auth/services/auth';
 import { SUBJECT_STATUS, Subject } from '../../interfaces/subject';
 import { Subjects } from '../../services/subjects';
@@ -91,12 +93,13 @@ export class SubjectManagement implements OnInit {
   private readonly auth = inject(Auth);
   private readonly router = inject(Router);
   private readonly confirmationService = inject(ConfirmationService);
+  private readonly notification = inject(NotificationService);
   private readonly destroyRef = inject(DestroyRef);
 
   protected readonly breadcrumbHome = BREADCRUMB_HOME;
   protected readonly breadcrumbTheme = BREADCRUMB_THEME;
   protected readonly breadcrumbItems: MenuItem[] = [
-    { label: 'Administración' },
+    { label: 'Gestión académica' },
     { label: 'Materias' },
   ];
 
@@ -106,7 +109,9 @@ export class SubjectManagement implements OnInit {
   protected readonly rowsPerPageOptions = [5, 10, 20];
 
   readonly subjects = signal<Subject[]>([]);
+  readonly loading = signal(false);
   readonly errorMessage = signal('');
+  readonly checkingPrerequisites = signal(false);
   readonly rowMenuItems = signal<MenuItem[]>([]);
 
   readonly canCreate = computed(() => this.auth.hasPermission('subjects.create'));
@@ -115,6 +120,10 @@ export class SubjectManagement implements OnInit {
     () => this.auth.hasPermission('subjects.update') || this.auth.hasPermission('subjects.delete'),
   );
   readonly hasRowMenuActions = computed(() => this.canUpdate() || this.canChangeStatus());
+
+  // Estado de los filtros: solo se deshabilitan si NO hay materias registradas en el sistema
+  // (sin confundir con estados de carga o errores de consulta)
+  readonly filtersDisabled = computed(() => !this.loading() && !this.errorMessage() && this.subjects().length === 0);
 
   readonly search = signal('');
   readonly studyPlanFilter = signal<number | null>(null);
@@ -138,12 +147,13 @@ export class SubjectManagement implements OnInit {
   readonly yearOptions = computed<Option<number>[]>(() =>
     [...new Set(this.subjects().map((subject) => subject.year))]
       .sort((a, b) => a - b)
-      .map((year) => ({ value: year, label: `${year}° año` })),
+      .map((year) => ({ label: `${year}° Año`, value: year })),
   );
 
-  readonly statusOptions: Option<string>[] = [
-    { value: SUBJECT_STATUS.ACTIVE, label: 'Activo' },
-    { value: SUBJECT_STATUS.INACTIVE, label: 'Inactivo' },
+  readonly statusOptions = [
+    { label: 'Todos los estados', value: null },
+    { label: 'Activo', value: SUBJECT_STATUS.ACTIVE },
+    { label: 'Inactivo', value: SUBJECT_STATUS.INACTIVE },
   ];
 
   readonly filteredSubjects = computed(() => {
@@ -189,11 +199,18 @@ export class SubjectManagement implements OnInit {
   }
 
   loadSubjects(): void {
+    this.loading.set(true);
     this.errorMessage.set('');
+
     this.subjectsService.getAll().subscribe({
-      next: (subjects) => this.subjects.set(subjects),
-      error: (error: HttpErrorResponse) =>
-        this.errorMessage.set(this.describeLoadError(error)),
+      next: (subjects) => {
+        this.subjects.set(subjects);
+        this.loading.set(false);
+      },
+      error: (error: HttpErrorResponse) => {
+        this.loading.set(false);
+        this.errorMessage.set(this.describeLoadError(error));
+      },
     });
   }
 
@@ -223,8 +240,48 @@ export class SubjectManagement implements OnInit {
   }
 
   goToCreate(): void {
-    if (!this.canCreate()) return;
-    this.router.navigate([SUBJECTS_ROUTE, 'nueva']);
+    if (!this.canCreate() || this.checkingPrerequisites()) return;
+
+    this.checkingPrerequisites.set(true);
+
+    forkJoin({
+      studyPlans: this.subjectsService.getStudyPlans(),
+      regimes: this.subjectsService.getRegimes(),
+    }).subscribe({
+      next: ({ studyPlans, regimes }) => {
+        this.checkingPrerequisites.set(false);
+        const availablePlans = studyPlans.filter((plan) => plan.status !== 'ARCHIVADO');
+
+        if (availablePlans.length === 0) {
+          this.notification.info(
+            'No hay planes de estudio disponibles',
+            'Para registrar una materia, primero necesitás crear un Plan de Estudios.',
+            6000,
+          );
+          return;
+        }
+
+        if (regimes.length === 0) {
+          this.notification.info(
+            'No hay regímenes disponibles',
+            'Para registrar una materia, primero necesitás crear un Régimen en Configuración institucional.',
+            6000,
+          );
+          return;
+        }
+
+        void this.router.navigate([SUBJECTS_ROUTE, 'nueva']);
+      },
+      error: (error: HttpErrorResponse) => {
+        this.checkingPrerequisites.set(false);
+        this.notification.error(
+          'Error al verificar requisitos previos',
+          error.status === 403
+            ? 'No tenés permisos para consultar los planes de estudio o regímenes.'
+            : 'No se pudieron consultar los planes de estudio y regímenes disponibles. Intentá nuevamente.',
+        );
+      },
+    });
   }
 
   goToDetail(subject: Subject): void {
@@ -237,6 +294,7 @@ export class SubjectManagement implements OnInit {
   }
 
   openRowMenu(event: Event, menu: Menu, subject: Subject): void {
+    event.stopPropagation();
     const active = isActive(subject);
     const items: MenuItem[] = [];
 
@@ -284,15 +342,26 @@ export class SubjectManagement implements OnInit {
 
   private changeStatus(subject: Subject, action: string): void {
     const status = isActive(subject) ? SUBJECT_STATUS.INACTIVE : SUBJECT_STATUS.ACTIVE;
+    const isDeactivating = status === SUBJECT_STATUS.INACTIVE;
     this.errorMessage.set('');
 
     this.subjectsService.updateStatus(subject.id, status).subscribe({
-      next: (updated) =>
+      next: (updated) => {
         this.subjects.update((list) =>
           list.map((item) => (item.id === updated.id ? updated : item)),
-        ),
-      error: (error: HttpErrorResponse) =>
-        this.errorMessage.set(this.describeStatusError(error, subject, action)),
+        );
+        this.notification.success(
+          isDeactivating
+            ? 'Materia desactivada correctamente'
+            : 'Materia activada correctamente',
+          `La materia "${updated.name}" fue ${isDeactivating ? 'desactivada' : 'activada'}.`,
+        );
+      },
+      error: (error: HttpErrorResponse) => {
+        const errorText = this.describeStatusError(error, subject, action);
+        this.errorMessage.set(errorText);
+        this.notification.error(`Error al ${action} la materia`, errorText);
+      },
     });
   }
 

@@ -1,4 +1,4 @@
-import { Component, OnInit, computed, inject, signal } from '@angular/core';
+﻿import { Component, OnInit, computed, inject, signal } from '@angular/core';
 import { HttpErrorResponse } from '@angular/common/http';
 import { ActivatedRoute, Router } from '@angular/router';
 import { MenuItem } from 'primeng/api';
@@ -7,6 +7,7 @@ import { ButtonModule } from 'primeng/button';
 import { CardModule } from 'primeng/card';
 import { Message } from 'primeng/message';
 import { TagModule } from 'primeng/tag';
+import { DetailHeaderComponent } from '../../../../shared/components/detail-header/detail-header';
 import { Auth } from '../../../auth/services/auth';
 import { Subject } from '../../interfaces/subject';
 import { Subjects } from '../../services/subjects';
@@ -28,7 +29,7 @@ interface DetailRow {
 @Component({
   selector: 'app-subject-detail',
   standalone: true,
-  imports: [BreadcrumbModule, ButtonModule, CardModule, Message, TagModule],
+  imports: [BreadcrumbModule, ButtonModule, CardModule, Message, TagModule, DetailHeaderComponent],
   templateUrl: './subject-detail.html',
   styleUrl: './subject-detail.css',
 })

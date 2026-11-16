@@ -1,0 +1,48 @@
+:host {
+  display: block;
+  width: 100%;
+  min-width: 0;
+}
+
+.shifts-error {
+  display: block;
+  margin-bottom: 1rem;
+}
+
+.shifts-filters {
+  margin-bottom: 1.25rem;
+}
+
+.shifts-search input {
+  width: 100%;
+}
+
+.shifts-name {
+  font-weight: 600;
+}
+
+.shifts-center {
+  text-align: center;
+}
+
+.shifts-actions {
+  display: inline-flex;
+  gap: 0.5rem;
+}
+
+.shifts-form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.shifts-form-error {
+  color: var(--p-red-500);
+}
+
+.shifts-form-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.5rem;
+  margin-top: 1rem;
+}

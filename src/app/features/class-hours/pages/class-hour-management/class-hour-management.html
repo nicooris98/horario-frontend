@@ -1,0 +1,177 @@
+<section aria-labelledby="class-hour-management-title">
+  <p-breadcrumb
+    class="page-breadcrumb"
+    [home]="breadcrumbHome"
+    [model]="breadcrumbItems"
+    [dt]="breadcrumbTheme"
+  />
+
+  <header class="page-header">
+    <div>
+      <h1 id="class-hour-management-title" class="page-title">Estructura horaria</h1>
+      <p class="page-subtitle">Franjas horarias que se usan para armar los horarios.</p>
+    </div>
+
+    <p-button label="Nueva franja" icon="pi pi-plus" (onClick)="openCreate()" />
+  </header>
+
+  @if (errorMessage()) {
+    <p-message class="class-hours-error" severity="error" role="alert">
+      {{ errorMessage() }}
+    </p-message>
+  }
+
+  <p-card class="class-hours-card">
+    <div class="class-hours-setting">
+      <div>
+        <span class="class-hours-setting-label">Hora cátedra</span>
+        <strong class="class-hours-setting-value">{{ classHourMinutes() }} minutos</strong>
+        <p class="class-hours-setting-help">Cada franja dura una hora cátedra.</p>
+      </div>
+
+      <p-button
+        label="Modificar"
+        icon="pi pi-pencil"
+        severity="secondary"
+        [outlined]="true"
+        (onClick)="openClassHourEdit()"
+      />
+    </div>
+  </p-card>
+
+  <p-card>
+    <p-table [value]="sortedClassHours()">
+      <ng-template #header>
+        <tr>
+          <th class="class-hours-center">N° de franja</th>
+          <th class="class-hours-center">Inicio</th>
+          <th class="class-hours-center">Fin</th>
+          <th class="class-hours-center">Duración</th>
+          <th class="class-hours-center">Acciones</th>
+        </tr>
+      </ng-template>
+
+      <ng-template #body let-classHour>
+        <tr>
+          <td class="class-hours-center class-hours-slot">{{ classHour.slotNumber }}</td>
+          <td class="class-hours-center">{{ shortTime(classHour.startTime) }}</td>
+          <td class="class-hours-center">{{ shortTime(classHour.endTime) }}</td>
+          <td
+            class="class-hours-center"
+            [class.class-hours-wrong]="!respectsClassHour(classHour)"
+            [title]="respectsClassHour(classHour) ? '' : 'No respeta la hora cátedra'"
+          >
+            {{ duration(classHour) }} min
+          </td>
+          <td class="class-hours-center">
+            <p-button
+              icon="pi pi-pencil"
+              [outlined]="true"
+              [ariaLabel]="'Editar franja ' + classHour.slotNumber"
+              (onClick)="openEdit(classHour)"
+            />
+          </td>
+        </tr>
+      </ng-template>
+
+      <ng-template #emptymessage>
+        <tr>
+          <td colspan="5">No hay franjas horarias cargadas.</td>
+        </tr>
+      </ng-template>
+    </p-table>
+  </p-card>
+
+  <p-dialog
+    [header]="editingClassHour() ? 'Editar franja' : 'Nueva franja'"
+    [visible]="dialogVisible()"
+    (visibleChange)="dialogVisible.set($event)"
+    [modal]="true"
+    [style]="{ width: '28rem' }"
+  >
+    <form class="class-hours-form" (ngSubmit)="save()">
+      <label for="class-hour-slot">N° de franja</label>
+      <input
+        id="class-hour-slot"
+        name="slotNumber"
+        type="number"
+        min="1"
+        pInputText
+        [ngModel]="slotNumberInput()"
+        (ngModelChange)="slotNumberInput.set($event); formError.set('')"
+      />
+
+      <label for="class-hour-start">Inicio</label>
+      <input
+        id="class-hour-start"
+        name="startTime"
+        type="time"
+        pInputText
+        [ngModel]="startTimeInput()"
+        (ngModelChange)="startTimeInput.set($event); formError.set('')"
+      />
+
+      @if (endTimePreview()) {
+        <p class="class-hours-preview">
+          Termina a las <strong>{{ endTimePreview() }}</strong> ({{ classHourMinutes() }} minutos).
+        </p>
+      }
+
+      @if (formError()) {
+        <small class="class-hours-form-error" role="alert">{{ formError() }}</small>
+      }
+
+      <div class="class-hours-form-actions">
+        <p-button
+          label="Cancelar"
+          severity="secondary"
+          [outlined]="true"
+          (onClick)="dialogVisible.set(false)"
+        />
+        <p-button type="submit" label="Guardar" [loading]="saving()" />
+      </div>
+    </form>
+  </p-dialog>
+
+  <p-dialog
+    header="Modificar hora cátedra"
+    [visible]="classHourDialogVisible()"
+    (visibleChange)="classHourDialogVisible.set($event)"
+    [modal]="true"
+    [style]="{ width: '28rem' }"
+  >
+    <form class="class-hours-form" (ngSubmit)="saveClassHour()">
+      <label for="class-hour-minutes">Duración en minutos</label>
+      <input
+        id="class-hour-minutes"
+        name="minutes"
+        type="number"
+        min="1"
+        pInputText
+        [ngModel]="classHourInput()"
+        (ngModelChange)="classHourInput.set($event); classHourError.set('')"
+      />
+
+      @if (classHours().length) {
+        <p-message severity="warn">
+          Se van a recalcular las {{ classHours().length }} franjas, manteniendo los recreos entre
+          ellas. Si ya hay horarios armados con estas franjas, también van a cambiar.
+        </p-message>
+      }
+
+      @if (classHourError()) {
+        <small class="class-hours-form-error" role="alert">{{ classHourError() }}</small>
+      }
+
+      <div class="class-hours-form-actions">
+        <p-button
+          label="Cancelar"
+          severity="secondary"
+          [outlined]="true"
+          (onClick)="classHourDialogVisible.set(false)"
+        />
+        <p-button type="submit" label="Guardar" [loading]="saving()" />
+      </div>
+    </form>
+  </p-dialog>
+</section>

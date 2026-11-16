@@ -8,6 +8,7 @@ import { CardModule } from 'primeng/card';
 import { Message } from 'primeng/message';
 import { SkeletonModule } from 'primeng/skeleton';
 import { TagModule } from 'primeng/tag';
+import { DetailHeaderComponent } from '../../../../shared/components/detail-header/detail-header';
 import { Degree, DegreeStatus } from '../../models/degree.model';
 import { DegreeService } from '../../services/degree.service';
 
@@ -16,7 +17,7 @@ const DEGREES_ROUTE = '/administracion/carreras';
 @Component({
   selector: 'app-degree-detail',
   standalone: true,
-  imports: [DatePipe, BreadcrumbModule, ButtonModule, CardModule, Message, SkeletonModule, TagModule],
+  imports: [DatePipe, BreadcrumbModule, ButtonModule, CardModule, Message, SkeletonModule, TagModule, DetailHeaderComponent],
   templateUrl: './degree-detail.html',
   styleUrl: './degree-detail.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -31,9 +32,8 @@ export class DegreeDetailComponent implements OnInit {
   readonly error = this.degreeService.error;
 
   protected readonly breadcrumbHome: MenuItem = { icon: 'pi pi-home', routerLink: '/dashboard' };
-  protected readonly breadcrumbTheme = { root: { background: 'transparent', padding: '0' } };
   protected readonly breadcrumbItems: MenuItem[] = [
-    { label: 'Administración' },
+    { label: 'Gestión académica' },
     { label: 'Carreras', routerLink: DEGREES_ROUTE },
     { label: 'Detalle' },
   ];

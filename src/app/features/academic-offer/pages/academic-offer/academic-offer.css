@@ -1,0 +1,70 @@
+:host {
+  display: block;
+  width: 100%;
+  min-width: 0;
+}
+
+.offer-error {
+  display: block;
+  margin-bottom: 1rem;
+}
+
+.offer-cycle {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 1.5rem;
+  font-weight: 600;
+}
+
+.offer-empty {
+  color: var(--p-text-muted-color);
+}
+
+.offer-card {
+  display: block;
+  margin-bottom: 1.5rem;
+}
+
+.offer-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.offer-card-title {
+  margin: 0;
+  font-size: 1.15rem;
+}
+
+.offer-name {
+  font-weight: 600;
+}
+
+.offer-center {
+  text-align: center;
+}
+
+.offer-actions {
+  display: inline-flex;
+  gap: 0.5rem;
+}
+
+.offer-form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.offer-form-error {
+  color: var(--p-red-500);
+}
+
+.offer-form-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.5rem;
+  margin-top: 1rem;
+}

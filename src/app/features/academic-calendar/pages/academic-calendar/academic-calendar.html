@@ -1,0 +1,269 @@
+<section aria-labelledby="academic-calendar-title">
+  <p-breadcrumb
+    class="page-breadcrumb"
+    [home]="breadcrumbHome"
+    [model]="breadcrumbItems"
+    [dt]="breadcrumbTheme"
+  />
+
+  <header class="page-header">
+    <div>
+      <h1 id="academic-calendar-title" class="page-title">Calendario académico</h1>
+      <p class="page-subtitle">Ciclos lectivos y cuatrimestres de la institución.</p>
+    </div>
+  </header>
+
+  @if (errorMessage()) {
+    <p-message class="calendar-error" severity="error" role="alert">
+      {{ errorMessage() }}
+    </p-message>
+  }
+
+  <p-card class="calendar-card">
+    <div class="calendar-card-header">
+      <h2 class="calendar-card-title">Ciclos lectivos</h2>
+      <p-button label="Nuevo ciclo" icon="pi pi-plus" (onClick)="openCreateCycle()" />
+    </div>
+
+    <p-table [value]="cycles()" [paginator]="true" [rows]="5">
+      <ng-template #header>
+        <tr>
+          <th>Año</th>
+          <th class="calendar-center">Desde</th>
+          <th class="calendar-center">Hasta</th>
+          <th class="calendar-center">Estado</th>
+          <th class="calendar-center">Acciones</th>
+        </tr>
+      </ng-template>
+
+      <ng-template #body let-cycle>
+        <tr>
+          <td class="calendar-name">{{ cycle.year }}</td>
+          <td class="calendar-center">{{ cycle.startDate }}</td>
+          <td class="calendar-center">{{ cycle.endDate }}</td>
+          <td class="calendar-center">
+            <p-tag
+              [value]="isActive(cycle) ? 'Activo' : 'Inactivo'"
+              [severity]="isActive(cycle) ? 'success' : 'danger'"
+            />
+          </td>
+          <td class="calendar-center">
+            <div class="calendar-actions">
+              <p-button
+                icon="pi pi-pencil"
+                [outlined]="true"
+                [ariaLabel]="'Editar ciclo ' + cycle.year"
+                (onClick)="openEditCycle(cycle)"
+              />
+              <p-button
+                [icon]="isActive(cycle) ? 'pi pi-ban' : 'pi pi-check-circle'"
+                [severity]="isActive(cycle) ? 'danger' : 'success'"
+                [outlined]="true"
+                [ariaLabel]="(isActive(cycle) ? 'Desactivar ciclo ' : 'Activar ciclo ') + cycle.year"
+                (onClick)="confirmCycleStatusChange(cycle)"
+              />
+            </div>
+          </td>
+        </tr>
+      </ng-template>
+
+      <ng-template #emptymessage>
+        <tr>
+          <td colspan="5">No hay ciclos lectivos registrados.</td>
+        </tr>
+      </ng-template>
+    </p-table>
+  </p-card>
+
+  <p-card class="calendar-card">
+    <div class="calendar-card-header">
+      <h2 class="calendar-card-title">Cuatrimestres</h2>
+      <p-button label="Nuevo cuatrimestre" icon="pi pi-plus" (onClick)="openCreateSemester()" />
+    </div>
+
+    <div class="calendar-filters">
+      <p-select
+        [options]="cycles()"
+        optionLabel="year"
+        [ngModel]="selectedCycle()"
+        (ngModelChange)="selectedCycle.set($event)"
+        placeholder="Todos los ciclos lectivos"
+        ariaLabel="Filtrar por ciclo lectivo"
+        [showClear]="true"
+      />
+    </div>
+
+    <p-table [value]="filteredSemesters()" [paginator]="true" [rows]="5">
+      <ng-template #header>
+        <tr>
+          <th class="calendar-center">N°</th>
+          <th>Cuatrimestre</th>
+          <th class="calendar-center">Desde</th>
+          <th class="calendar-center">Hasta</th>
+          <th class="calendar-center">Acciones</th>
+        </tr>
+      </ng-template>
+
+      <ng-template #body let-semester>
+        <tr>
+          <td class="calendar-center">{{ semester.number }}</td>
+          <td class="calendar-name">{{ semester.name }}</td>
+          <td class="calendar-center">{{ semester.startDate }}</td>
+          <td class="calendar-center">{{ semester.endDate }}</td>
+          <td class="calendar-center">
+            <div class="calendar-actions">
+              <p-button
+                icon="pi pi-pencil"
+                [outlined]="true"
+                [ariaLabel]="'Editar ' + semester.name"
+                (onClick)="openEditSemester(semester)"
+              />
+              <p-button
+                icon="pi pi-trash"
+                severity="danger"
+                [outlined]="true"
+                [ariaLabel]="'Eliminar ' + semester.name"
+                (onClick)="confirmDeleteSemester(semester)"
+              />
+            </div>
+          </td>
+        </tr>
+      </ng-template>
+
+      <ng-template #emptymessage>
+        <tr>
+          <td colspan="5">
+            {{
+              selectedCycle()
+                ? 'No hay cuatrimestres dentro de las fechas de este ciclo.'
+                : 'No hay cuatrimestres registrados.'
+            }}
+          </td>
+        </tr>
+      </ng-template>
+    </p-table>
+  </p-card>
+
+  <p-dialog
+    [header]="editingCycle() ? 'Editar ciclo lectivo' : 'Nuevo ciclo lectivo'"
+    [visible]="cycleDialogVisible()"
+    (visibleChange)="cycleDialogVisible.set($event)"
+    [modal]="true"
+    [style]="{ width: '28rem' }"
+  >
+    <form class="calendar-form" (ngSubmit)="saveCycle()">
+      <label for="cycle-year">Año</label>
+      <input
+        id="cycle-year"
+        name="year"
+        type="number"
+        pInputText
+        placeholder="2026"
+        [ngModel]="cycleYear()"
+        (ngModelChange)="cycleYear.set($event); cycleError.set('')"
+      />
+
+      <label for="cycle-start">Fecha de inicio</label>
+      <input
+        id="cycle-start"
+        name="startDate"
+        type="date"
+        pInputText
+        [ngModel]="cycleStart()"
+        (ngModelChange)="cycleStart.set($event); cycleError.set('')"
+      />
+
+      <label for="cycle-end">Fecha de fin</label>
+      <input
+        id="cycle-end"
+        name="endDate"
+        type="date"
+        pInputText
+        [ngModel]="cycleEnd()"
+        (ngModelChange)="cycleEnd.set($event); cycleError.set('')"
+      />
+
+      @if (cycleError()) {
+        <small class="calendar-form-error" role="alert">{{ cycleError() }}</small>
+      }
+
+      <div class="calendar-form-actions">
+        <p-button
+          label="Cancelar"
+          severity="secondary"
+          [outlined]="true"
+          (onClick)="cycleDialogVisible.set(false)"
+        />
+        <p-button type="submit" label="Guardar" [loading]="saving()" />
+      </div>
+    </form>
+  </p-dialog>
+
+  <p-dialog
+    [header]="editingSemester() ? 'Editar cuatrimestre' : 'Nuevo cuatrimestre'"
+    [visible]="semesterDialogVisible()"
+    (visibleChange)="semesterDialogVisible.set($event)"
+    [modal]="true"
+    [style]="{ width: '28rem' }"
+  >
+    <form class="calendar-form" (ngSubmit)="saveSemester()">
+      <label for="semester-name">Nombre</label>
+      <input
+        id="semester-name"
+        name="name"
+        type="text"
+        pInputText
+        placeholder="Primer cuatrimestre"
+        [ngModel]="semesterName()"
+        (ngModelChange)="semesterName.set($event); semesterError.set('')"
+      />
+
+      <label for="semester-number">Número</label>
+      <input
+        id="semester-number"
+        name="number"
+        type="number"
+        pInputText
+        placeholder="1"
+        [ngModel]="semesterNumber()"
+        (ngModelChange)="semesterNumber.set($event); semesterError.set('')"
+      />
+
+      <label for="semester-start">Fecha de inicio</label>
+      <input
+        id="semester-start"
+        name="startDate"
+        type="date"
+        pInputText
+        [ngModel]="semesterStart()"
+        (ngModelChange)="semesterStart.set($event); semesterError.set('')"
+      />
+
+      <label for="semester-end">Fecha de fin</label>
+      <input
+        id="semester-end"
+        name="endDate"
+        type="date"
+        pInputText
+        [ngModel]="semesterEnd()"
+        (ngModelChange)="semesterEnd.set($event); semesterError.set('')"
+      />
+
+      @if (semesterError()) {
+        <small class="calendar-form-error" role="alert">{{ semesterError() }}</small>
+      }
+
+      <div class="calendar-form-actions">
+        <p-button
+          label="Cancelar"
+          severity="secondary"
+          [outlined]="true"
+          (onClick)="semesterDialogVisible.set(false)"
+        />
+        <p-button type="submit" label="Guardar" [loading]="saving()" />
+      </div>
+    </form>
+  </p-dialog>
+
+  <p-confirmdialog />
+</section>

@@ -1,0 +1,45 @@
+﻿:host {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 auto;
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  min-height: 0;
+  box-sizing: border-box;
+}
+
+.regimes-error {
+  display: block;
+  flex: 0 0 auto;
+  margin-bottom: 1rem;
+}
+
+.regimes-filters {
+  display: flex;
+  flex: 0 0 auto;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  width: 100%;
+  min-width: 0;
+  margin-bottom: 1.25rem;
+}
+
+.regimes-search {
+  flex: 1 1 16rem;
+  min-width: 0;
+}
+
+.regimes-filters input {
+  width: 100%;
+  min-width: 0;
+}
+
+.regimes-name {
+  font-weight: 600;
+}
+
+.regimes-actions {
+  display: inline-flex;
+  gap: 0.5rem;
+}

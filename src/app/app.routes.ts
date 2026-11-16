@@ -1,4 +1,4 @@
-import { Routes } from '@angular/router';
+﻿import { Routes } from '@angular/router';
 import { authGuard } from './core/guards/auth-guard';
 import { permissionGuard } from './core/guards/permission-guard';
 
@@ -40,8 +40,7 @@ export const routes: Routes = [
         loadComponent: () =>
           import('./features/users/pages/create-user/create-user').then(
             (m) => m.CreateUser,
-          ),
-        
+          ),   
       },
       {
         path: 'administracion/roles',
@@ -81,6 +80,66 @@ export const routes: Routes = [
         loadComponent: () =>
           import('./features/users/pages/user-management/user-management').then(
             (m) => m.UserManagement,
+          ),
+      },
+      {
+        path: 'docentes',
+        loadChildren: () => import('./features/teachers/teachers.routes').then((m) => m.teachersRoutes),
+      },
+      {
+        path: 'configuracion/turnos',
+        loadComponent: () =>
+          import('./features/shifts/pages/shift-management/shift-management').then(
+            (m) => m.ShiftManagement,
+          ),
+      },
+      {
+        path: 'configuracion/estructura-horaria',
+        loadComponent: () =>
+          import('./features/class-hours/pages/class-hour-management/class-hour-management').then(
+            (m) => m.ClassHourManagement,
+          ),
+      },
+      {
+        path: 'configuracion/regimenes/nuevo',
+        loadComponent: () =>
+          import('./features/regimes/pages/regime-form/regime-form').then(
+            (m) => m.RegimeForm,
+          ),
+      },
+      {
+        path: 'configuracion/regimenes/:id/editar',
+        loadComponent: () =>
+          import('./features/regimes/pages/regime-form/regime-form').then(
+            (m) => m.RegimeForm,
+          ),
+      },
+      {
+        path: 'configuracion/regimenes/:id',
+        loadComponent: () =>
+          import('./features/regimes/pages/regime-detail/regime-detail').then(
+            (m) => m.RegimeDetail,
+          ),
+      },
+      {
+        path: 'configuracion/regimenes',
+        loadComponent: () =>
+          import('./features/regimes/pages/regime-management/regime-management').then(
+            (m) => m.RegimeManagement,
+          ),
+      },
+      {
+        path: 'configuracion/calendario-academico',
+        loadComponent: () =>
+          import('./features/academic-calendar/pages/academic-calendar/academic-calendar').then(
+            (m) => m.AcademicCalendar,
+          ),
+      },
+      {
+        path: 'academico/oferta-academica',
+        loadComponent: () =>
+          import('./features/academic-offer/pages/academic-offer/academic-offer').then(
+            (m) => m.AcademicOffer,
           ),
       },
       {
@@ -138,6 +197,15 @@ export const routes: Routes = [
         loadComponent: () =>
           import('./features/study-plans/pages/create-study-plan/create-study-plan').then(
             (m) => m.CreateStudyPlan,
+          ),
+      },
+      {
+        path: 'academico/planes-estudio/:id',
+        canActivate: [permissionGuard],
+        data: { permission: 'study-plans.read' },
+        loadComponent: () =>
+          import('./features/study-plans/pages/study-plan-detail/study-plan-detail').then(
+            (m) => m.StudyPlanDetail,
           ),
       },
       {

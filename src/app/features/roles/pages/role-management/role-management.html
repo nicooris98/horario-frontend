@@ -1,89 +1,289 @@
-<section class="role-management-page" aria-labelledby="role-management-title">
+<section class="table-page" aria-labelledby="role-management-title">
   <p-breadcrumb [model]="breadcrumbItems" [home]="breadcrumbHome" styleClass="page-breadcrumb" />
 
-  <header class="role-management-header">
+  <header class="page-header">
     <div>
-      <h1 id="role-management-title" class="role-management-title">Gestión de roles</h1>
-      <p class="role-management-subtitle">
+      <h1 id="role-management-title" class="page-title">Gestión de roles</h1>
+      <p class="page-subtitle">
         Roles del sistema y los permisos de cada uno.
       </p>
     </div>
   </header>
 
   @if (errorMessage()) {
-    <p-message class="role-management-error" severity="error" role="alert">
+    <p-message class="roles-error" severity="error" role="alert">
       {{ errorMessage() }}
     </p-message>
   }
 
   <p-card>
-    <p-table [value]="roles()" [loading]="loading()" [showLoader]="false" [paginator]="true" [rows]="10" responsiveLayout="scroll">
-      <ng-template #header>
-        <tr>
-          <th>Rol</th>
-          <th>Descripción</th>
-          <th>Estado</th>
-          <th>Permisos</th>
-        </tr>
-      </ng-template>
+    <div class="roles-filters" role="search">
+      <p-iconfield class="roles-search">
+        <p-inputicon class="pi pi-search" />
+        <input
+          type="text"
+          pInputText
+          [fluid]="true"
+          placeholder="Buscar por rol o descripción..."
+          aria-label="Buscar por rol o descripción"
+          [disabled]="filtersDisabled()"
+          [ngModel]="search()"
+          (ngModelChange)="onSearchChange($event)"
+        />
+      </p-iconfield>
 
-      <ng-template #body let-role>
-        <tr>
-          <td>{{ role.name }}</td>
-          <td>{{ role.description || '—' }}</td>
-          <td>
-            <p-tag
-              [value]="role.isActive ? 'Activo' : 'Inactivo'"
-              [severity]="role.isActive ? 'success' : 'warn'"
-            />
-          </td>
-          <td class="permissions-cell">
-            <p-autocomplete
-              [ngModel]="permissionsLabel(role)"
-              [suggestions]="[]"
-              [typeahead]="false"
-              [readonly]="true"
-              (completeMethod)="noopComplete()"
-              (onDropdownClick)="togglePermissionsPanel(role)"
-              [dropdown]="true"
-              dropdownMode="blank"
-              [fluid]="true"
-              inputId="role-permissions-{{ role.id }}"
-              ariaLabel="Ver permisos del rol"
-              styleClass="permissions-autocomplete"
-            >
-              <ng-template #loader></ng-template>
-            </p-autocomplete>
-            @if (expandedRoleId() === role.id) {
-              <div class="permissions-panel" role="region" [attr.aria-label]="'Permisos de ' + role.name">
-                @if (permissionNames(role).length) {
-                  @for (name of permissionNames(role); track name) {
-                    <span class="permissions-item">{{ name }}</span>
-                  }
-                } @else {
-                  <span class="permissions-empty">Sin permisos asignados.</span>
-                }
-              </div>
-            }
-          </td>
-        </tr>
-      </ng-template>
+      <p-select
+        [options]="statusOptions"
+        [ngModel]="statusFilter()"
+        (ngModelChange)="onStatusFilterChange($event)"
+        placeholder="Todos los estados"
+        ariaLabel="Filtrar por estado"
+        [disabled]="filtersDisabled()"
+        [showClear]="true"
+        [fluid]="true"
+        appendTo="body"
+      />
+    </div>
 
-      <ng-template #emptymessage>
-        <tr>
-          <td colspan="4">No hay roles registrados.</td>
-        </tr>
-      </ng-template>
-      <ng-template #loadingbody>
-        @for (_ of [1, 2, 3, 4, 5]; track $index) {
+    @if (!isMobile()) {
+      <p-table
+        [value]="filteredRoles()"
+        [loading]="loading()"
+        [paginator]="true"
+        [first]="first()"
+        [rows]="rows()"
+        [rowsPerPageOptions]="rowsPerPageOptions"
+        [showCurrentPageReport]="true"
+        currentPageReportTemplate="Mostrando {first} a {last} de {totalRecords} roles"
+        [tableStyle]="{ 'min-width': '52rem' }"
+        (onPage)="onPageChange($event)"
+      >
+        <ng-template #header>
           <tr>
-            <td><p-skeleton width="6rem" /></td>
-            <td><p-skeleton width="12rem" /></td>
-            <td><p-skeleton width="5rem" /></td>
-            <td><p-skeleton width="12rem" height="2.5rem" /></td>
+            <th>Rol</th>
+            <th>Descripción</th>
+            <th>Cantidad de permisos</th>
+            <th>Estado</th>
+            <th class="table-col-center">Acciones</th>
           </tr>
+        </ng-template>
+
+        <ng-template #body let-role>
+          <tr>
+            <td class="roles-name">{{ role.name }}</td>
+            <td class="roles-description">{{ role.description || '—' }}</td>
+            <td>{{ permissionsCountLabel(role) }}</td>
+            <td>
+              <p-tag
+                icon="pi pi-circle-fill"
+                [value]="role.isActive ? 'Activo' : 'Inactivo'"
+                [severity]="role.isActive ? 'success' : 'warn'"
+                [rounded]="true"
+              />
+            </td>
+            <td class="table-col-center">
+              <div class="roles-actions">
+                <p-button
+                  label="Ver permisos"
+                  icon="pi pi-eye"
+                  size="small"
+                  [outlined]="true"
+                  [ariaLabel]="'Ver permisos de ' + role.name"
+                  (onClick)="openPermissionsDialog(role)"
+                />
+              </div>
+            </td>
+          </tr>
+        </ng-template>
+
+        <ng-template #emptymessage>
+          <tr class="table-empty-row">
+            <td colspan="5" class="table-empty-cell">
+              <div class="table-empty-state">
+                <span class="table-empty-icon" aria-hidden="true">
+                  <i class="pi pi-shield"></i>
+                </span>
+                <p class="table-empty-title">
+                  {{
+                    roles().length
+                      ? 'No se encontraron roles'
+                      : 'No hay roles registrados'
+                  }}
+                </p>
+                <p class="table-empty-description">
+                  {{
+                    roles().length
+                      ? 'Probá ajustando o limpiando los filtros seleccionados para ver otros resultados.'
+                      : 'No se encontraron roles configurados en el sistema.'
+                  }}
+                </p>
+              </div>
+            </td>
+          </tr>
+        </ng-template>
+      </p-table>
+    } @else {
+      <div class="mobile-view">
+        @if (filteredRoles().length) {
+          <div class="mobile-card-list" role="list">
+            @for (role of paginatedRoles(); track role.id) {
+              <article class="mobile-card" role="listitem">
+                <header class="mobile-card-header">
+                  <h2 class="mobile-card-title">{{ role.name }}</h2>
+                  <p-tag
+                    icon="pi pi-circle-fill"
+                    [value]="role.isActive ? 'Activo' : 'Inactivo'"
+                    [severity]="role.isActive ? 'success' : 'warn'"
+                    [rounded]="true"
+                  />
+                </header>
+
+                <dl class="mobile-card-details">
+                  <div class="mobile-card-field mobile-card-field-full">
+                    <dt>
+                      <i class="pi pi-align-left" aria-hidden="true"></i>
+                      Descripción
+                    </dt>
+                    <dd>{{ role.description || '—' }}</dd>
+                  </div>
+
+                  <div class="mobile-card-field mobile-card-field-full">
+                    <dt>
+                      <i class="pi pi-shield" aria-hidden="true"></i>
+                      Cantidad de permisos
+                    </dt>
+                    <dd>{{ permissionsCountLabel(role) }}</dd>
+                  </div>
+                </dl>
+
+                <footer class="mobile-card-actions">
+                  <p-button
+                    label="Ver permisos"
+                    icon="pi pi-eye"
+                    size="small"
+                    [outlined]="true"
+                    [ariaLabel]="'Ver permisos de ' + role.name"
+                    (onClick)="openPermissionsDialog(role)"
+                  />
+                </footer>
+              </article>
+            }
+          </div>
+        } @else {
+          <div class="mobile-empty">
+            <div class="table-empty-state">
+              <span class="table-empty-icon" aria-hidden="true">
+                <i class="pi pi-shield"></i>
+              </span>
+              <p class="table-empty-title">
+                {{
+                  roles().length
+                    ? 'No se encontraron roles'
+                    : 'No hay roles registrados'
+                }}
+              </p>
+              <p class="table-empty-description">
+                {{
+                  roles().length
+                    ? 'Probá ajustando o limpiando los filtros seleccionados para ver otros resultados.'
+                    : 'No se encontraron roles configurados en el sistema.'
+                }}
+              </p>
+            </div>
+          </div>
         }
-      </ng-template>
-    </p-table>
+
+        <p-paginator
+          class="mobile-paginator"
+          [first]="first()"
+          [rows]="rows()"
+          [totalRecords]="filteredRoles().length"
+          [rowsPerPageOptions]="rowsPerPageOptions"
+          [pageLinkSize]="3"
+          [showCurrentPageReport]="true"
+          currentPageReportTemplate="Mostrando {first} a {last} de {totalRecords} roles"
+          appendTo="body"
+          (onPageChange)="onPageChange($event)"
+        />
+      </div>
+    }
   </p-card>
+
+  <p-dialog
+    [visible]="permissionsDialogVisible()"
+    (visibleChange)="permissionsDialogVisible.set($event)"
+    [modal]="true"
+    [draggable]="false"
+    [resizable]="false"
+    [dismissableMask]="true"
+    [style]="{ width: 'min(44rem, 94vw)' }"
+    [header]="selectedRole() ? 'Permisos del rol: ' + selectedRole()!.name : 'Permisos del rol'"
+    appendTo="body"
+  >
+    @if (selectedRole(); as currentRole) {
+      <div class="permissions-dialog-content">
+        <div class="permissions-dialog-summary">
+          <p class="permissions-dialog-description">
+            {{ currentRole.description || 'Sin descripción registrada.' }}
+          </p>
+          <div class="permissions-dialog-meta">
+            <p-tag
+              icon="pi pi-circle-fill"
+              [value]="currentRole.isActive ? 'Activo' : 'Inactivo'"
+              [severity]="currentRole.isActive ? 'success' : 'warn'"
+              [rounded]="true"
+            />
+            <span class="permissions-dialog-total">
+              {{ permissionsCountLabel(currentRole) }} asignados
+            </span>
+          </div>
+        </div>
+
+        @if (groupedPermissions().length) {
+          <div class="permissions-groups">
+            @for (group of groupedPermissions(); track group.key) {
+              <section class="permissions-group" [attr.aria-label]="group.label">
+                <header class="permissions-group-header">
+                  <span class="permissions-group-title">
+                    <i [class]="group.icon" aria-hidden="true"></i>
+                    {{ group.label }}
+                  </span>
+                  <span class="permissions-group-count">
+                    {{ group.permissions.length }}
+                  </span>
+                </header>
+
+                <ul class="permissions-group-list">
+                  @for (perm of group.permissions; track perm.id) {
+                    <li class="permissions-group-item">
+                      <span class="permission-item-name">{{ perm.name }}</span>
+                    </li>
+                  }
+                </ul>
+              </section>
+            }
+          </div>
+        } @else {
+          <div class="table-empty-state permissions-dialog-empty">
+            <span class="table-empty-icon" aria-hidden="true">
+              <i class="pi pi-shield"></i>
+            </span>
+            <p class="table-empty-title">Sin permisos asignados</p>
+            <p class="table-empty-description">
+              Este rol no tiene permisos asociados actualmente.
+            </p>
+          </div>
+        }
+      </div>
+    }
+
+    <ng-template #footer>
+      <p-button
+        label="Cerrar"
+        severity="secondary"
+        [outlined]="true"
+        (onClick)="closePermissionsDialog()"
+      />
+    </ng-template>
+  </p-dialog>
 </section>

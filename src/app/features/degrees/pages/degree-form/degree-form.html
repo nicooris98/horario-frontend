@@ -1,10 +1,5 @@
 <section aria-labelledby="degree-form-title">
-  <p-breadcrumb
-    class="page-breadcrumb"
-    [home]="breadcrumbHome"
-    [model]="breadcrumbItems()"
-    [dt]="breadcrumbTheme"
-  />
+  <p-breadcrumb [model]="breadcrumbItems()" [home]="breadcrumbHome" styleClass="page-breadcrumb" />
 
   <header class="page-header">
     <div class="page-heading">
@@ -12,16 +7,26 @@
         icon="pi pi-arrow-left"
         severity="secondary"
         [outlined]="true"
-        ariaLabel="Volver al listado"
+        [ariaLabel]="isEditMode() ? 'Volver al detalle' : 'Volver al listado'"
         (onClick)="cancel()"
       />
-      <h1 id="degree-form-title" class="page-title">
-        {{ isEditMode() ? 'Editar carrera' : 'Nueva carrera' }}
-      </h1>
+      <div class="form-title-row">
+        <h1 id="degree-form-title" class="page-title">
+          {{ isEditMode() ? 'Editar carrera' : 'Nueva carrera' }}
+        </h1>
+        @if (isEditMode()) {
+          <p-tag
+            icon="pi pi-circle-fill"
+            [value]="statusLabel(currentStatus())"
+            [severity]="statusSeverity(currentStatus())"
+            [rounded]="true"
+          />
+        }
+      </div>
       <p class="page-subtitle">
         {{
           isEditMode()
-            ? 'Modificá los datos de la carrera.'
+            ? (degreeName() || 'Modificá los datos de la carrera.')
             : 'Completá los datos para crear una nueva carrera.'
         }}
       </p>
@@ -81,6 +86,55 @@
       </div>
     </p-card>
   </form>
+
+  @if (isEditMode()) {
+    <p-card styleClass="status-card">
+      <div class="status-header">
+        <h2 class="form-section-title">
+          <i class="pi pi-sliders-h" aria-hidden="true"></i>
+          Acciones de estado
+        </h2>
+        <p-tag
+          icon="pi pi-circle-fill"
+          [value]="statusLabel(currentStatus())"
+          [severity]="statusSeverity(currentStatus())"
+          [rounded]="true"
+        />
+      </div>
+
+      <p class="status-description">
+        {{
+          currentStatus() === 'ACTIVO'
+            ? 'Desactivar carrera: esta acción cambiará el estado del registro a inactivo.'
+            : 'Esta carrera se encuentra inactiva. Podés volver a activarla cuando lo necesites.'
+        }}
+      </p>
+
+      @if (currentStatus() === 'ACTIVO') {
+        <p-button
+          type="button"
+          label="Desactivar"
+          icon="pi pi-ban"
+          severity="danger"
+          [outlined]="true"
+          [loading]="isSubmitting()"
+          [disabled]="isSubmitting()"
+          (onClick)="confirmStatusChange()"
+        />
+      } @else {
+        <p-button
+          type="button"
+          label="Activar"
+          icon="pi pi-check-circle"
+          severity="success"
+          [outlined]="true"
+          [loading]="isSubmitting()"
+          [disabled]="isSubmitting()"
+          (onClick)="confirmStatusChange()"
+        />
+      }
+    </p-card>
+  }
 </section>
 
-<p-confirmdialog />
+<p-confirmdialog appendTo="body" />

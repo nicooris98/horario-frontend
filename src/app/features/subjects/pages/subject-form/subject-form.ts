@@ -1,4 +1,4 @@
-import { Component, DestroyRef, OnInit, computed, inject, signal } from '@angular/core';
+﻿import { Component, DestroyRef, OnInit, computed, inject, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { HttpErrorResponse } from '@angular/common/http';
 import {
@@ -11,22 +11,28 @@ import {
   Validators,
 } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
-import { MenuItem } from 'primeng/api';
+import { ConfirmationService, MenuItem } from 'primeng/api';
 import { BreadcrumbModule } from 'primeng/breadcrumb';
 import { ButtonModule } from 'primeng/button';
 import { CardModule } from 'primeng/card';
+import { ConfirmDialogModule } from 'primeng/confirmdialog';
 import { InputNumberModule } from 'primeng/inputnumber';
 import { InputTextModule } from 'primeng/inputtext';
 import { Message } from 'primeng/message';
 import { SelectModule } from 'primeng/select';
+import { TagModule } from 'primeng/tag';
 import { ToggleSwitchModule } from 'primeng/toggleswitch';
 import { forkJoin, of } from 'rxjs';
-import { CreateSubjectRequest, Regime, StudyPlan, Subject } from '../../interfaces/subject';
+import { NotificationService } from '../../../../core/services/notification.service';
+import { CreateSubjectRequest, Regime, SUBJECT_STATUS, StudyPlan, Subject } from '../../interfaces/subject';
 import { Subjects } from '../../services/subjects';
 import {
   BREADCRUMB_HOME,
   BREADCRUMB_THEME,
   SUBJECTS_ROUTE,
+  isActive,
+  statusLabel,
+  statusSeverity,
   subjectsBreadcrumb,
 } from '../../subject-display';
 
@@ -49,7 +55,7 @@ interface YearOption {
   label: string;
 }
 
-const ACTIVE_STATUS = 'ACTIVO';
+const ARCHIVED_STUDY_PLAN_STATUS = 'ARCHIVADO';
 
 function notBlank(control: AbstractControl<string>): ValidationErrors | null {
   return control.value?.trim() ? null : { required: true };
@@ -58,9 +64,15 @@ function notBlank(control: AbstractControl<string>): ValidationErrors | null {
 function getStudyPlanDurationYears(plan: StudyPlan | null | undefined): number | null {
   if (!plan) return null;
   const raw = plan.durationYears ?? plan.degree?.durationYears ?? plan.career?.durationYears;
-  if (typeof raw !== 'number' || !Number.isFinite(raw)) return null;
-  const duration = Math.trunc(raw);
-  return duration >= 1 ? duration : null;
+  const parsed = typeof raw === 'string' ? Number(raw) : raw;
+  if (typeof parsed !== 'number' || !Number.isFinite(parsed) || parsed <= 0) return null;
+  return parsed;
+}
+
+function getMaxAvailableYear(durationYears: number | null): number | null {
+  if (durationYears === null) return null;
+  const maxYear = Math.ceil(durationYears);
+  return maxYear >= 1 ? maxYear : null;
 }
 
 function formatStudyPlanLabel(plan: StudyPlan): string {
@@ -90,12 +102,15 @@ function extractBackendMessage(error: HttpErrorResponse): string | null {
     BreadcrumbModule,
     ButtonModule,
     CardModule,
+    ConfirmDialogModule,
     InputNumberModule,
     InputTextModule,
     Message,
     SelectModule,
+    TagModule,
     ToggleSwitchModule,
   ],
+  providers: [ConfirmationService],
   templateUrl: './subject-form.html',
   styleUrl: './subject-form.css',
 })
@@ -103,10 +118,14 @@ export class SubjectFormPage implements OnInit {
   private readonly subjectsService = inject(Subjects);
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
+  private readonly confirmationService = inject(ConfirmationService);
+  private readonly notification = inject(NotificationService);
   private readonly destroyRef = inject(DestroyRef);
 
   protected readonly breadcrumbHome = BREADCRUMB_HOME;
   protected readonly breadcrumbTheme = BREADCRUMB_THEME;
+  protected readonly statusLabel = statusLabel;
+  protected readonly statusSeverity = statusSeverity;
 
   readonly subjectId = signal<number | null>(null);
   readonly isEdit = computed(() => this.subjectId() !== null);
@@ -115,6 +134,8 @@ export class SubjectFormPage implements OnInit {
   readonly selectedStudyPlanId = signal<number | null>(null);
   readonly regimes = signal<Regime[]>([]);
   readonly saving = signal(false);
+  readonly deactivating = signal(false);
+  readonly isSubjectActive = computed(() => { const s = this.subject(); return s !== null && isActive(s); });
   readonly errorMessage = signal('');
 
   readonly form = new FormGroup<SubjectForm>({
@@ -149,7 +170,7 @@ export class SubjectFormPage implements OnInit {
   readonly studyPlanOptions = computed<StudyPlanOption[]>(() => {
     const currentId = this.subject()?.studyPlan.id;
     return this.studyPlans()
-      .filter((plan) => plan.status === ACTIVE_STATUS || plan.id === currentId)
+      .filter((plan) => plan.status !== ARCHIVED_STUDY_PLAN_STATUS || plan.id === currentId)
       .map((plan) => ({
         ...plan,
         label: formatStudyPlanLabel(plan),
@@ -169,10 +190,14 @@ export class SubjectFormPage implements OnInit {
     getStudyPlanDurationYears(this.selectedStudyPlan()),
   );
 
+  readonly selectedPlanMaxYear = computed<number | null>(() =>
+    getMaxAvailableYear(this.selectedPlanDurationYears()),
+  );
+
   readonly yearOptions = computed<YearOption[]>(() => {
-    const duration = this.selectedPlanDurationYears();
-    if (duration === null) return [];
-    return Array.from({ length: duration }, (_, index) => {
+    const maxYear = this.selectedPlanMaxYear();
+    if (maxYear === null) return [];
+    return Array.from({ length: maxYear }, (_, index) => {
       const year = index + 1;
       return { value: year, label: `${year}° Año` };
     });
@@ -248,7 +273,7 @@ export class SubjectFormPage implements OnInit {
       { emitEvent: false },
     );
 
-    this.syncYearControl(subject.studyPlan.id, false);
+    this.syncYearControl(subject.studyPlan.id, true);
     this.syncMaxTeachers(subject.allowsMultipleTeachers);
   }
 
@@ -257,26 +282,30 @@ export class SubjectFormPage implements OnInit {
     this.syncYearControl(studyPlanId, true);
   }
 
-  private syncYearControl(studyPlanId: number | null, resetYear: boolean): void {
+  private syncYearControl(studyPlanId: number | null, validatePreviousYear: boolean): void {
     const yearControl = this.form.controls.year;
+    const maxYear = this.selectedPlanMaxYear();
 
-    if (resetYear) {
-      yearControl.setValue(null, { emitEvent: false });
-      yearControl.markAsUntouched();
-      yearControl.markAsPristine();
-    }
-
-    const duration = this.selectedPlanDurationYears();
     const validators: ValidatorFn[] = [Validators.required, Validators.min(1)];
-    if (duration !== null) {
-      validators.push(Validators.max(duration));
+    if (maxYear !== null) {
+      validators.push(Validators.max(maxYear));
     }
     yearControl.setValidators(validators);
 
-    if (studyPlanId !== null && duration !== null) {
+    if (studyPlanId !== null && maxYear !== null) {
       yearControl.enable({ emitEvent: false });
+
+      if (validatePreviousYear) {
+        const currentYear = yearControl.value;
+        if (currentYear !== null && (currentYear < 1 || currentYear > maxYear)) {
+          yearControl.setValue(null, { emitEvent: false });
+          yearControl.markAsTouched();
+        }
+      }
     } else {
       yearControl.setValue(null, { emitEvent: false });
+      yearControl.markAsUntouched();
+      yearControl.markAsPristine();
       yearControl.disable({ emitEvent: false });
     }
 
@@ -320,13 +349,102 @@ export class SubjectFormPage implements OnInit {
     request.subscribe({
       next: (saved) => {
         this.saving.set(false);
+        this.notification.success(
+          id === null ? 'Materia registrada correctamente' : 'Materia actualizada correctamente',
+          `La materia "${saved.name}" se guardó correctamente.`,
+        );
         this.router.navigate(id === null ? [SUBJECTS_ROUTE] : [SUBJECTS_ROUTE, saved.id]);
       },
       error: (error: HttpErrorResponse) => {
         this.saving.set(false);
-        this.errorMessage.set(this.describeError(error));
+        const errorText = this.describeError(error);
+        this.errorMessage.set(errorText);
+        this.notification.error(
+          id === null ? 'Error al registrar la materia' : 'Error al actualizar la materia',
+          errorText,
+        );
       },
     });
+  }
+
+  confirmStatusChange(): void {
+    const current = this.subject();
+    if (!current || this.deactivating()) {
+      return;
+    }
+
+    const deactivating = isActive(current);
+    const pendingWarning = this.form.dirty
+      ? ' Tenés cambios pendientes en el formulario que no serán guardados.'
+      : '';
+
+    this.confirmationService.confirm({
+      header: deactivating ? 'Desactivar materia' : 'Activar materia',
+      message: deactivating
+        ? `¿Querés desactivar la materia "${current.name}"? Dejará de estar activa en el sistema.${pendingWarning}`
+        : `¿Querés activar la materia "${current.name}"?${pendingWarning}`,
+      icon: 'pi pi-exclamation-triangle',
+      acceptButtonProps: {
+        label: deactivating ? 'Desactivar' : 'Activar',
+        severity: deactivating ? 'danger' : 'success',
+      },
+      rejectButtonProps: {
+        label: 'Cancelar',
+        severity: 'secondary',
+        outlined: true,
+      },
+      accept: () => this.executeStatusChange(current, deactivating),
+    });
+  }
+
+  private executeStatusChange(current: Subject, deactivating: boolean): void {
+    this.deactivating.set(true);
+    this.errorMessage.set('');
+    const nextStatus = deactivating ? SUBJECT_STATUS.INACTIVE : SUBJECT_STATUS.ACTIVE;
+
+    this.subjectsService.updateStatus(current.id, nextStatus).subscribe({
+      next: (updated) => {
+        this.deactivating.set(false);
+        this.subject.set(updated);
+        this.notification.success(
+          deactivating ? 'Materia desactivada correctamente' : 'Materia activada correctamente',
+          `La materia "${updated.name}" ahora está ${deactivating ? 'inactiva' : 'activa'}.`,
+        );
+      },
+      error: (error: HttpErrorResponse) => {
+        this.deactivating.set(false);
+        const errorText = this.describeDeactivateError(error, current);
+        this.notification.error(
+          deactivating ? 'Error al desactivar la materia' : 'Error al activar la materia',
+          errorText,
+        );
+      },
+    });
+  }
+
+  private describeDeactivateError(error: HttpErrorResponse, subject: Subject): string {
+    if (error.status === 0) {
+      return 'No se pudo conectar con el servidor.';
+    }
+    if (error.status === 400) {
+      return (
+        extractBackendMessage(error) ??
+        `El servidor rechazó la desactivación de "${subject.name}".`
+      );
+    }
+    if (error.status === 403) {
+      return 'No tenés permisos para desactivar la materia.';
+    }
+    if (error.status === 404) {
+      return extractBackendMessage(error) ?? `La materia "${subject.name}" ya no existe.`;
+    }
+    if (error.status === 409) {
+      return (
+        extractBackendMessage(error) ??
+        `No se pudo desactivar la materia "${subject.name}" por un conflicto de estado.`
+      );
+    }
+    return `No se pudo desactivar la materia "${subject.name}".`;
   }
 
   cancel(): void {

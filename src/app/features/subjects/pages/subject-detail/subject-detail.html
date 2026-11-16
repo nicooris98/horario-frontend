@@ -1,45 +1,17 @@
 <section aria-labelledby="subject-detail-title">
-  <p-breadcrumb
-    class="page-breadcrumb"
-    [home]="breadcrumbHome"
-    [model]="breadcrumbItems()"
-    [dt]="breadcrumbTheme"
+  <p-breadcrumb [model]="breadcrumbItems()" [home]="breadcrumbHome" styleClass="page-breadcrumb" />
+
+  <app-detail-header
+    headingId="subject-detail-title"
+    title="Detalle de la materia"
+    [recordName]="subject()?.name ?? 'Cargando...'"
+    [statusLabel]="subject() ? statusLabel(subject()!) : null"
+    [statusSeverity]="subject() ? statusSeverity(subject()!) : 'secondary'"
+    editLabel="Editar materia"
+    [showEdit]="!!(subject() && canUpdate())"
+    (back)="goBack()"
+    (edit)="goToEdit()"
   />
-
-  <header class="page-header">
-    <div class="page-heading">
-      <p-button
-        icon="pi pi-arrow-left"
-        severity="secondary"
-        [outlined]="true"
-        ariaLabel="Volver al listado"
-        (onClick)="goBack()"
-      />
-      <div class="detail-title-row">
-        <h1 id="subject-detail-title" class="page-title">
-          Detalle de la materia{{ subject() ? ': ' + subject()!.name : '' }}
-        </h1>
-        @if (subject(); as current) {
-          <p-tag
-            icon="pi pi-circle-fill"
-            [value]="statusLabel(current)"
-            [severity]="statusSeverity(current)"
-            [rounded]="true"
-          />
-        }
-      </div>
-      <p class="page-subtitle">Consultá la información completa de la materia.</p>
-    </div>
-
-    @if (subject() && canUpdate()) {
-      <p-button
-        label="Editar materia"
-        icon="pi pi-pencil"
-        [outlined]="true"
-        (onClick)="goToEdit()"
-      />
-    }
-  </header>
 
   @if (errorMessage()) {
     <p-message class="detail-error" severity="error" role="alert">

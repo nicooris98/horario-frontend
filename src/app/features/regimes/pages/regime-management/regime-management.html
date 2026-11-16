@@ -1,0 +1,170 @@
+<section class="table-page" aria-labelledby="regime-management-title">
+  <p-breadcrumb [model]="breadcrumbItems" [home]="breadcrumbHome" styleClass="page-breadcrumb" />
+
+  <header class="page-header">
+    <div>
+      <h1 id="regime-management-title" class="page-title">Gestión de regímenes</h1>
+      <p class="page-subtitle">Administrá los regímenes de cursado de las materias (anual, cuatrimestral...).</p>
+    </div>
+
+    <p-button label="Nuevo régimen" icon="pi pi-plus" (onClick)="goToCreate()" />
+  </header>
+
+  @if (errorMessage()) {
+    <p-message class="regimes-error" severity="error" role="alert">
+      {{ errorMessage() }}
+    </p-message>
+  }
+
+  <p-card>
+    <div class="regimes-filters" role="search">
+      <p-iconfield class="regimes-search">
+        <p-inputicon class="pi pi-search" />
+        <input
+          type="text"
+          pInputText
+          [fluid]="true"
+          placeholder="Buscar por nombre de régimen..."
+          aria-label="Buscar por nombre de régimen"
+          [disabled]="filtersDisabled()"
+          [ngModel]="search()"
+          (ngModelChange)="onSearchChange($event)"
+        />
+      </p-iconfield>
+    </div>
+
+    @if (!isMobile()) {
+      <p-table
+        [value]="filteredRegimes()"
+        [loading]="loading()"
+        [paginator]="true"
+        [first]="first()"
+        [rows]="rows()"
+        [rowsPerPageOptions]="rowsPerPageOptions"
+        [showCurrentPageReport]="true"
+        currentPageReportTemplate="Mostrando {first} a {last} de {totalRecords} regímenes"
+        [tableStyle]="{ 'min-width': '32rem' }"
+        (onPage)="onPageChange($event)"
+      >
+        <ng-template #header>
+          <tr>
+            <th>Régimen</th>
+            <th class="table-col-center">Acciones</th>
+          </tr>
+        </ng-template>
+
+        <ng-template #body let-regime>
+          <tr>
+            <td class="regimes-name">{{ regime.name }}</td>
+            <td class="table-col-center">
+              <app-row-actions
+                [viewAriaLabel]="'Ver ' + regime.name"
+                [menuAriaLabel]="'Más acciones para ' + regime.name"
+                [actions]="rowActionsMap().get(regime.id) ?? []"
+                (view)="goToDetail(regime.id)"
+              />
+            </td>
+          </tr>
+        </ng-template>
+
+        <ng-template #emptymessage>
+          <tr class="table-empty-row">
+            <td colspan="2" class="table-empty-cell">
+              <div class="table-empty-state">
+                <span class="table-empty-icon" aria-hidden="true">
+                  <i class="pi pi-list"></i>
+                </span>
+                <p class="table-empty-title">
+                  {{ regimes().length ? 'No se encontraron regímenes' : 'No hay regímenes registrados' }}
+                </p>
+                <p class="table-empty-description">
+                  {{
+                    regimes().length
+                      ? 'Probá ajustando o limpiando la búsqueda para ver otros resultados.'
+                      : 'Podés registrar un primer régimen desde el botón "Nuevo régimen".'
+                  }}
+                </p>
+              </div>
+            </td>
+          </tr>
+        </ng-template>
+      </p-table>
+    } @else {
+      <div class="mobile-view">
+        @if (filteredRegimes().length) {
+          <div class="mobile-card-list" role="list">
+            @for (regime of paginatedRegimes(); track regime.id) {
+              <article class="mobile-card" role="listitem">
+                <header class="mobile-card-header">
+                  <h2 class="mobile-card-title">{{ regime.name }}</h2>
+                </header>
+
+                <footer class="mobile-card-actions">
+                  <p-button
+                    label="Ver detalle"
+                    icon="pi pi-eye"
+                    size="small"
+                    [outlined]="true"
+                    [ariaLabel]="'Ver detalle de ' + regime.name"
+                    (onClick)="goToDetail(regime.id)"
+                  />
+                  <p-button
+                    label="Editar"
+                    icon="pi pi-pencil"
+                    severity="secondary"
+                    size="small"
+                    [outlined]="true"
+                    [ariaLabel]="'Editar ' + regime.name"
+                    (onClick)="goToEdit(regime.id)"
+                  />
+                  <p-button
+                    label="Eliminar"
+                    icon="pi pi-trash"
+                    severity="danger"
+                    size="small"
+                    [outlined]="true"
+                    [ariaLabel]="'Eliminar ' + regime.name"
+                    (onClick)="confirmDelete(regime)"
+                  />
+                </footer>
+              </article>
+            }
+          </div>
+        } @else {
+          <div class="mobile-empty">
+            <div class="table-empty-state">
+              <span class="table-empty-icon" aria-hidden="true">
+                <i class="pi pi-list"></i>
+              </span>
+              <p class="table-empty-title">
+                {{ regimes().length ? 'No se encontraron regímenes' : 'No hay regímenes registrados' }}
+              </p>
+              <p class="table-empty-description">
+                {{
+                  regimes().length
+                    ? 'Probá ajustando o limpiando la búsqueda para ver otros resultados.'
+                    : 'Podés registrar un primer régimen desde el botón "Nuevo régimen".'
+                }}
+              </p>
+            </div>
+          </div>
+        }
+
+        <p-paginator
+          class="mobile-paginator"
+          [first]="first()"
+          [rows]="rows()"
+          [totalRecords]="filteredRegimes().length"
+          [rowsPerPageOptions]="rowsPerPageOptions"
+          [pageLinkSize]="3"
+          [showCurrentPageReport]="true"
+          currentPageReportTemplate="Mostrando {first} a {last} de {totalRecords} regímenes"
+          appendTo="body"
+          (onPageChange)="onPageChange($event)"
+        />
+      </div>
+    }
+  </p-card>
+</section>
+
+<p-confirmdialog appendTo="body" />
