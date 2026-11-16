@@ -1,59 +1,120 @@
-# HorarioFrontend
+# SAHD — Frontend
 
-This project was generated using [Angular CLI](https://github.com/angular/angular-cli) version 21.2.24.
+Pantallas del Sistema de Administración de Horarios Docentes. Angular 21 y PrimeNG.
 
-## Development server
+La aplicación queda en `http://localhost:4200`. Habla con la API en `http://localhost:3000`.
 
-To start a local development server, run:
+La API, la base y Brevo se configuran en el backend. Este README cubre solo las pantallas. Los pasos de la API están en el README de `horario-backend`.
 
-```bash
-ng serve
-```
+## Qué hace falta antes de empezar
 
-Once the server is running, open your browser and navigate to `http://localhost:4200/`. The application will automatically reload whenever you modify any of the source files.
-
-## Code scaffolding
-
-Angular CLI includes powerful code scaffolding tools. To generate a new component, run:
+1. [Node.js 20 o superior](https://nodejs.org/).
+2. [pnpm](https://pnpm.io/installation):
 
 ```bash
-ng generate component component-name
+corepack enable
+corepack prepare pnpm@10.28.1 --activate
 ```
 
-For a complete list of available schematics (such as `components`, `directives`, or `pipes`), run:
+3. El backend ya levantado. Sin la API en `http://localhost:3000`, el login y las tablas no cargan. Cómo dejarlo listo está en el README de `horario-backend`.
+
+Comprobá Node y pnpm:
 
 ```bash
-ng generate --help
+node -v
+pnpm -v
 ```
 
-## Building
+## Orden para dejarlo funcionando
 
-To build the project run:
+### 1. Instalar dependencias
+
+Desde la carpeta `horario-frontend`:
 
 ```bash
-ng build
+pnpm install
 ```
 
-This will compile your project and store the build artifacts in the `dist/` directory. By default, the production build optimizes your application for performance and speed.
+Descarga Angular, PrimeNG y el resto de las librerías. No abre la aplicación.
 
-## Running unit tests
+### 2. Confirmar la dirección de la API
 
-To execute unit tests with the [Vitest](https://vitest.dev/) test runner, use the following command:
+En local no hay un `.env`. La dirección está en `src/app/core/environments/environment.development.ts`:
+
+```ts
+export const environment = {
+  apiUrl: 'http://localhost:3000'
+} as const;
+```
+
+Tiene que apuntar al mismo puerto en el que corre el backend. Las peticiones salen con la cookie de sesión. El backend solo acepta el origen `http://localhost:4200`, así que no cambies el puerto del frontend sin cambiar también el CORS de la API.
+
+### 3. Arrancar la aplicación
 
 ```bash
-ng test
+pnpm start
 ```
 
-## Running end-to-end tests
+Ejecuta `ng serve`, compila y abre el servidor de desarrollo. Cada vez que guardás un archivo, la página se recarga sola.
 
-For end-to-end (e2e) testing, run:
+Cuando termina, la consola muestra:
+
+```text
+Local: http://localhost:4200/
+```
+
+Abrí esa dirección. La primera pantalla es el login.
+
+## Cómo probar que quedó funcional
+
+1. El backend tiene que estar en `http://localhost:3000` y Swagger tiene que abrir en `http://localhost:3000/api/docs`.
+2. Entrá a `http://localhost:4200`.
+3. Escribí el correo de `SEED_ADMIN_EMAIL` del backend y presioná **Continuar**.
+4. Fuera de producción, ese correo entra directo a `/dashboard`.
+5. Cualquier otro correo pasa a `/verify-code`. El código llega por Brevo con el asunto `Código para ingresar — Gestión de Horarios`. Si no llega, la configuración está del lado del backend, en las variables `BREVO_*`.
+
+En `/verify-code`, **Volver para corregir el correo** regresa al login.
+
+## Pantallas
+
+| Ruta | Qué muestra |
+|---|---|
+| `/login` | Correo y botón Continuar |
+| `/verify-code` | Código de 6 dígitos |
+| `/activate-account` | Activación de una cuenta nueva |
+| `/dashboard` | Entrada después del ingreso |
+| `/docentes` | Listado de docentes, filtros y alta |
+| `/administracion/usuarios` | Usuarios |
+| `/administracion/usuarios/nuevo` | Alta de usuario |
+| `/administracion/roles` | Roles |
+| `/administracion/materias` | Materias |
+
+Docentes pide sesión. Usuarios y roles piden además el permiso que corresponda. El menú muestra Dashboard, Docentes y Administración.
+
+## Comandos
+
+Cada comando se ejecuta dentro de `horario-frontend`.
 
 ```bash
-ng e2e
+pnpm start
 ```
 
-Angular CLI does not come with an end-to-end testing framework by default. You can choose one that suits your needs.
+Levanta el servidor de desarrollo en `http://localhost:4200`. Es el comando de trabajo diario.
 
-## Additional Resources
+```bash
+pnpm run build
+```
 
-For more information on using the Angular CLI, including detailed command references, visit the [Angular CLI Overview and Command Reference](https://angular.dev/tools/cli) page.
+Compila la aplicación para producción y deja el resultado en `dist/`. No abre el navegador.
+
+```bash
+pnpm test
+```
+
+Corre los tests unitarios con Vitest.
+
+```bash
+pnpm exec ng generate component nombre
+```
+
+Crea un componente nuevo. `pnpm exec ng generate --help` lista el resto de los generadores.
