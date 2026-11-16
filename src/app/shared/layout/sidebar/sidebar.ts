@@ -1,4 +1,4 @@
-﻿import { Component, EventEmitter, Output, input, inject } from '@angular/core';
+import { Component, EventEmitter, Output, input, inject } from '@angular/core';
 import { NavigationEnd, Router } from '@angular/router';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ConfirmationService, MenuItem } from 'primeng/api';

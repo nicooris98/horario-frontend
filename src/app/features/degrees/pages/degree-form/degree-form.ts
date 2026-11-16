@@ -1,4 +1,4 @@
-﻿import { ChangeDetectionStrategy, Component, OnInit, computed, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, OnInit, computed, inject, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { ConfirmationService, MenuItem } from 'primeng/api';
@@ -51,9 +51,8 @@ export class DegreeFormComponent implements OnInit {
   readonly error = this.degreeService.error;
 
   protected readonly breadcrumbHome: MenuItem = { icon: 'pi pi-home', routerLink: '/dashboard' };
-  protected readonly breadcrumbTheme = { root: { background: 'transparent', padding: '0' } };
   protected readonly breadcrumbItems = computed<MenuItem[]>(() => [
-    { label: 'Administración' },
+    { label: 'Gestión académica' },
     { label: 'Carreras', routerLink: DEGREES_ROUTE },
     { label: this.isEditMode() ? 'Editar carrera' : 'Nueva carrera' },
   ]);

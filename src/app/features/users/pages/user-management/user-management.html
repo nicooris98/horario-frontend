@@ -1,10 +1,10 @@
-<section class="user-management-page" aria-labelledby="user-management-title">
+<section class="table-page" aria-labelledby="user-management-title">
   <p-breadcrumb [model]="breadcrumbItems" [home]="breadcrumbHome" styleClass="page-breadcrumb" />
 
-  <header class="user-management-header">
+  <header class="page-header">
     <div>
-      <h1 id="user-management-title" class="user-management-title">Gestión de usuarios</h1>
-      <p class="user-management-subtitle">
+      <h1 id="user-management-title" class="page-title">Gestión de usuarios</h1>
+      <p class="page-subtitle">
         Administración de las cuentas de usuario del sistema.
       </p>
     </div>
@@ -13,67 +13,219 @@
   </header>
 
   @if (errorMessage()) {
-    <p-message class="user-management-error" severity="error" role="alert">
+    <p-message class="users-error" severity="error" role="alert">
       {{ errorMessage() }}
     </p-message>
   }
 
   <p-card>
-    <p-table [value]="users()" [loading]="loading()" [showLoader]="false" [paginator]="true" [rows]="10" responsiveLayout="scroll">
-      <ng-template #header>
-        <tr>
-          <th>Nombre</th>
-          <th>Apellido</th>
-          <th>Correo electrónico</th>
-          <th>Estado</th>
-          <th>Acciones</th>
-        </tr>
-      </ng-template>
+    <div class="users-filters" role="search">
+      <p-iconfield class="users-search">
+        <p-inputicon class="pi pi-search" />
+        <input
+          type="text"
+          pInputText
+          [fluid]="true"
+          placeholder="Buscar por nombre, apellido o correo electrónico..."
+          aria-label="Buscar por nombre, apellido o correo electrónico"
+          [disabled]="filtersDisabled()"
+          [ngModel]="search()"
+          (ngModelChange)="onSearchChange($event)"
+        />
+      </p-iconfield>
 
-      <ng-template #body let-user>
-        <tr [class.user-row-disabled]="user.isDisabled">
-          <td>
-            <div class="user-name-cell">
-              <p-avatar [label]="getInitials(user)" shape="circle" size="normal" />
-              <span>{{ user.firstName }}</span>
-            </div>
-          </td>
-          <td>{{ user.lastName }}</td>
-          <td>{{ user.email }}</td>
-          <td>
-            <p-tag
-              [value]="user.isDisabled ? 'Desactivado' : user.isActive ? 'Activo' : 'Pendiente de activación'"
-              [severity]="user.isDisabled ? 'danger' : user.isActive ? 'success' : 'warn'"
-            />
-          </td>
-          <td>
-            <p-button
-              label="Ver detalle"
-              icon="pi pi-eye"
-              [text]="true"
-              (onClick)="goToDetail(user.id)"
-            />
-          </td>
-        </tr>
-      </ng-template>
+      <p-select
+        [options]="statusOptions"
+        [ngModel]="statusFilter()"
+        (ngModelChange)="onStatusFilterChange($event)"
+        placeholder="Todos los estados"
+        ariaLabel="Filtrar por estado"
+        [disabled]="filtersDisabled()"
+        [showClear]="true"
+        [fluid]="true"
+        appendTo="body"
+      />
+    </div>
 
-      <ng-template #emptymessage>
-        <tr>
-          <td colspan="5">No hay usuarios registrados.</td>
-        </tr>
-      </ng-template>
-
-      <ng-template #loadingbody>
-        @for (_ of [1, 2, 3, 4, 5]; track $index) {
+    @if (!isMobile()) {
+      <p-table
+        [value]="filteredUsers()"
+        [loading]="loading()"
+        [paginator]="true"
+        [first]="first()"
+        [rows]="rows()"
+        [rowsPerPageOptions]="rowsPerPageOptions"
+        [showCurrentPageReport]="true"
+        currentPageReportTemplate="Mostrando {first} a {last} de {totalRecords} usuarios"
+        [tableStyle]="{ 'min-width': '52rem' }"
+        (onPage)="onPageChange($event)"
+      >
+        <ng-template #header>
           <tr>
-            <td><p-skeleton width="8rem" /></td>
-            <td><p-skeleton width="6rem" /></td>
-            <td><p-skeleton width="12rem" /></td>
-            <td><p-skeleton width="5rem" /></td>
-            <td><p-skeleton width="6rem" /></td>
+            <th>Nombre</th>
+            <th>Apellido</th>
+            <th>Correo electrónico</th>
+            <th>Estado</th>
+            <th class="table-col-center">Acciones</th>
           </tr>
+        </ng-template>
+
+        <ng-template #body let-user>
+          <tr [class.user-row-disabled]="user.isDisabled">
+            <td class="users-name">
+              <div class="user-name-cell">
+                <p-avatar [label]="getInitials(user)" shape="circle" size="normal" />
+                <span>{{ user.firstName }}</span>
+              </div>
+            </td>
+            <td class="users-name">{{ user.lastName }}</td>
+            <td class="users-email">{{ user.email }}</td>
+            <td>
+              <p-tag
+                icon="pi pi-circle-fill"
+                [value]="statusLabel(user)"
+                [severity]="statusSeverity(user)"
+                [rounded]="true"
+              />
+            </td>
+            <td class="table-col-center">
+              <div class="users-actions">
+                <p-button
+                  icon="pi pi-eye"
+                  [outlined]="true"
+                  [ariaLabel]="'Ver ' + user.firstName + ' ' + user.lastName"
+                  (onClick)="goToDetail(user.id)"
+                />
+              </div>
+            </td>
+          </tr>
+        </ng-template>
+
+        <ng-template #emptymessage>
+          <tr class="table-empty-row">
+            <td colspan="5" class="table-empty-cell">
+              <div class="table-empty-state">
+                <span class="table-empty-icon" aria-hidden="true">
+                  <i class="pi pi-users"></i>
+                </span>
+                <p class="table-empty-title">
+                  {{
+                    users().length
+                      ? 'No se encontraron usuarios'
+                      : 'No hay usuarios registrados'
+                  }}
+                </p>
+                <p class="table-empty-description">
+                  {{
+                    users().length
+                      ? 'Probá ajustando o limpiando los filtros seleccionados para ver otros resultados.'
+                      : 'Podés registrar un primer usuario desde el botón "Agregar usuario".'
+                  }}
+                </p>
+              </div>
+            </td>
+          </tr>
+        </ng-template>
+      </p-table>
+    } @else {
+      <div class="mobile-view">
+        @if (filteredUsers().length) {
+          <div class="mobile-card-list" role="list">
+            @for (user of paginatedUsers(); track user.id) {
+              <article
+                class="mobile-card"
+                [class.user-card-disabled]="user.isDisabled"
+                role="listitem"
+              >
+                <header class="mobile-card-header">
+                  <div class="user-card-identity">
+                    <p-avatar [label]="getInitials(user)" shape="circle" size="normal" />
+                    <h2 class="mobile-card-title">{{ user.firstName }} {{ user.lastName }}</h2>
+                  </div>
+                  <p-tag
+                    icon="pi pi-circle-fill"
+                    [value]="statusLabel(user)"
+                    [severity]="statusSeverity(user)"
+                    [rounded]="true"
+                  />
+                </header>
+
+                <dl class="mobile-card-details">
+                  <div class="mobile-card-field">
+                    <dt>
+                      <i class="pi pi-user" aria-hidden="true"></i>
+                      Nombre
+                    </dt>
+                    <dd>{{ user.firstName }}</dd>
+                  </div>
+
+                  <div class="mobile-card-field">
+                    <dt>
+                      <i class="pi pi-id-card" aria-hidden="true"></i>
+                      Apellido
+                    </dt>
+                    <dd>{{ user.lastName }}</dd>
+                  </div>
+
+                  <div class="mobile-card-field mobile-card-field-full">
+                    <dt>
+                      <i class="pi pi-envelope" aria-hidden="true"></i>
+                      Correo electrónico
+                    </dt>
+                    <dd>{{ user.email }}</dd>
+                  </div>
+                </dl>
+
+                <footer class="mobile-card-actions">
+                  <p-button
+                    label="Ver detalle"
+                    icon="pi pi-eye"
+                    size="small"
+                    [outlined]="true"
+                    [ariaLabel]="'Ver detalle de ' + user.firstName + ' ' + user.lastName"
+                    (onClick)="goToDetail(user.id)"
+                  />
+                </footer>
+              </article>
+            }
+          </div>
+        } @else {
+          <div class="mobile-empty">
+            <div class="table-empty-state">
+              <span class="table-empty-icon" aria-hidden="true">
+                <i class="pi pi-users"></i>
+              </span>
+              <p class="table-empty-title">
+                {{
+                  users().length
+                    ? 'No se encontraron usuarios'
+                    : 'No hay usuarios registrados'
+                }}
+              </p>
+              <p class="table-empty-description">
+                {{
+                  users().length
+                    ? 'Probá ajustando o limpiando los filtros seleccionados para ver otros resultados.'
+                    : 'Podés registrar un primer usuario desde el botón "Agregar usuario".'
+                }}
+              </p>
+            </div>
+          </div>
         }
-      </ng-template>
-    </p-table>
+
+        <p-paginator
+          class="mobile-paginator"
+          [first]="first()"
+          [rows]="rows()"
+          [totalRecords]="filteredUsers().length"
+          [rowsPerPageOptions]="rowsPerPageOptions"
+          [pageLinkSize]="3"
+          [showCurrentPageReport]="true"
+          currentPageReportTemplate="Mostrando {first} a {last} de {totalRecords} usuarios"
+          appendTo="body"
+          (onPageChange)="onPageChange($event)"
+        />
+      </div>
+    }
   </p-card>
 </section>

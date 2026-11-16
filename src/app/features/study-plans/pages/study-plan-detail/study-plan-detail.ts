@@ -1,4 +1,4 @@
-﻿import { Component, OnInit, computed, inject, signal } from '@angular/core';
+import { Component, OnInit, computed, inject, signal } from '@angular/core';
 import { HttpErrorResponse } from '@angular/common/http';
 import { ActivatedRoute, Router } from '@angular/router';
 import { MenuItem } from 'primeng/api';
@@ -40,7 +40,6 @@ export class StudyPlanDetail implements OnInit {
   private readonly router = inject(Router);
 
   protected readonly breadcrumbHome: MenuItem = { icon: 'pi pi-home', routerLink: '/dashboard' };
-  protected readonly breadcrumbTheme = { root: { background: 'transparent', padding: '0' } };
 
   readonly studyPlan = signal<StudyPlan | null>(null);
   readonly loading = signal(true);

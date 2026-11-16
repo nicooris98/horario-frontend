@@ -1,4 +1,4 @@
-﻿@import 'primeicons/primeicons.css';
+@import 'primeicons/primeicons.css';
 
 *,
 *::before,
@@ -49,7 +49,7 @@ input:focus-visible,
   justify-content: space-between;
   gap: 1rem;
   flex-wrap: wrap;
-  margin-bottom: 1.25rem;
+  margin-bottom: 1.5rem;
 }
 
 .page-heading {
@@ -80,9 +80,7 @@ input:focus-visible,
 }
 
 .page-breadcrumb {
-  display: block;
-  margin-bottom: 0.75rem;
-  font-size: 0.8125rem;
+  margin-bottom: 1rem;
 }
 
 /* Campos de formulario: etiqueta arriba, control y error abajo. */

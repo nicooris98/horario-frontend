@@ -13,11 +13,6 @@ export const MENU_ITEMS: MenuEntry[] = [
     routerLink: '/dashboard',
   },
   {
-    label: 'Docentes',
-    icon: 'pi pi-users',
-    routerLink: '/docentes',
-  },
-  {
     label: 'Gestión académica',
     icon: 'pi pi-building-columns',
     items: [
@@ -38,6 +33,11 @@ export const MENU_ITEMS: MenuEntry[] = [
         icon: 'pi pi-book',
         routerLink: '/administracion/materias',
         permission: 'subjects.read',
+      },
+      {
+        label: 'Docentes',
+        icon: 'pi pi-users',
+        routerLink: '/docentes',
       },
       {
         label: 'Oferta académica',

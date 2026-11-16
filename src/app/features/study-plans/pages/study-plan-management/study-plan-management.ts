@@ -1,4 +1,4 @@
-﻿import { Component, computed, DestroyRef, inject, OnInit, signal } from '@angular/core';
+import { Component, computed, DestroyRef, inject, OnInit, signal } from '@angular/core';
 import { Router } from '@angular/router';
 import { HttpErrorResponse } from '@angular/common/http';
 import { ConfirmationService, MenuItem } from 'primeng/api';
@@ -59,7 +59,6 @@ export class StudyPlanManagement implements OnInit {
 
   // Breadcrumbs
   protected readonly breadcrumbHome: MenuItem = { icon: 'pi pi-home', routerLink: '/dashboard' };
-  protected readonly breadcrumbTheme = { root: { background: 'transparent', padding: '0' } };
   protected readonly breadcrumbItems: MenuItem[] = [
     { label: 'Gestión académica' },
     { label: 'Planes de estudio' },

@@ -1,4 +1,4 @@
-﻿import { Component, inject, OnInit, signal } from '@angular/core';
+import { Component, inject, OnInit, signal } from '@angular/core';
 import { FormBuilder, FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { HttpErrorResponse } from '@angular/common/http';
 import { Router } from '@angular/router';
@@ -59,7 +59,6 @@ export class CreateStudyPlan implements OnInit {
   successMessage = signal('');
 
   protected readonly breadcrumbHome: MenuItem = { icon: 'pi pi-home', routerLink: '/dashboard' };
-  protected readonly breadcrumbTheme = { root: { background: 'transparent', padding: '0' } };
   protected readonly breadcrumbItems: MenuItem[] = [
     { label: 'Gestión académica' },
     { label: 'Planes de estudio', routerLink: STUDY_PLANS_ROUTE },

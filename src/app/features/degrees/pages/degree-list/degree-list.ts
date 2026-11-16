@@ -1,4 +1,4 @@
-﻿import { CommonModule } from '@angular/common';
+import { CommonModule } from '@angular/common';
 import { ChangeDetectionStrategy, Component, computed, DestroyRef, inject, OnInit, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
@@ -177,9 +177,8 @@ export class DegreeListComponent implements OnInit {
   }
 
   protected readonly breadcrumbHome: MenuItem = { icon: 'pi pi-home', routerLink: '/dashboard' };
-  protected readonly breadcrumbTheme = { root: { background: 'transparent', padding: '0' } };
   protected readonly breadcrumbItems: MenuItem[] = [
-    { label: 'Administración' },
+    { label: 'Gestión académica' },
     { label: 'Carreras' },
   ];
 

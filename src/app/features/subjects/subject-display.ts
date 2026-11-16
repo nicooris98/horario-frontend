@@ -23,12 +23,10 @@ export function maxTeachersLabel(subject: Subject): string {
 }
 
 export function subjectsBreadcrumb(...tail: MenuItem[]): MenuItem[] {
-  return [{ label: 'Administración' }, { label: 'Materias', routerLink: SUBJECTS_ROUTE }, ...tail];
+  return [{ label: 'Gestión académica' }, { label: 'Materias', routerLink: SUBJECTS_ROUTE }, ...tail];
 }
 
 export const BREADCRUMB_HOME: MenuItem = { icon: 'pi pi-home', routerLink: '/dashboard' };
 
-// El breadcrumb va sobre el fondo de la página, sin caja propia.
-export const BREADCRUMB_THEME = {
-  root: { background: 'transparent', padding: '0' },
-};
+// Usa el estilo por defecto de PrimeNG (franja blanca horizontal igual que Gestión de usuarios).
+export const BREADCRUMB_THEME = {};

@@ -1,4 +1,4 @@
-﻿import {
+import {
   Component,
   DestroyRef,
   OnInit,
@@ -99,7 +99,7 @@ export class SubjectManagement implements OnInit {
   protected readonly breadcrumbHome = BREADCRUMB_HOME;
   protected readonly breadcrumbTheme = BREADCRUMB_THEME;
   protected readonly breadcrumbItems: MenuItem[] = [
-    { label: 'Administración' },
+    { label: 'Gestión académica' },
     { label: 'Materias' },
   ];
 

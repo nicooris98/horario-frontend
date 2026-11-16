@@ -1,4 +1,4 @@
-﻿import { DatePipe } from '@angular/common';
+import { DatePipe } from '@angular/common';
 import { ChangeDetectionStrategy, Component, OnInit, inject, signal } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { MenuItem } from 'primeng/api';
@@ -32,9 +32,8 @@ export class DegreeDetailComponent implements OnInit {
   readonly error = this.degreeService.error;
 
   protected readonly breadcrumbHome: MenuItem = { icon: 'pi pi-home', routerLink: '/dashboard' };
-  protected readonly breadcrumbTheme = { root: { background: 'transparent', padding: '0' } };
   protected readonly breadcrumbItems: MenuItem[] = [
-    { label: 'Administración' },
+    { label: 'Gestión académica' },
     { label: 'Carreras', routerLink: DEGREES_ROUTE },
     { label: 'Detalle' },
   ];
