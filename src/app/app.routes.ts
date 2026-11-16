@@ -1,4 +1,4 @@
-import { Routes } from '@angular/router';
+﻿import { Routes } from '@angular/router';
 import { authGuard } from './core/guards/auth-guard';
 import { permissionGuard } from './core/guards/permission-guard';
 
@@ -82,36 +82,6 @@ export const routes: Routes = [
             (m) => m.UserManagement,
           ),
       },
-      // Materias: el backend todavía no define permisos "subjects.*",
-      // así que alcanza con estar logueado (authGuard del layout).
-      {
-        path: 'administracion/materias',
-        loadComponent: () =>
-          import('./features/subjects/pages/subject-management/subject-management').then(
-            (m) => m.SubjectManagement,
-          ),
-      },
-      {
-        path: 'administracion/materias/nueva',
-        loadComponent: () =>
-          import('./features/subjects/pages/subject-form/subject-form').then(
-            (m) => m.SubjectFormPage,
-          ),
-      },
-      {
-        path: 'administracion/materias/:id',
-        loadComponent: () =>
-          import('./features/subjects/pages/subject-detail/subject-detail').then(
-            (m) => m.SubjectDetail,
-          ),
-      },
-      {
-        path: 'administracion/materias/:id/editar',
-        loadComponent: () =>
-          import('./features/subjects/pages/subject-form/subject-form').then(
-            (m) => m.SubjectFormPage,
-          ),
-      },
       {
         path: 'docentes',
         loadChildren: () => import('./features/teachers/teachers.routes').then((m) => m.teachersRoutes),
@@ -128,6 +98,27 @@ export const routes: Routes = [
         loadComponent: () =>
           import('./features/class-hours/pages/class-hour-management/class-hour-management').then(
             (m) => m.ClassHourManagement,
+          ),
+      },
+      {
+        path: 'configuracion/regimenes/nuevo',
+        loadComponent: () =>
+          import('./features/regimes/pages/regime-form/regime-form').then(
+            (m) => m.RegimeForm,
+          ),
+      },
+      {
+        path: 'configuracion/regimenes/:id/editar',
+        loadComponent: () =>
+          import('./features/regimes/pages/regime-form/regime-form').then(
+            (m) => m.RegimeForm,
+          ),
+      },
+      {
+        path: 'configuracion/regimenes/:id',
+        loadComponent: () =>
+          import('./features/regimes/pages/regime-detail/regime-detail').then(
+            (m) => m.RegimeDetail,
           ),
       },
       {
@@ -206,6 +197,15 @@ export const routes: Routes = [
         loadComponent: () =>
           import('./features/study-plans/pages/create-study-plan/create-study-plan').then(
             (m) => m.CreateStudyPlan,
+          ),
+      },
+      {
+        path: 'academico/planes-estudio/:id',
+        canActivate: [permissionGuard],
+        data: { permission: 'study-plans.read' },
+        loadComponent: () =>
+          import('./features/study-plans/pages/study-plan-detail/study-plan-detail').then(
+            (m) => m.StudyPlanDetail,
           ),
       },
       {

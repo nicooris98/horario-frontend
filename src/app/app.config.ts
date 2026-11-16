@@ -1,8 +1,9 @@
-import { provideHttpClient, withInterceptors } from '@angular/common/http';
+﻿import { provideHttpClient, withInterceptors } from '@angular/common/http';
 import { ApplicationConfig, provideBrowserGlobalErrorListeners } from '@angular/core';
 import { definePreset } from '@primeuix/themes';
 import Aura from '@primeuix/themes/aura';
 import { provideRouter } from '@angular/router';
+import { MessageService } from 'primeng/api';
 import { providePrimeNG } from 'primeng/config';
 import { routes } from './app.routes';
 import { authInterceptor } from './core/interceptors/auth-interceptor';
@@ -166,7 +167,47 @@ export const appConfig: ApplicationConfig = {
         // oscuro del sistema y los desplegables y campos salen oscuros.
         options: { darkModeSelector: false },
       },
+      translation: {
+        firstDayOfWeek: 1,
+        dayNames: ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'],
+        dayNamesShort: ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'],
+        dayNamesMin: ['Do', 'Lu', 'Ma', 'Mi', 'Ju', 'Vi', 'Sá'],
+        monthNames: [
+          'Enero',
+          'Febrero',
+          'Marzo',
+          'Abril',
+          'Mayo',
+          'Junio',
+          'Julio',
+          'Agosto',
+          'Septiembre',
+          'Octubre',
+          'Noviembre',
+          'Diciembre',
+        ],
+        monthNamesShort: ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'],
+        today: 'Hoy',
+        clear: 'Limpiar',
+        dateFormat: 'dd/mm/yy',
+        weekHeader: 'Sem',
+        accept: 'Aceptar',
+        reject: 'Cancelar',
+        cancel: 'Cancelar',
+        chooseYear: 'Elegir año',
+        chooseMonth: 'Elegir mes',
+        chooseDate: 'Elegir fecha',
+        prevDecade: 'Década anterior',
+        nextDecade: 'Década siguiente',
+        prevYear: 'Año anterior',
+        nextYear: 'Año siguiente',
+        prevMonth: 'Mes anterior',
+        nextMonth: 'Mes siguiente',
+        emptyMessage: 'No hay resultados',
+        emptyFilterMessage: 'No se encontraron resultados',
+      },
     }),
     provideHttpClient(withInterceptors([authInterceptor])),
+    MessageService,
   ],
 };

@@ -1,98 +1,164 @@
-<section class="create-plan-page" aria-labelledby="create-plan-title">
-  <header class="create-plan-header">
-    <h1 id="create-plan-title" class="create-plan-title">Agregar plan de estudio</h1>
-    <p class="create-plan-subtitle">
-          Completá los datos del plan. Se crea como vigente; si la carrera ya tiene uno, te pedimos confirmación para reemplazarlo.
+<section aria-labelledby="create-plan-title">
+  <p-breadcrumb [model]="breadcrumbItems" [home]="breadcrumbHome" styleClass="page-breadcrumb" />
 
-    </p>
+  <header class="page-header">
+    <div class="page-heading">
+      <p-button
+        icon="pi pi-arrow-left"
+        severity="secondary"
+        [outlined]="true"
+        ariaLabel="Volver al listado"
+        (onClick)="cancel()"
+      />
+      <h1 id="create-plan-title" class="page-title">Nuevo plan de estudio</h1>
+      <p class="page-subtitle">
+        Completá los datos del plan. Se crea como vigente; si la carrera ya tiene uno, te pedimos confirmación para reemplazarlo.
+      </p>
+    </div>
   </header>
 
-  <form [formGroup]="studyPlanForm" (ngSubmit)="save()">
+  <form [formGroup]="studyPlanForm" (ngSubmit)="save()" novalidate>
     <p-card>
-      <div class="field">
-        <label for="name">Nombre</label>
-        <input id="name" type="text" pInputText formControlName="name" placeholder="Nombre del plan" />
-        @if (studyPlanForm.controls.name.touched && studyPlanForm.controls.name.invalid) {
-          <small class="field-error" role="alert">
-            @if (studyPlanForm.controls.name.hasError('required')) {
-              El nombre es obligatorio.
-            } @else {
-              El nombre debe tener entre 2 y 150 caracteres.
-            }
-          </small>
-        }
-      </div>
+      <h2 class="form-section-title">
+        <i class="pi pi-file" aria-hidden="true"></i>
+        Datos del plan de estudio
+      </h2>
 
-      <div class="field">
-        <label for="degreeId">Carrera</label>
-        <p-select
-          inputId="degreeId"
-          formControlName="degreeId"
-          [options]="degrees()"
-          optionLabel="name"
-          optionValue="id"
-          placeholder="Seleccioná una carrera"
-          [filter]="true"
-        />
-        @if (studyPlanForm.controls.degreeId.touched && studyPlanForm.controls.degreeId.invalid) {
-          <small class="field-error" role="alert">Seleccioná una carrera.</small>
-        }
-      </div>
+      <div class="form-grid">
+        <div class="form-field">
+          <label for="name">Nombre del plan <span class="required">*</span></label>
+          <input
+            id="name"
+            type="text"
+            pInputText
+            [fluid]="true"
+            formControlName="name"
+            placeholder="Ingresá el nombre del plan..."
+            maxlength="150"
+          />
+          @if (studyPlanForm.controls.name.touched && studyPlanForm.controls.name.invalid) {
+            <small class="form-field-error" role="alert">
+              @if (studyPlanForm.controls.name.hasError('required')) {
+                El nombre es obligatorio.
+              } @else {
+                El nombre debe tener entre 2 y 150 caracteres.
+              }
+            </small>
+          }
+        </div>
 
-      <div class="field">
-        <label for="validityYear">Año de vigencia</label>
-        <input id="validityYear" type="number" pInputText formControlName="validityYear" placeholder="2025" />
-        @if (studyPlanForm.controls.validityYear.touched && studyPlanForm.controls.validityYear.invalid) {
-          <small class="field-error" role="alert">
-            @if (studyPlanForm.controls.validityYear.hasError('required')) {
-              El año de vigencia es obligatorio.
-            } @else {
-              Ingresá un año válido de 4 dígitos (2000 o posterior).
-            }
-          </small>
-        }
-      </div>
+        <div class="form-field">
+          <label for="degreeId">Carrera <span class="required">*</span></label>
+          <p-select
+            inputId="degreeId"
+            formControlName="degreeId"
+            [options]="degrees()"
+            optionLabel="name"
+            optionValue="id"
+            placeholder="Seleccioná una carrera"
+            [filter]="degrees().length > 8"
+            filterBy="name"
+            [fluid]="true"
+            appendTo="body"
+          />
+          @if (studyPlanForm.controls.degreeId.touched && studyPlanForm.controls.degreeId.invalid) {
+            <small class="form-field-error" role="alert">Seleccioná una carrera.</small>
+          }
+        </div>
 
-      <div class="field">
-        <label for="durationYears">Duración (años)</label>
-        <input id="durationYears" type="number" step="0.5" pInputText formControlName="durationYears" placeholder="3" />
-        @if (studyPlanForm.controls.durationYears.touched && studyPlanForm.controls.durationYears.invalid) {
-          <small class="field-error" role="alert">
-            @if (studyPlanForm.controls.durationYears.hasError('required')) {
-              La duración es obligatoria.
-            } @else {
-              La duración debe ser de al menos 1 año.
-            }
-          </small>
-        }
-      </div>
+        <div class="form-field">
+          <label for="validityYear">Año de vigencia <span class="required">*</span></label>
+          <input
+            id="validityYear"
+            type="number"
+            pInputText
+            [fluid]="true"
+            formControlName="validityYear"
+            placeholder="2025"
+          />
+          @if (studyPlanForm.controls.validityYear.touched && studyPlanForm.controls.validityYear.invalid) {
+            <small class="form-field-error" role="alert">
+              @if (studyPlanForm.controls.validityYear.hasError('required')) {
+                El año de vigencia es obligatorio.
+              } @else {
+                Ingresá un año válido de 4 dígitos (2000 o posterior).
+              }
+            </small>
+          }
+        </div>
 
-      <div class="field">
-        <label for="startDate">Fecha desde</label>
-        <input id="startDate" type="date" pInputText formControlName="startDate" />
-        @if (studyPlanForm.controls.startDate.touched && studyPlanForm.controls.startDate.invalid) {
-          <small class="field-error" role="alert">La fecha desde es obligatoria.</small>
-        }
-      </div>
+        <div class="form-field">
+          <label for="durationYears">Duración (años) <span class="required">*</span></label>
+          <input
+            id="durationYears"
+            type="number"
+            step="0.5"
+            pInputText
+            [fluid]="true"
+            formControlName="durationYears"
+            placeholder="3"
+          />
+          @if (studyPlanForm.controls.durationYears.touched && studyPlanForm.controls.durationYears.invalid) {
+            <small class="form-field-error" role="alert">
+              @if (studyPlanForm.controls.durationYears.hasError('required')) {
+                La duración es obligatoria.
+              } @else {
+                La duración debe ser de al menos 1 año.
+              }
+            </small>
+          }
+        </div>
 
-      <div class="field">
-        <label for="endDate">Fecha hasta (opcional)</label>
-        <input id="endDate" type="date" pInputText formControlName="endDate" />
+        <div class="form-field">
+          <label for="startDate">Fecha desde <span class="required">*</span></label>
+          <p-datepicker
+            inputId="startDate"
+            formControlName="startDate"
+            dateFormat="dd/mm/yy"
+            placeholder="dd/mm/aaaa"
+            [showIcon]="true"
+            [fluid]="true"
+            appendTo="body"
+          />
+          @if (studyPlanForm.controls.startDate.touched && studyPlanForm.controls.startDate.invalid) {
+            <small class="form-field-error" role="alert">La fecha desde es obligatoria.</small>
+          }
+        </div>
+
+        <div class="form-field">
+          <label for="endDate">Fecha hasta (opcional)</label>
+          <p-datepicker
+            inputId="endDate"
+            formControlName="endDate"
+            dateFormat="dd/mm/yy"
+            placeholder="dd/mm/aaaa"
+            [showIcon]="true"
+            [showClear]="true"
+            [fluid]="true"
+            appendTo="body"
+          />
+        </div>
       </div>
 
       @if (errorMessage()) {
-        <p-message class="form-message" severity="error" role="alert">{{ errorMessage() }}</p-message>
+        <p-message class="form-error" severity="error" role="alert">{{ errorMessage() }}</p-message>
       }
       @if (successMessage()) {
-        <p-message class="form-message" severity="success" role="status">{{ successMessage() }}</p-message>
+        <p-message class="form-error" severity="success" role="status">{{ successMessage() }}</p-message>
       }
 
-      <div class="actions">
+      <div class="form-actions">
         <p-button label="Cancelar" severity="secondary" [outlined]="true" (onClick)="cancel()" />
-        <p-button type="submit" label="Crear plan" icon="pi pi-plus" [loading]="loading()" [disabled]="loading()" />
+        <p-button
+          type="submit"
+          label="Guardar plan"
+          icon="pi pi-check"
+          [loading]="loading()"
+          [disabled]="loading()"
+        />
       </div>
     </p-card>
   </form>
-
-  <p-confirmdialog />
 </section>
+
+<p-confirmdialog />

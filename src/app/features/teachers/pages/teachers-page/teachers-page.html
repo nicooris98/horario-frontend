@@ -1,205 +1,243 @@
-<p-toast></p-toast>
-<p-confirmDialog></p-confirmDialog>
+<section class="table-page" aria-labelledby="teachers-management-title">
+  <p-breadcrumb [model]="breadcrumbItems" [home]="breadcrumbHome" styleClass="page-breadcrumb" />
 
-<p-toolbar styleClass="mb-4">
-  <ng-template #start>
-    <div class="flex gap-2">
-      <input
-        pInputText
-        type="text"
-        [(ngModel)]="filterDni"
-       
-        (keyup.enter)="load()"
-        placeholder="Filtrar por DNI"
-      />
-      <input
-        pInputText
-        type="text"
-        [(ngModel)]="filterLastName"
-        
-        (keyup.enter)="load()"
-        placeholder="Filtrar por apellido"
-      />
-      <button pButton label="Buscar" icon="pi pi-search" (click)="load()"></button>
-      <button pButton label="Limpiar" icon="pi pi-times" class="p-button-secondary" (click)="clearFilters()"></button>
+  <header class="page-header">
+    <div>
+      <h1 id="teachers-management-title" class="page-title">Gestión de docentes</h1>
+      <p class="page-subtitle">Administrá los docentes, su contacto y sus asignaciones académicas.</p>
     </div>
-  </ng-template>
-  <ng-template #end>
-    <button pButton label="Nuevo Docente" icon="pi pi-plus" (click)="openNew()"></button>
-  </ng-template>
-</p-toolbar>
 
+    <p-button label="Nuevo docente" icon="pi pi-plus" (onClick)="goToCreate()" />
+  </header>
 
-<p-table [value]="teachers" [loading]="loading" [paginator]="true" [rows]="15" [rowsPerPageOptions]="[15, 30, 50]" >
-  <ng-template pTemplate="header">
-    <tr>
-      <th>DNI</th>
-      <th>Apellido</th>
-      <th>Nombre</th>
-      <th>Teléfono</th>
-      <th>Email</th>
-      <th>Legajo</th>
-      <th>Asignaciones</th>
-      <th>Estado</th>
-      <th>Acciones</th>
-    </tr>
-  </ng-template>
-  <ng-template pTemplate="body" let-t>
-    <tr>
-      <td>{{ t.dni }}</td>
-      <td>{{ t.lastName }}</td>
-      <td>{{ t.firstName }}</td>
-      <td>{{ t.phone }}</td>
-      <td>{{ t.email }}</td>
-      <td>{{ t.fileNumber }}</td>
-      <td>
-        <span
-          [title]="(t.currentAssignments?.length || 0) > 0 ? getAssignmentsTooltip(t) : 'Sin asignaciones'"
-          style="cursor: default;"
-        >
-          {{ t.currentAssignments?.length || 0 }}
-        </span>
-      </td>
-      <td>
-        @if (t.status === 'ACTIVO') {
-          <span class="badge badge-activo">ACTIVO</span>
+  @if (errorMessage()) {
+    <p-message class="teachers-error" severity="error" role="alert">
+      {{ errorMessage() }}
+    </p-message>
+  }
+
+  <p-card>
+    <div class="teachers-filters" role="search">
+      <p-iconfield class="teachers-search">
+        <p-inputicon class="pi pi-search" />
+        <input
+          type="text"
+          pInputText
+          [fluid]="true"
+          placeholder="Buscar por apellido o nombre..."
+          aria-label="Buscar por apellido o nombre"
+          [disabled]="filtersDisabled()"
+          [ngModel]="searchName()"
+          (ngModelChange)="onSearchNameChange($event)"
+        />
+      </p-iconfield>
+
+      <p-iconfield class="teachers-search">
+        <p-inputicon class="pi pi-id-card" />
+        <input
+          type="text"
+          pInputText
+          [fluid]="true"
+          placeholder="Filtrar por DNI..."
+          aria-label="Filtrar por DNI"
+          [disabled]="filtersDisabled()"
+          [ngModel]="searchDni()"
+          (ngModelChange)="onSearchDniChange($event)"
+        />
+      </p-iconfield>
+
+      <p-select
+        [options]="statusOptions"
+        [ngModel]="statusFilter()"
+        (ngModelChange)="onStatusFilterChange($event)"
+        placeholder="Todos los estados"
+        ariaLabel="Filtrar por estado"
+        [disabled]="filtersDisabled()"
+        [showClear]="true"
+        [fluid]="true"
+        appendTo="body"
+      />
+    </div>
+
+    @if (!isMobile()) {
+      <p-table
+        [value]="filteredTeachers()"
+        [loading]="loading()"
+        [paginator]="true"
+        [first]="first()"
+        [rows]="rows()"
+        [rowsPerPageOptions]="rowsPerPageOptions"
+        [showCurrentPageReport]="true"
+        currentPageReportTemplate="Mostrando {first} a {last} de {totalRecords} docentes"
+        [tableStyle]="{ 'min-width': '52rem' }"
+        (onPage)="onPageChange($event)"
+      >
+        <ng-template #header>
+          <tr>
+            <th>Docente</th>
+            <th>DNI</th>
+            <th>Legajo</th>
+            <th>Email</th>
+            <th>Teléfono</th>
+            <th>Asignaciones</th>
+            <th>Estado</th>
+            <th class="table-col-center">Acciones</th>
+          </tr>
+        </ng-template>
+
+        <ng-template #body let-t>
+          <tr>
+            <td class="teachers-name">{{ t.lastName }}, {{ t.firstName }}</td>
+            <td>{{ t.dni }}</td>
+            <td>{{ t.fileNumber ?? '—' }}</td>
+            <td class="teachers-muted">{{ t.email || '—' }}</td>
+            <td class="teachers-muted">{{ t.phone || '—' }}</td>
+            <td>{{ t.currentAssignments?.length || 0 }}</td>
+            <td>
+              <p-tag
+                icon="pi pi-circle-fill"
+                [value]="t.status === 'INACTIVO' ? 'Inactivo' : 'Activo'"
+                [severity]="t.status === 'INACTIVO' ? 'danger' : 'success'"
+                [rounded]="true"
+              />
+            </td>
+            <td class="table-col-center">
+              <app-row-actions
+                [viewAriaLabel]="'Ver ' + t.lastName + ' ' + t.firstName"
+                [menuAriaLabel]="'Más acciones para ' + t.lastName + ' ' + t.firstName"
+                [actions]="rowActionsMap().get(t.id) ?? []"
+                (view)="goToDetail(t.id)"
+              />
+            </td>
+          </tr>
+        </ng-template>
+
+        <ng-template #emptymessage>
+          <tr class="table-empty-row">
+            <td colspan="8" class="table-empty-cell">
+              <div class="table-empty-state">
+                <span class="table-empty-icon" aria-hidden="true">
+                  <i class="pi pi-users"></i>
+                </span>
+                <p class="table-empty-title">
+                  {{ teachers().length ? 'No se encontraron docentes' : 'No hay docentes registrados' }}
+                </p>
+                <p class="table-empty-description">
+                  {{
+                    teachers().length
+                      ? 'Probá ajustando o limpiando los filtros seleccionados para ver otros resultados.'
+                      : 'Podés registrar un primer docente desde el botón "Nuevo docente".'
+                  }}
+                </p>
+              </div>
+            </td>
+          </tr>
+        </ng-template>
+      </p-table>
+    } @else {
+      <div class="mobile-view">
+        @if (filteredTeachers().length) {
+          <div class="mobile-card-list" role="list">
+            @for (t of paginatedTeachers(); track t.id) {
+              <article class="mobile-card" role="listitem">
+                <header class="mobile-card-header">
+                  <h2 class="mobile-card-title">{{ t.lastName }}, {{ t.firstName }}</h2>
+                  <p-tag
+                    icon="pi pi-circle-fill"
+                    [value]="t.status === 'INACTIVO' ? 'Inactivo' : 'Activo'"
+                    [severity]="t.status === 'INACTIVO' ? 'danger' : 'success'"
+                    [rounded]="true"
+                  />
+                </header>
+
+                <dl class="mobile-card-details">
+                  <div class="mobile-card-field">
+                    <dt><i class="pi pi-id-card" aria-hidden="true"></i> DNI</dt>
+                    <dd>{{ t.dni }}</dd>
+                  </div>
+                  <div class="mobile-card-field">
+                    <dt><i class="pi pi-hashtag" aria-hidden="true"></i> Legajo</dt>
+                    <dd>{{ t.fileNumber ?? '—' }}</dd>
+                  </div>
+                  <div class="mobile-card-field mobile-card-field-full">
+                    <dt><i class="pi pi-envelope" aria-hidden="true"></i> Email</dt>
+                    <dd>{{ t.email || '—' }}</dd>
+                  </div>
+                  <div class="mobile-card-field">
+                    <dt><i class="pi pi-phone" aria-hidden="true"></i> Teléfono</dt>
+                    <dd>{{ t.phone || '—' }}</dd>
+                  </div>
+                  <div class="mobile-card-field">
+                    <dt><i class="pi pi-briefcase" aria-hidden="true"></i> Asignaciones</dt>
+                    <dd>{{ t.currentAssignments?.length || 0 }}</dd>
+                  </div>
+                </dl>
+
+                <footer class="mobile-card-actions">
+                  <p-button
+                    label="Ver detalle"
+                    icon="pi pi-eye"
+                    size="small"
+                    [outlined]="true"
+                    [ariaLabel]="'Ver detalle de ' + t.lastName + ' ' + t.firstName"
+                    (onClick)="goToDetail(t.id)"
+                  />
+                  <p-button
+                    label="Editar"
+                    icon="pi pi-pencil"
+                    severity="secondary"
+                    size="small"
+                    [outlined]="true"
+                    [ariaLabel]="'Editar ' + t.lastName + ' ' + t.firstName"
+                    (onClick)="goToEdit(t.id)"
+                  />
+                  <p-button
+                    [label]="t.status === 'INACTIVO' ? 'Reactivar' : 'Desactivar'"
+                    [icon]="t.status === 'INACTIVO' ? 'pi pi-check-circle' : 'pi pi-ban'"
+                    [severity]="t.status === 'INACTIVO' ? 'success' : 'danger'"
+                    size="small"
+                    [outlined]="true"
+                    (onClick)="confirmStatusChange(t)"
+                  />
+                </footer>
+              </article>
+            }
+          </div>
         } @else {
-          <span class="badge badge-inactivo">{{ t.status || 'INACTIVO' }}</span>
+          <div class="mobile-empty">
+            <div class="table-empty-state">
+              <span class="table-empty-icon" aria-hidden="true">
+                <i class="pi pi-users"></i>
+              </span>
+              <p class="table-empty-title">
+                {{ teachers().length ? 'No se encontraron docentes' : 'No hay docentes registrados' }}
+              </p>
+              <p class="table-empty-description">
+                {{
+                  teachers().length
+                    ? 'Probá ajustando o limpiando los filtros seleccionados para ver otros resultados.'
+                    : 'Podés registrar un primer docente desde el botón "Nuevo docente".'
+                }}
+              </p>
+            </div>
+          </div>
         }
-      </td>
-      <td>
-        <button
-          pButton
-          icon="pi pi-pencil"
-          class="p-button-rounded p-button-text"
-          title="Editar"
-          aria-label="Editar"
-          (click)="edit(t)"
-        ></button>
-        @if (t.status === 'INACTIVO') {
-          <button
-            pButton
-            icon="pi pi-check"
-            class="p-button-rounded p-button-text p-button-success"
-            title="Reactivar"
-            aria-label="Reactivar"
-            (click)="reactivate(t)"
-          ></button>
-        } @else {
-          <button
-            pButton
-            icon="pi pi-ban"
-            class="p-button-rounded p-button-text p-button-danger"
-            title="Desactivar"
-            aria-label="Desactivar"
-            (click)="deactivate(t)"
-          ></button>
-        }
-      </td>
-    </tr>
-  </ng-template>
-  <ng-template pTemplate="emptymessage">
-    <tr>
-      <td colspan="9">
-        {{ hasActiveFilters() ? 'Sin resultados para los filtros aplicados' : 'Sin docentes cargados' }}
-      </td>
-    </tr>
-  </ng-template>
-</p-table>
 
-<p-dialog
-  [(visible)]="displayDialog"
-  [style]="{ width: '92vw', maxWidth: '450px' }"
-  header="Docente"
-  [modal]="true"
->
-  <div class="flex flex-column gap-3">
-    <div>
-      <label class="block mb-1">DNI</label>
-      <input
-        pInputText
-        [(ngModel)]="teacher.dni"
-        class="w-full"
-        [class.field-invalid]="hasError('dni')"
-        placeholder="7 u 8 dígitos"
-      />
-      @if (hasError('dni')) {
-        <small class="block p-error">{{ errors['dni'] }}</small>
-      }
-    </div>
-    <div>
-      <label class="block mb-1">Apellido</label>
-      <input
-        pInputText
-        [(ngModel)]="teacher.lastName"
-        class="w-full"
-        [class.field-invalid]="hasError('lastName')"
-      />
-      @if (hasError('lastName')) {
-        <small class="block p-error">{{ errors['lastName'] }}</small>
-      }
-    </div>
-    <div>
-      <label class="block mb-1">Nombre</label>
-      <input
-        pInputText
-        [(ngModel)]="teacher.firstName"
-        class="w-full"
-        [class.field-invalid]="hasError('firstName')"
-      />
-      @if (hasError('firstName')) {
-        <small class="block p-error">{{ errors['firstName'] }}</small>
-      }
-    </div>
-    <div>
-      <label class="block mb-1">Teléfono</label>
-      <input
-        pInputText
-        [(ngModel)]="teacher.phone"
-        class="w-full"
-        [class.field-invalid]="hasError('contact')"
-      />
-    </div>
-    <div>
-      <label class="block mb-1">Email</label>
-      <input
-        pInputText
-        [(ngModel)]="teacher.email"
-        class="w-full"
-        [class.field-invalid]="hasError('email') || hasError('contact')"
-      />
-      @if (hasError('email')) {
-        <small class="block p-error">{{ errors['email'] }}</small>
-      }
-    </div>
-    <div>
-      <label class="block mb-1">Legajo</label>
-      <input
-        pInputText
-        type="number"
-        min="1"
-        step="1"
-        [(ngModel)]="teacher.fileNumber"
-        placeholder="Legajo"
-        class="w-full"
-        [class.field-invalid]="hasError('fileNumber')"
-      />
-      @if (hasError('fileNumber')) {
-        <small class="block p-error">{{ errors['fileNumber'] }}</small>
-      }
-    </div>
-    <div>
-      <label class="block mb-1">Estado</label>
-      <p-select [options]="statusOptions" [(ngModel)]="status" optionLabel="label" optionValue="label" class="w-full" />
-    </div>
-    @if (hasError('contact')) {
-      <small class="block p-error">{{ errors['contact'] }}</small>
+        <p-paginator
+          class="mobile-paginator"
+          [first]="first()"
+          [rows]="rows()"
+          [totalRecords]="filteredTeachers().length"
+          [rowsPerPageOptions]="rowsPerPageOptions"
+          [pageLinkSize]="3"
+          [showCurrentPageReport]="true"
+          currentPageReportTemplate="Mostrando {first} a {last} de {totalRecords} docentes"
+          appendTo="body"
+          (onPageChange)="onPageChange($event)"
+        />
+      </div>
     }
-    <small class="block">El teléfono o el email son obligatorios.</small>
-  </div>
+  </p-card>
+</section>
 
-  <ng-template #footer>
-    <button pButton label="Cancelar" class="p-button-text" (click)="displayDialog = false"></button>
-    <button pButton label="Guardar" (click)="save()"></button>
-  </ng-template>
-</p-dialog>
+<p-confirmdialog appendTo="body" />

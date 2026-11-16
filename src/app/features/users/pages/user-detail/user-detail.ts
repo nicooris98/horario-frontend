@@ -1,4 +1,4 @@
-import { Component, OnInit, inject, signal } from '@angular/core';
+import { Component, OnInit, computed, inject, signal } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { HttpErrorResponse } from '@angular/common/http';
 import { MenuItem } from 'primeng/api';
@@ -6,16 +6,31 @@ import { ButtonModule } from 'primeng/button';
 import { CardModule } from 'primeng/card';
 import { TagModule } from 'primeng/tag';
 import { Message } from 'primeng/message';
-import { AvatarModule } from 'primeng/avatar';
 import { SkeletonModule } from 'primeng/skeleton';
 import { Breadcrumb } from 'primeng/breadcrumb';
+import { DetailHeaderComponent } from '../../../../shared/components/detail-header/detail-header';
 import { Users } from '../../services/users';
 import { User } from '../../interfaces/user';
+
+const USERS_ROUTE = '/administracion/usuarios';
+
+interface DetailRow {
+  label: string;
+  value: string;
+}
 
 @Component({
   selector: 'app-user-detail',
   standalone: true,
-  imports: [ButtonModule, CardModule, TagModule, Message, AvatarModule, SkeletonModule, Breadcrumb],
+  imports: [
+    ButtonModule,
+    CardModule,
+    TagModule,
+    Message,
+    SkeletonModule,
+    Breadcrumb,
+    DetailHeaderComponent,
+  ],
   templateUrl: './user-detail.html',
   styleUrl: './user-detail.css',
 })
@@ -24,21 +39,65 @@ export class UserDetail implements OnInit {
   private readonly router = inject(Router);
   private readonly usersService = inject(Users);
 
-  user = signal<User | null>(null);
-  loading = signal(false);
-  toggling = signal(false);
-  errorMessage = signal('');
+  readonly user = signal<User | null>(null);
+  readonly loading = signal(false);
+  readonly toggling = signal(false);
+  readonly errorMessage = signal('');
 
   readonly breadcrumbHome: MenuItem = {
     icon: 'pi pi-home',
     routerLink: '/dashboard',
   };
 
-  readonly breadcrumbItems: MenuItem[] = [
+  readonly fullName = computed(() => {
+    const current = this.user();
+    if (!current) {
+      return this.loading() ? 'Cargando...' : 'Usuario';
+    }
+    return `${current.firstName} ${current.lastName}`.trim();
+  });
+
+  readonly breadcrumbItems = computed<MenuItem[]>(() => [
     { label: 'Administración' },
-    { label: 'Gestión de usuarios', routerLink: '/administracion/usuarios' },
-    { label: 'Detalle de usuario' },
-  ];
+    { label: 'Gestión de usuarios', routerLink: USERS_ROUTE },
+    { label: this.user() ? `${this.user()!.firstName} ${this.user()!.lastName}`.trim() : 'Detalle de usuario' },
+  ]);
+
+  readonly highlights = computed(() => {
+    const current = this.user();
+    if (!current) return [];
+    const rolesCount = current.roles?.length ?? 0;
+    return [
+      { icon: 'pi pi-envelope', value: current.email, label: 'Correo electrónico' },
+      {
+        icon: 'pi pi-shield',
+        value: `${rolesCount} ${rolesCount === 1 ? 'rol' : 'roles'}`,
+        label: 'Roles asignados',
+      },
+      {
+        icon: 'pi pi-calendar-plus',
+        value: this.formatShortDate(current.createdAt),
+        label: 'Fecha de creación',
+      },
+      {
+        icon: 'pi pi-clock',
+        value: this.formatShortDate(current.updatedAt),
+        label: 'Última actualización',
+      },
+    ];
+  });
+
+  readonly rows = computed<DetailRow[]>(() => {
+    const current = this.user();
+    if (!current) return [];
+    return [
+      { label: 'Nombre', value: current.firstName },
+      { label: 'Apellido', value: current.lastName },
+      { label: 'Correo electrónico', value: current.email },
+      { label: 'Fecha de creación', value: this.formatDate(current.createdAt) },
+      { label: 'Última actualización', value: this.formatDate(current.updatedAt) },
+    ];
+  });
 
   ngOnInit(): void {
     const id = Number(this.route.snapshot.paramMap.get('id'));
@@ -72,7 +131,7 @@ export class UserDetail implements OnInit {
   }
 
   goBack(): void {
-    this.router.navigate(['/administracion/usuarios']);
+    this.router.navigate([USERS_ROUTE]);
   }
 
   toggleDisabled(): void {
@@ -116,6 +175,17 @@ export class UserDetail implements OnInit {
     });
   }
 
+  private formatShortDate(value?: string): string {
+    if (!value) return '—';
+    const date = new Date(value);
+    if (Number.isNaN(date.getTime())) return '—';
+    return date.toLocaleDateString('es-AR', {
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric',
+    });
+  }
+
   statusLabel(user: User): string {
     if (user.isDisabled) return 'Desactivada';
     if (user.isActive) return 'Activo';
@@ -126,11 +196,5 @@ export class UserDetail implements OnInit {
     if (user.isDisabled) return 'danger';
     if (user.isActive) return 'success';
     return 'warn';
-  }
-
-  getInitials(user: User): string {
-    const first = user.firstName?.trim().charAt(0) ?? '';
-    const last = user.lastName?.trim().charAt(0) ?? '';
-    return `${first}${last}`.toUpperCase() || '?';
   }
 }

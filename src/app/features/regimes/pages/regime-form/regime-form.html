@@ -1,0 +1,92 @@
+<section aria-labelledby="regime-form-title">
+  <p-breadcrumb [model]="breadcrumbItems()" [home]="breadcrumbHome" styleClass="page-breadcrumb" />
+
+  <header class="page-header">
+    <div class="page-heading">
+      <p-button
+        icon="pi pi-arrow-left"
+        severity="secondary"
+        [outlined]="true"
+        [ariaLabel]="isEdit() ? 'Volver al detalle' : 'Volver al listado'"
+        (onClick)="cancel()"
+      />
+      <h1 id="regime-form-title" class="page-title">
+        {{ isEdit() ? 'Editar régimen' : 'Nuevo régimen' }}
+      </h1>
+      <p class="page-subtitle">
+        {{
+          isEdit()
+            ? (regime()?.name || 'Modificá los datos del régimen.')
+            : 'Completá los datos para crear un nuevo régimen.'
+        }}
+      </p>
+    </div>
+  </header>
+
+  <form [formGroup]="form" (ngSubmit)="save()" novalidate>
+    <p-card>
+      <h2 class="form-section-title">
+        <i class="pi pi-file" aria-hidden="true"></i>
+        Datos del régimen
+      </h2>
+
+      <div class="form-grid">
+        <div class="form-field form-grid-full">
+          <label for="regime-name">Nombre <span class="required">*</span></label>
+          <input
+            id="regime-name"
+            type="text"
+            pInputText
+            [fluid]="true"
+            formControlName="name"
+            placeholder="Cuatrimestral"
+            maxlength="100"
+          />
+          @if (form.controls.name.touched && form.controls.name.invalid) {
+            <small class="form-field-error" role="alert">El nombre es obligatorio.</small>
+          }
+        </div>
+      </div>
+
+      @if (errorMessage()) {
+        <p-message class="form-error" severity="error" role="alert">
+          {{ errorMessage() }}
+        </p-message>
+      }
+
+      <div class="form-actions">
+        <p-button label="Cancelar" severity="secondary" [outlined]="true" (onClick)="cancel()" />
+        <p-button
+          type="submit"
+          [label]="isEdit() ? 'Guardar cambios' : 'Guardar régimen'"
+          [loading]="saving()"
+          [disabled]="saving() || deleting()"
+        />
+      </div>
+    </p-card>
+  </form>
+
+  @if (isEdit() && regime()) {
+    <p-card styleClass="status-card">
+      <h2 class="form-section-title">
+        <i class="pi pi-sliders-h" aria-hidden="true"></i>
+        Acciones de estado
+      </h2>
+      <p class="status-description">
+        Eliminar régimen: esta acción quitará el régimen si no tiene materias asociadas.
+      </p>
+      <p-button
+        type="button"
+        label="Eliminar"
+        icon="pi pi-trash"
+        severity="danger"
+        [outlined]="true"
+        [loading]="deleting()"
+        [disabled]="saving() || deleting()"
+        (onClick)="confirmDelete()"
+      />
+    </p-card>
+  }
+</section>
+
+<p-confirmdialog appendTo="body" />

@@ -1,10 +1,5 @@
 <section class="table-page" aria-labelledby="degree-list-title">
-  <p-breadcrumb
-    class="page-breadcrumb"
-    [home]="breadcrumbHome"
-    [model]="breadcrumbItems"
-    [dt]="breadcrumbTheme"
-  />
+  <p-breadcrumb [model]="breadcrumbItems" [home]="breadcrumbHome" styleClass="page-breadcrumb" />
 
   <header class="page-header">
     <div>
@@ -15,29 +10,6 @@
     <p-button label="Nueva carrera" icon="pi pi-plus" (onClick)="goToCreate()" />
   </header>
 
-  <div class="degree-toolbar">
-    <span class="p-input-icon-left degree-search">
-      <i class="pi pi-search"></i>
-      <input
-        pInputText
-        type="search"
-        [(ngModel)]="searchText"
-        placeholder="Buscar carrera"
-        aria-label="Buscar carrera"
-      />
-    </span>
-
-    <p-select
-      [options]="statusOptions"
-      optionLabel="label"
-      optionValue="value"
-      [(ngModel)]="statusFilter"
-      placeholder="Filtrar por estado"
-      aria-label="Filtrar por estado"
-      styleClass="degree-filter"
-    ></p-select>
-  </div>
-
   @if (error()) {
     <div class="degree-alert" role="alert">
       {{ error() }}
@@ -46,73 +18,157 @@
   }
 
   <p-card>
-    <p-table
-      [value]="filteredDegrees()"
-      [loading]="loading()"
-      [paginator]="true"
-      [rows]="10"
-      [rowsPerPageOptions]="[5, 10, 20]"
-      [showCurrentPageReport]="true"
-      currentPageReportTemplate="Mostrando {first} a {last} de {totalRecords} carreras"
-      [tableStyle]="{ 'min-width': '40rem' }"
-    >
-      <ng-template #header>
-        <tr>
-          <th>Carrera</th>
-          <th>Estado</th>
-          <th class="table-col-center">Acciones</th>
-        </tr>
-      </ng-template>
+    <div class="degrees-filters" role="search">
+      <p-iconfield class="degrees-search">
+        <p-inputicon class="pi pi-search" />
+        <input
+          type="text"
+          pInputText
+          [fluid]="true"
+          placeholder="Buscar por nombre de carrera..."
+          aria-label="Buscar por nombre de carrera"
+          [ngModel]="search()"
+          (ngModelChange)="onSearchChange($event)"
+        />
+      </p-iconfield>
 
-      <ng-template #body let-degree>
-        <tr>
-          <td>{{ degree.name }}</td>
-          <td>
-            <p-tag
-              icon="pi pi-circle-fill"
-              [value]="statusLabel(degree.status)"
-              [severity]="statusSeverity(degree.status)"
-              [rounded]="true"
-            />
-          </td>
-          <td class="table-col-center">
-            <p-button
-              icon="pi pi-eye"
-              [outlined]="true"
-              [ariaLabel]="'Ver ' + degree.name"
-              (onClick)="goToDetail(degree.id)"
-            />
-            <p-button
-              icon="pi pi-pencil"
-              severity="secondary"
-              [outlined]="true"
-              [ariaLabel]="'Editar ' + degree.name"
-              (onClick)="goToEdit(degree.id)"
-            />
-            <p-button
-              [icon]="degree.status === 'ACTIVO' ? 'pi pi-ban' : 'pi pi-check'"
-              [severity]="degree.status === 'ACTIVO' ? 'danger' : 'success'"
-              [outlined]="true"
-              [ariaLabel]="(degree.status === 'ACTIVO' ? 'Desactivar ' : 'Activar ') + degree.name"
-              (onClick)="openDeleteDialog(degree)"
-            />
-          </td>
-        </tr>
-      </ng-template>
+      <p-select
+        [options]="statusOptions"
+        optionLabel="label"
+        optionValue="value"
+        [ngModel]="statusFilter()"
+        (ngModelChange)="onStatusFilterChange($event)"
+        placeholder="Todos los estados"
+        ariaLabel="Filtrar por estado"
+        [fluid]="true"
+        appendTo="body"
+      />
+    </div>
 
-      <ng-template #loadingbody>
-        @for (_ of [1, 2, 3, 4, 5]; track $index) {
+    @if (!isMobile()) {
+      <p-table
+        [value]="filteredDegrees()"
+        [loading]="loading()"
+        [paginator]="true"
+        [first]="first()"
+        [rows]="rows()"
+        [rowsPerPageOptions]="rowsPerPageOptions"
+        [showCurrentPageReport]="true"
+        currentPageReportTemplate="Mostrando {first} a {last} de {totalRecords} carreras"
+        [tableStyle]="{ 'min-width': '40rem' }"
+        (onPage)="onPageChange($event)"
+      >
+        <ng-template #header>
           <tr>
-            <td><p-skeleton width="12rem" /></td>
-            <td><p-skeleton width="5rem" /></td>
-            <td><p-skeleton width="8rem" /></td>
+            <th>Carrera</th>
+            <th>Estado</th>
+            <th class="table-col-center">Acciones</th>
           </tr>
-        }
-      </ng-template>
+        </ng-template>
 
-      <ng-template #emptymessage>
-        <tr class="table-empty-row">
-          <td colspan="3" class="table-empty-cell">
+        <ng-template #body let-degree>
+          <tr>
+            <td class="degrees-name">{{ degree.name }}</td>
+            <td>
+              <p-tag
+                icon="pi pi-circle-fill"
+                [value]="statusLabel(degree.status)"
+                [severity]="statusSeverity(degree.status)"
+                [rounded]="true"
+              />
+            </td>
+            <td class="table-col-center">
+              <app-row-actions
+                [viewAriaLabel]="'Ver ' + degree.name"
+                [menuAriaLabel]="'Más acciones para ' + degree.name"
+                [actions]="rowActionsMap().get(degree.id) ?? []"
+                (view)="goToDetail(degree.id)"
+              />
+            </td>
+          </tr>
+        </ng-template>
+
+        <ng-template #loadingbody>
+          @for (_ of [1, 2, 3, 4, 5]; track $index) {
+            <tr>
+              <td><p-skeleton width="12rem" /></td>
+              <td><p-skeleton width="5rem" /></td>
+              <td><p-skeleton width="4rem" /></td>
+            </tr>
+          }
+        </ng-template>
+
+        <ng-template #emptymessage>
+          <tr class="table-empty-row">
+            <td colspan="3" class="table-empty-cell">
+              <div class="table-empty-state">
+                <span class="table-empty-icon" aria-hidden="true">
+                  <i class="pi pi-book"></i>
+                </span>
+                <p class="table-empty-title">
+                  {{ degrees().length ? 'Ninguna carrera coincide con la búsqueda' : 'No hay carreras registradas' }}
+                </p>
+                <p class="table-empty-description">
+                  {{
+                    degrees().length
+                      ? 'Probá ajustando o limpiando los filtros para ver otros resultados.'
+                      : 'Podés registrar la primera carrera desde el botón "Nueva carrera".'
+                  }}
+                </p>
+              </div>
+            </td>
+          </tr>
+        </ng-template>
+      </p-table>
+    } @else {
+      <div class="mobile-view">
+        @if (filteredDegrees().length) {
+          <div class="mobile-card-list" role="list">
+            @for (degree of paginatedDegrees(); track degree.id) {
+              <article class="mobile-card" role="listitem">
+                <header class="mobile-card-header">
+                  <h2 class="mobile-card-title">{{ degree.name }}</h2>
+                  <p-tag
+                    icon="pi pi-circle-fill"
+                    [value]="statusLabel(degree.status)"
+                    [severity]="statusSeverity(degree.status)"
+                    [rounded]="true"
+                  />
+                </header>
+
+                <footer class="mobile-card-actions">
+                  <p-button
+                    label="Ver detalle"
+                    icon="pi pi-eye"
+                    size="small"
+                    [outlined]="true"
+                    [ariaLabel]="'Ver detalle de ' + degree.name"
+                    (onClick)="goToDetail(degree.id)"
+                  />
+                  <p-button
+                    label="Editar"
+                    icon="pi pi-pencil"
+                    severity="secondary"
+                    size="small"
+                    [outlined]="true"
+                    [ariaLabel]="'Editar ' + degree.name"
+                    (onClick)="goToEdit(degree.id)"
+                  />
+                  <p-button
+                    [label]="degree.status === 'ACTIVO' ? 'Desactivar' : 'Activar'"
+                    [icon]="degree.status === 'ACTIVO' ? 'pi pi-ban' : 'pi pi-check-circle'"
+                    [severity]="degree.status === 'ACTIVO' ? 'danger' : 'success'"
+                    size="small"
+                    [outlined]="true"
+                    [ariaLabel]="(degree.status === 'ACTIVO' ? 'Desactivar ' : 'Activar ') + degree.name"
+                    (onClick)="confirmStatusChange(degree)"
+                  />
+                </footer>
+              </article>
+            }
+          </div>
+        } @else {
+          <div class="mobile-empty">
             <div class="table-empty-state">
               <span class="table-empty-icon" aria-hidden="true">
                 <i class="pi pi-book"></i>
@@ -128,29 +184,24 @@
                 }}
               </p>
             </div>
-          </td>
-        </tr>
-      </ng-template>
-    </p-table>
+          </div>
+        }
+
+        <p-paginator
+          class="mobile-paginator"
+          [first]="first()"
+          [rows]="rows()"
+          [totalRecords]="filteredDegrees().length"
+          [rowsPerPageOptions]="rowsPerPageOptions"
+          [pageLinkSize]="3"
+          [showCurrentPageReport]="true"
+          currentPageReportTemplate="Mostrando {first} a {last} de {totalRecords} carreras"
+          appendTo="body"
+          (onPageChange)="onPageChange($event)"
+        />
+      </div>
+    }
   </p-card>
 </section>
 
-<p-dialog
-  [visible]="pendingDelete() !== null"
-  [modal]="true"
-  [closable]="true"
-  [header]="pendingDelete()?.status === 'ACTIVO' ? 'Desactivar carrera' : 'Activar carrera'"
-  (onHide)="cancelDelete()"
->
-  <div class="dialog-content">
-    <p>
-      &iquest;Quer&eacute;s {{ pendingDelete()?.status === 'ACTIVO' ? 'desactivar' : 'activar' }} la carrera
-      <strong>{{ pendingDelete()?.name }}</strong>?
-    </p>
-  </div>
-
-  <ng-template pTemplate="footer">
-    <button pButton type="button" label="Cancelar" severity="secondary" (click)="cancelDelete()"></button>
-    <button pButton type="button" label="Confirmar" severity="danger" (click)="confirmDelete()"></button>
-  </ng-template>
-</p-dialog>
+<p-confirmdialog appendTo="body" />

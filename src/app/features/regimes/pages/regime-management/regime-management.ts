@@ -1,20 +1,27 @@
-import { Component, OnInit, computed, inject, signal } from '@angular/core';
+﻿import { Component, DestroyRef, OnInit, computed, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { HttpErrorResponse } from '@angular/common/http';
+import { Router } from '@angular/router';
 import { ConfirmationService, MenuItem } from 'primeng/api';
 import { BreadcrumbModule } from 'primeng/breadcrumb';
 import { ButtonModule } from 'primeng/button';
 import { CardModule } from 'primeng/card';
 import { ConfirmDialogModule } from 'primeng/confirmdialog';
-import { DialogModule } from 'primeng/dialog';
 import { IconFieldModule } from 'primeng/iconfield';
 import { InputIconModule } from 'primeng/inputicon';
 import { InputTextModule } from 'primeng/inputtext';
 import { Message } from 'primeng/message';
-import { TableModule } from 'primeng/table';
+import { PaginatorModule, PaginatorState } from 'primeng/paginator';
+import { TableModule, TablePageEvent } from 'primeng/table';
+import { NotificationService } from '../../../../core/services/notification.service';
+import { createIsMobileSignal } from '../../../../shared/utils/viewport';
+import { RowActionsComponent } from '../../../../shared/components/row-actions/row-actions';
 import { Regime } from '../../interfaces/regime';
 import { Regimes } from '../../services/regimes';
 import { BREADCRUMB_HOME, BREADCRUMB_THEME } from '../../../subjects/subject-display';
+
+const REGIMES_ROUTE = '/configuracion/regimenes';
+const DEFAULT_PAGE_SIZE = 10;
 
 @Component({
   selector: 'app-regime-management',
@@ -25,12 +32,13 @@ import { BREADCRUMB_HOME, BREADCRUMB_THEME } from '../../../subjects/subject-dis
     ButtonModule,
     CardModule,
     ConfirmDialogModule,
-    DialogModule,
     IconFieldModule,
     InputIconModule,
     InputTextModule,
     Message,
+    PaginatorModule,
     TableModule,
+    RowActionsComponent,
   ],
   providers: [ConfirmationService],
   templateUrl: './regime-management.html',
@@ -38,7 +46,10 @@ import { BREADCRUMB_HOME, BREADCRUMB_THEME } from '../../../subjects/subject-dis
 })
 export class RegimeManagement implements OnInit {
   private readonly regimesService = inject(Regimes);
+  private readonly router = inject(Router);
   private readonly confirmationService = inject(ConfirmationService);
+  private readonly notification = inject(NotificationService);
+  private readonly destroyRef = inject(DestroyRef);
 
   protected readonly breadcrumbHome = BREADCRUMB_HOME;
   protected readonly breadcrumbTheme = BREADCRUMB_THEME;
@@ -46,81 +57,88 @@ export class RegimeManagement implements OnInit {
     { label: 'Configuración institucional' },
     { label: 'Regímenes' },
   ];
+  protected readonly rowsPerPageOptions = [5, 10, 20];
 
   readonly regimes = signal<Regime[]>([]);
+  readonly loading = signal(false);
   readonly errorMessage = signal('');
   readonly search = signal('');
+  readonly first = signal(0);
+  readonly rows = signal(DEFAULT_PAGE_SIZE);
+  readonly isMobile = createIsMobileSignal(this.destroyRef);
+
+  readonly filtersDisabled = computed(
+    () => !this.loading() && !this.errorMessage() && this.regimes().length === 0,
+  );
 
   readonly filteredRegimes = computed(() => {
     const search = this.search().toLowerCase().trim();
     return this.regimes().filter((regime) => regime.name.toLowerCase().includes(search));
   });
 
-  readonly dialogVisible = signal(false);
-  readonly editingRegime = signal<Regime | null>(null);
-  readonly nameInput = signal('');
-  readonly formError = signal('');
-  readonly saving = signal(false);
+  readonly paginatedRegimes = computed(() => {
+    const start = this.first();
+    return this.filteredRegimes().slice(start, start + this.rows());
+  });
+
+  readonly rowActionsMap = computed(() => {
+    const map = new Map<number, MenuItem[]>();
+    for (const regime of this.filteredRegimes()) {
+      map.set(regime.id, [
+        {
+          label: 'Editar',
+          icon: 'pi pi-pencil',
+          command: () => this.goToEdit(regime.id),
+        },
+        {
+          label: 'Eliminar',
+          icon: 'pi pi-trash',
+          command: () => this.confirmDelete(regime),
+        },
+      ]);
+    }
+    return map;
+  });
 
   ngOnInit(): void {
     this.loadRegimes();
   }
 
   loadRegimes(): void {
+    this.loading.set(true);
     this.errorMessage.set('');
     this.regimesService.getAll().subscribe({
-      next: (regimes) => this.regimes.set(regimes),
-      error: () => this.errorMessage.set('Ocurrió un error al cargar los regímenes.'),
-    });
-  }
-
-  openCreate(): void {
-    this.editingRegime.set(null);
-    this.nameInput.set('');
-    this.formError.set('');
-    this.dialogVisible.set(true);
-  }
-
-  openEdit(regime: Regime): void {
-    this.editingRegime.set(regime);
-    this.nameInput.set(regime.name);
-    this.formError.set('');
-    this.dialogVisible.set(true);
-  }
-
-  save(): void {
-    const name = this.nameInput().trim();
-    if (!name) {
-      this.formError.set('El nombre es obligatorio.');
-      return;
-    }
-
-    const repeated = this.regimes().some(
-      (regime) =>
-        regime.name.toLowerCase() === name.toLowerCase() && regime.id !== this.editingRegime()?.id,
-    );
-    if (repeated) {
-      this.formError.set('Ya existe un régimen con ese nombre.');
-      return;
-    }
-
-    const editing = this.editingRegime();
-    const request = editing
-      ? this.regimesService.update(editing.id, name)
-      : this.regimesService.create(name);
-
-    this.saving.set(true);
-    request.subscribe({
-      next: () => {
-        this.saving.set(false);
-        this.dialogVisible.set(false);
-        this.loadRegimes();
+      next: (regimes) => {
+        this.regimes.set(regimes);
+        this.loading.set(false);
       },
       error: () => {
-        this.saving.set(false);
-        this.formError.set('No se pudo guardar el régimen.');
+        this.loading.set(false);
+        this.errorMessage.set('Ocurrió un error al cargar los regímenes.');
       },
     });
+  }
+
+  onSearchChange(value: string): void {
+    this.search.set(value ?? '');
+    this.first.set(0);
+  }
+
+  onPageChange(event: TablePageEvent | PaginatorState): void {
+    this.first.set(event.first ?? 0);
+    this.rows.set(event.rows ?? DEFAULT_PAGE_SIZE);
+  }
+
+  goToCreate(): void {
+    void this.router.navigate([REGIMES_ROUTE, 'nuevo']);
+  }
+
+  goToDetail(id: number): void {
+    void this.router.navigate([REGIMES_ROUTE, id]);
+  }
+
+  goToEdit(id: number): void {
+    void this.router.navigate([REGIMES_ROUTE, id, 'editar']);
   }
 
   confirmDelete(regime: Regime): void {
@@ -130,20 +148,28 @@ export class RegimeManagement implements OnInit {
       icon: 'pi pi-exclamation-triangle',
       acceptButtonProps: { label: 'Eliminar', severity: 'danger' },
       rejectButtonProps: { label: 'Cancelar', severity: 'secondary', outlined: true },
-      accept: () => this.delete(regime),
+      accept: () => this.deleteRegime(regime),
     });
   }
 
-  private delete(regime: Regime): void {
+  private deleteRegime(regime: Regime): void {
     this.errorMessage.set('');
     this.regimesService.delete(regime.id).subscribe({
-      next: () => this.loadRegimes(),
-      error: (error: HttpErrorResponse) =>
-        this.errorMessage.set(
+      next: () => {
+        this.notification.success(
+          'Régimen eliminado correctamente',
+          `El régimen "${regime.name}" fue eliminado.`,
+        );
+        this.loadRegimes();
+      },
+      error: (error: HttpErrorResponse) => {
+        const msg =
           error.status === 409
-            ? error.error.message
-            : `No se pudo eliminar el régimen "${regime.name}".`,
-        ),
+            ? error.error?.message ?? 'No se puede eliminar un régimen en uso.'
+            : `No se pudo eliminar el régimen "${regime.name}".`;
+        this.errorMessage.set(msg);
+        this.notification.error('Error al eliminar el régimen', msg);
+      },
     });
   }
 }
